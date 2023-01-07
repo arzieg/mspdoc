@@ -10,7 +10,9 @@ Welcome to MSP's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-
+   Grundlagen  <grundlagen>
+   Filestruktur <filestruktur>
+   Basisbefehle <msf_commands>
 
 Indices and tables
 ==================
