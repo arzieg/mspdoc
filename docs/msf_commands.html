@@ -1,0 +1,167 @@
+
+<!DOCTYPE html>
+
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+    <title>MSF Basisbefehle &#8212; MSP 0.1 Dokumentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/translations.js"></script>
+    <link rel="index" title="Stichwortverzeichnis" href="genindex.html" />
+    <link rel="search" title="Suche" href="search.html" />
+    <link rel="prev" title="Filestruktur" href="filestruktur.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="msf-basisbefehle">
+<span id="filestruktur"></span><h1>MSF Basisbefehle<a class="headerlink" href="#msf-basisbefehle" title="Permalink to this heading">¶</a></h1>
+<p>Start von Metasploit über die msfconsole</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>msfconsole
+</pre></div>
+</div>
+<p>Wenn ein „offener“ Service gefunden wurde, würde man in MSF nach einem exploit oder später ein payload suchen.
+Beispiel postgres.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span> search postgres
+
+    <span class="c1">#   Name                                                        Disclosure Date  Rank       Check  Description</span>
+-   ----                                                        ---------------  ----       -----  -----------
+<span class="m">0</span>   auxiliary/server/capture/postgresql                                          normal     No     Authentication Capture: PostgreSQL
+<span class="m">1</span>   post/linux/gather/enum_users_history                                         normal     No     Linux Gather User History
+<span class="m">2</span>   exploit/multi/http/manage_engine_dc_pmp_sqli                <span class="m">2014</span>-06-08       excellent  Yes    ManageEngine Desktop Central / Password Manager LinkViewFetchServlet.dat SQL Injection
+<span class="m">3</span>   exploit/windows/misc/manageengine_eventlog_analyzer_rce     <span class="m">2015</span>-07-11       manual     Yes    ManageEngine EventLog Analyzer Remote Code Execution
+<span class="m">4</span>   auxiliary/admin/http/manageengine_pmp_privesc               <span class="m">2014</span>-11-08       normal     Yes    ManageEngine Password Manager SQLAdvancedALSearchResult.cc Pro SQL Injection
+<span class="m">5</span>   auxiliary/analyze/crack_databases                                            normal     No     Password Cracker: Databases
+<span class="m">6</span>   exploit/multi/postgres/postgres_copy_from_program_cmd_exec  <span class="m">2019</span>-03-20       excellent  Yes    PostgreSQL COPY FROM PROGRAM Command Execution
+<span class="m">7</span>   exploit/multi/postgres/postgres_createlang                  <span class="m">2016</span>-01-01       good       Yes    PostgreSQL CREATE LANGUAGE Execution
+<span class="m">8</span>   auxiliary/scanner/postgres/postgres_dbname_flag_injection                    normal     No     PostgreSQL Database Name Command Line Flag Injection
+<span class="m">9</span>   auxiliary/scanner/postgres/postgres_login                                    normal     No     PostgreSQL Login Utility
+<span class="m">10</span>  auxiliary/admin/postgres/postgres_readfile                                   normal     No     PostgreSQL Server Generic Query
+<span class="m">11</span>  auxiliary/admin/postgres/postgres_sql                                        normal     No     PostgreSQL Server Generic Query
+<span class="m">12</span>  auxiliary/scanner/postgres/postgres_version                                  normal     No     PostgreSQL Version Probe
+<span class="m">13</span>  exploit/linux/postgres/postgres_payload                     <span class="m">2007</span>-06-05       excellent  Yes    PostgreSQL <span class="k">for</span> Linux Payload Execution
+<span class="m">14</span>  exploit/windows/postgres/postgres_payload                   <span class="m">2009</span>-04-10       excellent  Yes    PostgreSQL <span class="k">for</span> Microsoft Windows Payload Execution
+<span class="m">15</span>  auxiliary/scanner/postgres/postgres_hashdump                                 normal     No     Postgres Password Hashdump
+<span class="m">16</span>  auxiliary/scanner/postgres/postgres_schemadump                               normal     No     Postgres Schema Dump
+<span class="m">17</span>  auxiliary/admin/http/rails_devise_pass_reset                <span class="m">2013</span>-01-28       normal     No     Ruby on Rails Devise Authentication Password Reset
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>Der Name gibt den Ort des Ruby-Scripts an.</p></li>
+<li><p>Rank gibt die an, wie gut ein exploit ist.</p></li>
+<li><p>Check gibt an, ob vorher geprüft werden kann, ob ein Exploit auf dem Zielsyste läuft oder nicht.</p></li>
+<li><p>Disclosure Date gibt an, seit wann der Exploit bekannt ist.</p></li>
+</ul>
+<p>Mit use wird ein Modul ausgeählt. Entweder als Name angeben inkl. vollständigen Pfad oder aber die Nummer.</p>
+<div class="highlight-Shell notranslate"><div class="highlight"><pre><span></span>use auxiliary/scanner/postgres/postgres_login
+oder
+use <span class="m">9</span>
+</pre></div>
+</div>
+<p>Mit info erhält man Informationen zu dem Module. Mit options werden die definierbaren Parameter angezeigt.
+Mit set wird ein Parameterwert gesetzt</p>
+<div class="highlight-Shell notranslate"><div class="highlight"><pre><span></span><span class="nb">set</span> RHOST &lt;Ziel IP&gt;
+show options
+</pre></div>
+</div>
+<p>Mit check kann geprüft werden, ob der exploit funktioniert oder nicht sofern das Modul das unterstützt.</p>
+<p>Der Start erfolgt dann mit „run“.</p>
+<div class="highlight-Shell notranslate"><div class="highlight"><pre><span></span>...
+<span class="o">[</span>-<span class="o">]</span> &lt;IP&gt; - LOGIN FAILED: admin:password@template1 <span class="o">(</span>Incorrect: FATAL      VFATAL  C28P01  Mpassword authentication failed <span class="k">for</span> user <span class="s2">&quot;admin&quot;</span>Fauth.c L330    Rauth_failed<span class="o">)</span>
+<span class="o">[</span>+<span class="o">]</span> &lt;IP&gt; - Login Successful: admin:admin@template1   &lt;-- Treffer
+<span class="o">[</span>-<span class="o">]</span> &lt;IP&gt; - LOGIN FAILED: postgres:postgres@template1 <span class="o">(</span>Incorrect: FATAL   VFATAL  C28P01  Mpassword authentication failed <span class="k">for</span> user <span class="s2">&quot;postgres&quot;</span>     Fauth.c L330    Rauth_failed<span class="o">)</span>
+</pre></div>
+</div>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">MSP</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="grundlagen.html">Grundlagen</a></li>
+<li class="toctree-l1"><a class="reference internal" href="filestruktur.html">Filestruktur</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Basisbefehle</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="filestruktur.html" title="vorheriges Kapitel">Filestruktur</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Schnellsuche</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Los" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2023, ArZieg.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.0.2</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/msf_commands.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
