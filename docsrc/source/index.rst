@@ -11,7 +11,8 @@ Welcome to MSP's documentation!
    :caption: Contents:
 
    Grundlagen  <grundlagen>
-
+   Filestruktur <filestruktur>
+   Basisbefehle <msf_commands>
 
 Indices and tables
 ==================

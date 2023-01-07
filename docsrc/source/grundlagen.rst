@@ -42,7 +42,25 @@ MSP hat mehrere Module, u.a.
    dass AV Programme dies nicht als Schadcode identifizieren
 
 
+Programme im Metasploit
+************************
+Metasploit ist in Ruby geschrieben und kann durch plugins erweitert werden. 
 
+1. mfsconsole
+   CLI für das Metasploit Framework. 
+
+2. msfdb
+   Eine postgres - Datenbank, die z.B. Ergebnisse eines Scans zwischenspeichern kann. 
+
+3. msfvenom
+   Tool um eigene Payloads zu erstellen und auf dem Zielsystem auszuführen. 
+
+4. meterpreter
+   ist ein erweiterter Payload mit einer mehreren Funktionalitäten. Es kann verschlüsselt 
+   kommunizieren, schwer zu identifizieren. Es können Screenshoots erstellt werden, Passwörter
+   extrahiert werden usw. 
+
+ 
 
 Zurück zu :ref:`grundlagen`
 
