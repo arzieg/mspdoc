@@ -1,4 +1,4 @@
-.. _filestruktur:
+.. _msf:
 
 ##################
 MSF Basisbefehle

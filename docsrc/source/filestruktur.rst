@@ -1,8 +1,8 @@
 .. _filestruktur:
 
-###########
+###############
 Filestruktur
-###########
+
 
 Metasploit wird installiert nach /usr/share/metasploit-framework
 
@@ -19,4 +19,4 @@ drwxr-xr-x 14 root root 4096 Dec  5 08:38 post         <- post Programme
 
 
 
-Zurück zu :ref:`filestruktur`
+Zurück zu :ref:`_filestruktur`
