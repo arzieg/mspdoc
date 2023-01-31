@@ -17,6 +17,8 @@ Welcome to MSP's documentation!
 
    PostgreSQL <postgresql>
 
+   Pacemaker <pacemaker>
+
 Indices and tables
 ==================
 

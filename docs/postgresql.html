@@ -4,7 +4,7 @@
 <html lang="de">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
     <title>Konfiguration &#8212; MSP 0.1 Dokumentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
@@ -12,7 +12,6 @@
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
-    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     <script src="_static/translations.js"></script>
     <link rel="index" title="Stichwortverzeichnis" href="genindex.html" />
@@ -35,9 +34,9 @@
           <div class="body" role="main">
             
   <section id="konfiguration">
-<span id="postgresql"></span><h1>Konfiguration<a class="headerlink" href="#konfiguration" title="Permalink to this heading">¶</a></h1>
+<span id="postgresql"></span><h1>Konfiguration<a class="headerlink" href="#konfiguration" title="Link zu dieser Überschrift">¶</a></h1>
 <section id="remote-access-ermoglichen">
-<h2>Remote Access ermöglichen<a class="headerlink" href="#remote-access-ermoglichen" title="Permalink to this heading">¶</a></h2>
+<h2>Remote Access ermöglichen<a class="headerlink" href="#remote-access-ermoglichen" title="Link zu dieser Überschrift">¶</a></h2>
 <ol class="arabic">
 <li><dl>
 <dt>/etc/postgresql/14/main/postgresql.conf</dt><dd><dl class="simple">
@@ -72,7 +71,7 @@ beim exploit „scanner/postgres/postgres_login“</em></p>
 <li><p>psql -h &lt;IP&gt; -p 5432 -d &lt;DB&gt; -U &lt;user&gt; -W</p></li>
 </ol>
 <section id="command-execution-with-copy-command">
-<h3>Command Execution with COPY Command<a class="headerlink" href="#command-execution-with-copy-command" title="Permalink to this heading">¶</a></h3>
+<h3>Command Execution with COPY Command<a class="headerlink" href="#command-execution-with-copy-command" title="Link zu dieser Überschrift">¶</a></h3>
 <p>Quelle: <a class="reference external" href="https://medium.com/r3d-buck3t/command-execution-with-postgresql-copy-command-a79aef9c2767">https://medium.com/r3d-buck3t/command-execution-with-postgresql-copy-command-a79aef9c2767</a></p>
 <p>In diesem Szenario erfolgt eine remote Anmeldung an die postgres-Datenbank; es wird ein Listener eingerichtet, um beliebige
 Befehle auf dem Zielhost abzusetzen.</p>
@@ -145,7 +144,7 @@ Befehle auf dem Zielhost abzusetzen.</p>
     </form>
     </div>
 </div>
-<script>document.getElementById('searchbox').style.display = "block"</script>
+<script>$('#searchbox').show(0);</script>
 
 
 
@@ -162,7 +161,7 @@ Befehle auf dem Zielhost abzusetzen.</p>
       &copy;2023, ArZieg.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.0.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.4.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
