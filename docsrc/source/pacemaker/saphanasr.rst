@@ -10,11 +10,11 @@ Konfiguration
 
 Pakete
 =======
-```
-rpm -qa |grep -i saphanasr
-SAPHanaSR-ScaleOut-doc-0.180.1-3.23.1.noarch
-SAPHanaSR-ScaleOut-0.180.1-3.23.1.noarch
-```
+
+.. code:: bash
+    rpm -qa |grep -i saphanasr
+    SAPHanaSR-ScaleOut-doc-0.180.1-3.23.1.noarch
+    SAPHanaSR-ScaleOut-0.180.1-3.23.1.noarch
 
 Python Hook
 =============
