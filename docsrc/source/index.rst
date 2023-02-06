@@ -17,7 +17,8 @@ Welcome to MSP's documentation!
 
    PostgreSQL <postgresql>
 
-   Pacemaker <pacemaker>
+   Pacemaker <pacemaker/pacemaker>
+   SAPHanaSR <pacemaker/saphanasr>
 
 Indices and tables
 ==================

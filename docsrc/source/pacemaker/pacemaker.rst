@@ -111,8 +111,9 @@ hb_report ausführen:
 Konfiguration
 ***************
 
-SBD
-=====
+SBD als STONITH Device
+=======================
+SBD wird als STONITH Device verwendet. 
 
 Stonith-Device: 
 ----------------
@@ -133,3 +134,35 @@ Die SBD Disks stehen in /etc/sysconfig/sbd
 	Timeout (loop)     : 5
 	Timeout (msgwait)  : 90   <- uups
 	==Header on disk /dev/disk/by-id/scsi-<id> is dumped
+
+
+
+Watchdog für Storage Based Fencing
+-----------------------------------
+
+Jeder Pacemaker-Knoten prüft, ob es die angebundenen SBD Devices ansprechen kann.
+Moderne Systeme haben einen Hardware-Watchdog. Dieser wird zyklisch von einem Software-Dämon zurückgesetzt. Wenn dieser 
+Mechanismus unterbrochen wird, wird durch den watchdog ein SystemReset ausgeführt. Dieser Mechanismus schützt auch den 
+SBD Prozess, wenn dieser "stirbt" oder aber aufgrund von i/o - Problemen nicht mehr ansprechbar ist. 
+
+In der Lösung ist hier der ipmi_watchdog implemetiert:
+
+.. code:: bash
+
+    lsmod | egrep "(wd|dog|i6|iT|ibm)"
+    ipmi_watchdog          32768  1
+    ipmi_msghandler        49152  3 ipmi_devintf,ipmi_si,ipmi_watchdog
+
+Das Verhalten testen kann man, indem man ein :code:`touch /dev/watchdog` oder beim softdog ein :code:`echo1> /dev/watchdog` absetzt. Das 
+System sollte dann sofort fencen. 
+
+Pacemaker Konfiguration STONITH Device
+----------------------------------------
+Für das STONITH Device wird eine Regel in pacemaker definiert:
+
+.. code:: bash
+    
+    primitive stonith-sbd stonith:external/sbd \
+            params pcmk_action_limit=-1 pcmk_delay_max=30s
+
+pcmk_delay_max in ScaleOut 1s, in ScaleUp 30s, um zu verhindern, das sich zwei Knoten gleichzeitig "abschießen". (-> `<https://clusterlabs.org/pacemaker/doc/2.1/Pacemaker_Explained/html/fencing.html#fencing>`_)
