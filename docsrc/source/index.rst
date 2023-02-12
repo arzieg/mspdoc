@@ -6,19 +6,35 @@
 Welcome to MSP's documentation!
 ===============================
 
+
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :numbered:
+   :caption: MSP Documentation
 
-   Grundlagen  <grundlagen>
-   Filestruktur  <filestruktur>
-   Basisbefehle  <msf_commands>
-   Links  <linkliste>
+   MSP Grundlagen  <msp/grundlagen>
+   MSP Filestruktur  <msp/filestruktur>
+   MSP Basisbefehle  <msp/msf_commands>
+   MSP Links  <msp/linkliste>
 
-   PostgreSQL <postgresql>
+
+.. toctree::
+   :maxdepth: 2
+   :numbered:
+   :caption: Pacemaker
 
    Pacemaker <pacemaker/pacemaker>
    SAPHanaSR <pacemaker/saphanasr>
+
+.. toctree::
+   :maxdepth: 2
+   :numbered:
+   :caption: postgres
+
+   PostgreSQL <postgresql>
+
+
+
 
 Indices and tables
 ==================
