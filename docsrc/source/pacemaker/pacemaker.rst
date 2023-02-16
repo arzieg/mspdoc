@@ -82,6 +82,52 @@ Ressourcen haben im SAPHana den Präfix rsc_<name>.
     crm_resource -P
 
 
+corosync-quorumtool
+====================
+Display the current state of quorum in the cluster and set vote quorum options.
+
+Anzeige der definierten Knoten im Cluster und wie viele davon mindestens benötigt werden, damit der Cluster eine Aktion ausführen kann. 
+Wenn das Quorum unterschritten wird, führt der Cluster keine Aktionen mehr aus (Sicherheit vor Datenverlust durch Aktionen auf einer defekten Seite).
+Im Fall, wenn man einen 7 Knoten HANA Cluster (3+3+1) verwendet, dann liegt das Quorum bei 4. Wird je DC Seite ein StandBy rausgenommen, gehen dann 
+durch einen DC Ausfall 2 Knoten verloren, d.h. es fehlt ein Knoten, um das Quorum von 4 zu erreichen (5 Available Knoten - 2 = 3 < 4). In diesem
+Fall sind keine Clusteraktionen möglich und etwaige Clusterbefehle (z.B. Ressourcen starten) werden nicht ausgeführt (auch in dem Zustand, wo man 
+aktuell 5 laufende Pacemakerknoten hat!) 
+
+Anpassen kann man die Regel mit: 
+`corosync-quorumtool -e`
+
+Anzeigen des Status mit -s:
+
+.. code:: bash
+
+    # corosync-quorumtool -s                                                                                                                                                                                              [12/24]
+    Quorum information
+    ------------------
+    Date:             Thu Feb 16 12:05:30 2023
+    Quorum provider:  corosync_votequorum
+    Nodes:            5
+    Node ID:          1
+    Ring ID:          28808
+    Quorate:          Yes
+
+    Votequorum information
+    ----------------------
+    Expected votes:   5
+    Highest expected: 5
+    Total votes:      5
+    Quorum:           3
+    Flags:            Quorate WaitForAll
+
+    Membership information
+    ----------------------
+        Nodeid      Votes Name
+            1          1 <ip> (local)
+            2          1 <ip>
+            4          1 <ip>
+            5          1 <ip>
+            7          1 <ip>
+
+
 SAPHanaSR zeigt nur ein DC an, srHook wird nicht angezeigt
 ==============================================================
 .. index:: srHook, crm_attribute
