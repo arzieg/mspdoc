@@ -81,6 +81,12 @@ Ressourcen haben im SAPHana den Präfix rsc_<name>.
     # Löschen der Ressource - Fehler und reload 
     crm_resource -P
 
+Logs
+====
+/var/lib/pacemaker
+  pengine   - hier stehen CIB Dateien und deren Status in gepackter Form
+  cib       - hier steht die Historie der cib-xml files
+
 
 corosync-quorumtool
 ====================

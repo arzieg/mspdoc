@@ -104,3 +104,9 @@ Das sind regex Ausdrücke, die im weiteren ausgewertet werden.
 (man ocf_suse_SAPHanaTopology)
 
 Das Script wertet die Rückgabe von *landscapeHostConfiguration.py* aus. 
+
+Analyse
+========
+SAPHanaSR-replay-archive  - Tool für die Analyse von hb_report
+Bsp: SAPHanaSR-replay-archive --format=script hb_report_log_<hostname>.tar.bz2 2>/dev/null | SAPHanaSR-filter --filterDouble --search="clone_state|score|roles|srHook|sync_state" --showFormerValues
+
