@@ -81,6 +81,11 @@ Ressourcen haben im SAPHana den Präfix rsc_<name>.
     # Löschen der Ressource - Fehler und reload 
     crm_resource -P
 
+Simulation
+============
+    crm_simulate -sL
+
+
 Logs
 ====
 /var/lib/pacemaker
