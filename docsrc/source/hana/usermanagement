@@ -1,0 +1,13 @@
+.. _hana_usermanagement:
+
+####################
+HANA Usermanagement
+#####################
+
+hdbuserstore
+*****************
+hdbuserstore list           - definierte Keys im Userstore
+hdbuserstore delete <Key>   - löschen eines Keys
+hdbuserstore set            - Key definieren, Bsp: hdbuserstore set BACKUP lavdb10y03101:31013 BACKUPUSER <Passwort>
+
+
