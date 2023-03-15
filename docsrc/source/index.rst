@@ -33,6 +33,19 @@ Welcome to MSP's documentation!
 
    PostgreSQL <postgresql>
 
+.. toctree::
+   :maxdepth: 2
+   :numbered:
+   :caption: Python
+   
+   Packages <python/packages>
+
+.. toctree::
+   :maxdepth: 2
+   :numbered:
+   :caption: SALT
+   
+   
 
 
 
