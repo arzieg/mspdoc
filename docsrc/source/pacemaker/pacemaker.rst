@@ -105,7 +105,7 @@ Fall sind keine Clusteraktionen möglich und etwaige Clusterbefehle (z.B. Ressou
 aktuell 5 laufende Pacemakerknoten hat!) 
 
 Anpassen kann man die Regel mit: 
-`corosync-quorumtool -e`
+`corosync-quorumtool -e` z.B. `corosync-quorumtool -e 3`
 
 Anzeigen des Status mit -s:
 
