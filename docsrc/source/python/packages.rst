@@ -7,17 +7,21 @@ Packages
 
 Projektstruktur
 ================
-app/<packagename>
-    src/
-       __init__.py
-       <package.py>
-       <other.py>
-    test/
-    __init__.py  (hier steht drin: from .src.<package> import (...) und für ... alle Klassen von dem Pakete <package> )
-__init__.py
-Readme.md 
-LICENSE.txt
-setup.py
+
+.. code-block:: bash
+
+  app/<packagename>
+      src/
+        __init__.py
+        <package.py>
+        <other.py>
+      test/
+      __init__.py  (hier steht drin: from .src.<package> import (...) und für ... alle Klassen von dem Pakete <package> )
+  __init__.py
+  Readme.md 
+  LICENSE.txt
+  setup.py
+
 
 setup
 ======
@@ -52,6 +56,8 @@ twine upload -r testpypi dist/*   -> upload to testrepository
 - richtige software lizenz verwendet
 - making update easily (bumpversion z.B. als Unterstützungstools)
 - use project classifiers (eine Liste ist auf pypi)
+
+
 
 
 

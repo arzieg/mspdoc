@@ -25,6 +25,7 @@ Welcome to MSP's documentation!
 
    Pacemaker <pacemaker/pacemaker>
    SAPHanaSR <pacemaker/saphanasr>
+   iscsi     <pacemaker/iscsi>
 
 .. toctree::
    :maxdepth: 2
@@ -45,7 +46,7 @@ Welcome to MSP's documentation!
    :numbered:
    :caption: SALT
    
-   
+   Salt <salt/salt>
 
 
 
