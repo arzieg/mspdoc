@@ -51,6 +51,9 @@ Hier werden je Worker spezifische Parameter definiert:
   SUT_IP=<FQDN Hostname oder IP>
   HOSTNAME=<HOSTNAME des Workers (Public Interface)>
 
+Settings für Worker: https://github.com/os-autoinst/os-autoinst/blob/master/doc/backend_vars.asciidoc
+systemctl start openqa-worker@<nr>
+
 GOVC vSphere API
 =================
 Die Anbinung an vSphere erfolgt über die vSphere API (https://github.com/vmware/govmomi/tree/main/govc)
