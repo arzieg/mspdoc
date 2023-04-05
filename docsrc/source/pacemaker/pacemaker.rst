@@ -84,7 +84,15 @@ Ressourcen haben im SAPHana den Präfix rsc_<name>.
 Simulation
 ============
     crm_simulate -sL
-
+    crm_simulate
+    crm_simulate --simulate --xml-file <engine inpurt, f.i. /var/lib/pacemaker/cib/cib.xml>
+    crm_simulate --simulate --live-check
+    crm_simulate --simulate --live-check -VVVV -> Verbose 
+    crm_simulate --simulate --live-check --show-scores
+    
+    # grafische Ausgabe
+    crm_simulate --simulate --xml-file $FILENAME --dot-file $FILENAME.dot
+        dot $FILENAME.dot -Tsvg > $FILENAME.svg
 
 Logs
 ====

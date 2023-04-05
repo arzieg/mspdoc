@@ -5,6 +5,15 @@ SAPHanaSR
 ##########
 
 
+Programme
+**********
+SAPHanaSR-showAttr - Anzeige des Status HANA Cluster
+
+Post Mortem Analyse:
+SAPHanaSR-showAttr --sid <SID> --cib=cib.xml
+SAPHanaSR-replay-archive --format=script hb_report_<...>.tar.bz2 | SAPHanaSR-filter --search='Hosts/<host>/roles' --filterDouble
+
+
 Konfiguration
 *****************
 
@@ -104,6 +113,12 @@ Das sind regex Ausdrücke, die im weiteren ausgewertet werden.
 (man ocf_suse_SAPHanaTopology)
 
 Das Script wertet die Rückgabe von *landscapeHostConfiguration.py* aus. 
+
+
+/usr/lib/ocf/resource.d/suse/SAPStartSrv
+=========================================
+man SAPStartSrv
+https://github.com/SUSE/SAPStartSrv-resourceAgent
 
 Analyse
 ========
