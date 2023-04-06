@@ -194,10 +194,10 @@ Die SBD Disks stehen in /etc/sysconfig/sbd
 	UUID               : 132a8cfc-6153-4ceb-bb91-d01f42ed0825
 	Number of slots    : 255
 	Sector size        : 512
-	Timeout (watchdog) : 30   <- watchdog * 2 = msgwait (passt hier nicht)
+	Timeout (watchdog) : 30   <- watchdog * 2 <= msgwait 
 	Timeout (allocate) : 2
 	Timeout (loop)     : 5
-	Timeout (msgwait)  : 90   <- uups
+	Timeout (msgwait)  : 90   
 	==Header on disk /dev/disk/by-id/scsi-<id> is dumped
 
 
@@ -231,3 +231,97 @@ Für das STONITH Device wird eine Regel in pacemaker definiert:
             params pcmk_action_limit=-1 pcmk_delay_max=30s
 
 pcmk_delay_max in ScaleOut 1s, in ScaleUp 30s, um zu verhindern, das sich zwei Knoten gleichzeitig "abschießen". (-> `<https://clusterlabs.org/pacemaker/doc/2.1/Pacemaker_Explained/html/fencing.html#fencing>`_)
+
+Test Fencing
+-------------
+Test SBD Fencing
+^^^^^^^^^^^^^^^^
+SBD Starverhalten anpassen (nur für test)
+  /etc/sysconfig/sbd -> SBD_STARTMODE change von always to clean (-> sbd startet nach einem Fencing nicht)
+  csync2 -xv (kopieren der geänderten Konfigurationsdatei auf die anderen Knoten)
+  crm cluster stop
+  crm cluster start
+  crm cluster status
+  crm node fence node2
+  sbd -d <sbd-device> list  -> zeigt an, welchen Status die einzelnen Knoten haben. Node1 sollte clear haben, node zwei "reset  node1". Da man in /etc/sysconfig/sbd definiert hat, dass
+     der Startmode clean sein soll, muss man nun den Slot für Knoten 2 auf den SBD-Devices zurücksetzen durch
+     sbd -d <sbd-device> message node02 clear. Dies muss für alle SBD Devices durchgeführt werden. Danach kann erst auf dem Knoten 2 der Cluster gestartet werden. 
+   
+
+Corosync
+=========
+Konfiguration
+--------------
+/etc/corosync/corosync.conf
+  Update three sections:
+  * totem
+  * interface
+  * nodelist
+
+crm corosync edit (alternativ vi /etc/corosync/corosync.conf)
+
+totem
+^^^^^^
+Bei zwei corosync Ringen soll der zweite Ring passiv sein. rrp_mode: passive
+
+.. code:: bash
+
+  ...
+    max_messages: 20
+    transport: udpu
+    rrp_mode: passive   <--
+    interface {
+        ringnumber: 0
+  ...
+
+interface
+^^^^^^^^^^
+Ring0 und Ring1 eintragen
+
+.. code:: bash
+
+    totem:
+      ...
+        interface {
+                ringnumber: 0
+                mcastport: 5405
+                ttl: 1
+        }
+        interface {
+                ringnumber: 1
+                mcastport: 5407
+                ttl: 1
+        }
+    ...
+
+nodelist
+^^^^^^^^^
+
+.. code::bash
+
+    nodelist {
+    ...
+        node {
+                ring0_addr: <IP Ring0>
+                ring1_addr: <IP Ring1>
+                nodeid: 1
+        }
+        node {
+                ring0_addr: <IP Ring0>
+                ring1_addr: <IP Ring1>
+                nodeid: 2
+        }
+    ...
+
+Mittels csync2 -xv wieder auf alle anderen Knoten kopieren
+
+corosync-cfgtool -R    -> Reload corosync.conf auf allen Knoten
+corosync-cfgtool -s    -> Show corosync configuration
+crm corosync status    -> show corosync configuration
+
+
+
+
+
+
+
