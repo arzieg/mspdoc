@@ -76,6 +76,9 @@ Ressourcen haben im SAPHana den Präfix rsc_<name>.
     crm_resource -r rsc_SAPHana_IP_<SID>_HDB10_01 --force-start
     # Ressourcen "verschieben"
     crm resource move <name> <node>
+      Es werden dann Constraints gesetzt in der Konfiguration! Diese wird man mit
+      crm resource clear <resourcenid> wieder los. Dies ist wichtig, da ansonsten der 
+      Cluster beim Ausfall sich vielleicht anders verhält als erwartet.
     # Alle Ressource-Fehler löschen
     crm_resource --cleanup
     # Löschen der Ressource - Fehler und reload 
