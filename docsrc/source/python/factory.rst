@@ -15,7 +15,9 @@ Kombination aus Audio/Videoexporter als Klasse abgebildet werden muss. Hier ist 
 Composition und Dependency Inversion vorzuziehen.
 
 1. Definition einer abstrakten Klasse sowie konkrete Ableitung von Klassen die etwas kombinieren.
-..code-block::
+
+.. code-block:: python
+
     class Abstract (ABC)
         def method1()
         
@@ -36,7 +38,8 @@ Composition und Dependency Inversion vorzuziehen.
     
 2. Funktion zum Erstellen einer Instanz (aus Arjancodes)
 
-..code-block::
+.. code-block:: python
+
     def read_exporter() -> Abstract:
     """constructs a factory based exporter based on the user preference"""
     factories = {
@@ -53,7 +56,8 @@ Composition und Dependency Inversion vorzuziehen.
 
 3. Verwenden der Factory
 
-..code-block::
+.. code-block:: python
+
     video_exporter = fac.methode1()
     audio_exporter = fac.methode2()
 

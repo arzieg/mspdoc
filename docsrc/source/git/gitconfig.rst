@@ -11,7 +11,8 @@ Configuration
 Mehrere Git - Accounts unter VSC (https://stackoverflow.com/questions/62625513/i-have-2-github-accounts-how-can-i-use-both-when-i-am-working-in-vs-code)
 1. Define some aliases in ~/.ssh/config
 
-..code-block:
+.. code-block:: bash
+  
   Host *github*
     HostName github.com
     User git
@@ -28,20 +29,23 @@ Mehrere Git - Accounts unter VSC (https://stackoverflow.com/questions/62625513/i
 
 3. Clone your repositories as follows
    
-..code-block:
+.. code-block:: bash
+
   ~ # cd repositories
   ➜ repositories # git clone perso-github.com:git_perso_account/some_fun_repo.git 
   ➜ repositories # git clone pro-github.com:git_pro_account/boring_business_repo.git 
 
 4. Remove git global user config
 
-..code-block:
+.. code-block:: bash
+
   ➜ repositories # git config --global --unset user.name
   ➜ repositories # git config --global --unset user.email
 
 5. Add your github account informations in each repository
 
-..code-block:
+.. code-block:: bash
+
   ➜ repositories # cd some_fun_repo 
   ➜ some_fun_repo git:(master) # git config --local user.name git_perso_account
   ➜ some_fun_repo git:(master) # git config --local user.email perso@gmail.com

@@ -1,8 +1,8 @@
 .. _openqa_basic:
 
-###############
+#################
 openQA Allgemein
-###############
+#################
 
 DIR Structure
 ==============
@@ -36,6 +36,7 @@ Die Konfigurationsparameter für die Worker werden in /etc/openqa/worker.ini ges
 Hier werden je Worker spezifische Parameter definiert:  
 
 .. code-block:: bash
+  
   [1]
   WORKER_CLASS = qemu_x86_64_staging,qemu_x86_64
   SUT_USER = root

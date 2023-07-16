@@ -182,7 +182,7 @@ salt lokal
       - /srv/salt/<repo1>/pillar
 
 
-............................
+
 SALT via python (https://www.tutorialspoint.com/saltstack/saltstack_python_api.htm)
 http://man.hubwiz.com/docset/SaltStack.docset/Contents/Resources/Documents/docs.saltstack.com/en/latest/ref/clients/index.html
 
@@ -190,24 +190,27 @@ python3
 
 .. code-block:: bash
 
- import salt.loader
- opts = salt.config.minion_config('/etc/salt/minion')
- grains = salt.loader.grains(opts)
+  import salt.loader
+  opts = salt.config.minion_config('/etc/salt/minion')
+  grains = salt.loader.grains(opts)
 
-..............................
 salt-mine
-  um mine zu disablen (wurde vom SuSE Manager verwendet: https://documentation.suse.com/external-tree/en-us/suma/4.0/suse-manager/salt/large-scale.html aber aufgrund des erzeugten Loads wieder deaktiviert)
-	SusE Manager hat unter /etc/salt/minion.d/_schedule folgende Datei erzeugt: 
 
-  .. code-block:: bash
+Um mine zu disablen (wurde vom SuSE Manager verwendet: https://documentation.suse.com/external-tree/en-us/suma/4.0/suse-manager/salt/large-scale.html aber aufgrund des erzeugten Loads wieder deaktiviert)
 
-	  schedule:
-		__mine_interval: {enabled: true, function: mine.update, jid_include: true, maxrunning: 2,
-		minutes: 60, return_job: false, run_on_start: true}
-    Wenn man das für ein System disablen möchte, dann kann man aufrufen vom salt-master:
-		salt '<host>' state.sls util.mgr_mine_config_clean_up saltenv=base
-		salt --batch-size 50 '*' state.sls util.mgr_mine_config_clean_up saltenv=base     (für Massenoperation in Batches)
+SusE Manager hat unter /etc/salt/minion.d/_schedule folgende Datei erzeugt: 
+
+.. code-block:: bash
+
+  schedule:
+  __mine_interval: {enabled: true, function: mine.update, jid_include: true, maxrunning: 2,
+  minutes: 60, return_job: false, run_on_start: true}
+    
+  # Wenn man das für ein System disablen möchte, dann kann man aufrufen vom salt-master:
+  salt '<host>' state.sls util.mgr_mine_config_clean_up saltenv=base
+  salt --batch-size 50 '*' state.sls util.mgr_mine_config_clean_up saltenv=base     (für Massenoperation in Batches)
   
 Ab hier geht man davon aus, dass mine genutzt wird:
- ``salt-call config.get mine_functions``     - welche mine-functions sind definiert
+
+``salt-call config.get mine_functions``     - welche mine-functions sind definiert
  

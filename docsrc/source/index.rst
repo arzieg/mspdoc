@@ -26,6 +26,7 @@ Welcome to MSP's documentation!
    Pacemaker <pacemaker/pacemaker>
    SAPHanaSR <pacemaker/saphanasr>
    iscsi     <pacemaker/iscsi>
+   clusterscripts <pacemaker/cs_scripts>
 
 .. toctree::
    :maxdepth: 2
@@ -39,7 +40,13 @@ Welcome to MSP's documentation!
    :numbered:
    :caption: Python
    
+   Rules <python/rules>
    Packages <python/packages>
+   Function <python/function>
+   Template <python/template>
+   Factory <python/factory>
+
+
 
 .. toctree::
    :maxdepth: 2
@@ -48,6 +55,21 @@ Welcome to MSP's documentation!
    
    Salt <salt/salt>
 
+
+.. toctree::
+   :maxdepth: 2
+   :numbered:
+   :caption: openQA
+   
+   Basics <openqa/openqabasic>
+
+
+.. toctree::
+   :maxdepth: 2
+   :numbered:
+   :caption: GIT
+   
+   Basics <git/gitconfig>
 
 
 Indices and tables

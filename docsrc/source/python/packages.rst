@@ -9,7 +9,7 @@ Projektstruktur
 ================
 
 .. code-block:: bash
-
+  
   app/<packagename>
       src/
         __init__.py
