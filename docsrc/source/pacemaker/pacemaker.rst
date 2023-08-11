@@ -83,6 +83,9 @@ Ressourcen haben im SAPHana den Präfix rsc_<name>.
     crm_resource --cleanup
     # Löschen der Ressource - Fehler und reload 
     crm_resource -P
+    # Resource in Maintenance setzen
+    crm resource maintenance msl_SAPHana_SR_<SID>_HDB10 on
+    crm resource maintenance msl_SAPHana_SR_<SID>_HDB10 off
 
 Simulation
 ============
