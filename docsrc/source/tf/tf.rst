@@ -4,6 +4,35 @@
 Terraform
 ###############
 
+Installation
+=============
+
+1. git clone https://github.com/tfutils/tfenv.git ~/.tfenv
+2. PATH erweitertn
+3. tfenv install latest
+4. tfenv use 1.6.0
+5. echo 'alias tf="terraform"' | tee -a ~/.bashrc
+6. 
+
+
+
+
+
+Prozess
+========
+1. terraform init
+2. terraform validate
+3. terraform plan
+4. terraform apply
+   
+  * terraform apply -var "resource_group_name=myNewResourceGroupName"   - einzelne Variablen übersteuern
+  * terraform output resource_group_id  - Rückgabewerte abfrage, sofern man eine output.tf - Datei erzeugt hat
+
+5. terraform show (was wurde angelegt)
+6. terraform state list (status der angelegten Objekte)
+7. terraform destroy
+
+
 Variablen:
 ===========
 
@@ -25,4 +54,16 @@ Bei terraform apply ist zu unterscheiden:
   terraform apply   - Interaktive Angabe der Parameter 
   terraform apply -var "port=8888"   - Ohne Abfrage
   terraform apply   - Ohne Abfrage, wenn Environmentvariable definiert ist TF_VAR_port=8888
+
+
+
+
+AZTFExport
+===========
+
+aztfexport ist ein Tool, um eine vorhanden Definition einer Azure Infrastruktur in ein Terraform Script zu übertragen. 
+
+Quelle: https://learn.microsoft.com/de-de/azure/developer/terraform/azure-export-for-terraform/export-terraform-overview
+
+Source: https://github.com/Azure/aztfexport/releases
 
