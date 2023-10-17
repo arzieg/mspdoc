@@ -20,9 +20,9 @@ Installation
 
 Prozess
 ========
-1. terraform init
+1. terraform init (-upgrade)
 2. terraform validate
-3. terraform plan
+3. terraform plan (-out main.tfplan)
 4. terraform apply
    
   * terraform apply -var "resource_group_name=myNewResourceGroupName"   - einzelne Variablen übersteuern
@@ -67,3 +67,22 @@ Quelle: https://learn.microsoft.com/de-de/azure/developer/terraform/azure-export
 
 Source: https://github.com/Azure/aztfexport/releases
 
+Installation
+-------------
+git clone https://github.com/Azure/aztfexport.git oder
+
+Ubuntu
+.......
+curl -sSL https://packages.microsoft.com/keys/microsoft.asc > /etc/apt/trusted.gpg.d/microsoft.asc
+ver=20.04 # or 22.04
+apt-add-repository https://packages.microsoft.com/ubuntu/${ver}/prod
+apt-get install aztfexport
+
+
+Befehle
+-------
+aztfexport config set telemetry_enabled false   -> telemetry Daten nicht senden
+
+aztfexport query -n "resourceGroup =~ 'myResourceGroup' and type contains 'Microsoft.Network'"  -> Query Beispiel
+
+aztfexport resource-group --non-interactive --hcl-only myResourceGroup  -> Export Beispiel
