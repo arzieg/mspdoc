@@ -16,14 +16,16 @@ führen zu diesem Fehler.
 
 1. Auf dem Clientsystem
 
-    ```nsradmin -C -y -p nsrexecd "nsr peer information"´´´
+    ``` nsradmin -C -y -p nsrexecd "nsr peer information" ´´´
 
 2. Peer-Informationen manuell löschen
    
 .. code-block:: shell
 
+    nsradmin -C
+
     nsradmin -p nsrexec
-    nsradmin> p type: nsr peer information; name: client_name
+    nsradmin> p type: nsr peer information; name: <client_name>
     nsradmin> delete
 
     systemctl stop networker
@@ -33,8 +35,8 @@ führen zu diesem Fehler.
 
 .. code-block:: shell
 
-    nsradmin -s server_name -p nsrexec
-    nsradmin> p type: nsr peer information; name: client_name
+    nsradmin -s <server_name> -p nsrexec
+    nsradmin> p type: nsr peer information; name: <client_name>
     nsradmin> delete
 
 4. LOG File betrachten

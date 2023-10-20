@@ -32,6 +32,13 @@ Prozess
 6. terraform state list (status der angelegten Objekte)
 7. terraform destroy
 
+Remove single Resource
+-----------------------
+terraform state list
+terraform state rm RESOURCE.ADDRESS
+
+
+
 
 Variablen:
 ===========
@@ -55,6 +62,8 @@ Bei terraform apply ist zu unterscheiden:
   terraform apply -var "port=8888"   - Ohne Abfrage
   terraform apply   - Ohne Abfrage, wenn Environmentvariable definiert ist TF_VAR_port=8888
 
+KnowHow
+========
 
 
 
