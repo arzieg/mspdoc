@@ -64,6 +64,7 @@ Bei terraform apply ist zu unterscheiden:
 
 KnowHow
 ========
+Custom-Scripts beim Anlegen von Compute Resourcen ausführen: https://sbulav.github.io/terraform/terraform-azurerm-compute-custom-data/
 
 
 
