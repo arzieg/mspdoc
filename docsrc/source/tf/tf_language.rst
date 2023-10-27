@@ -4,8 +4,8 @@
 Terraform Language
 ##############################
 
-Loops
-======
+Loops 
+=====
 
 * *count* parameter, loop over resources
 * *for_each* expression, to loop over resources and inline blocks within a resource
@@ -83,6 +83,182 @@ When for_each is set, Terraform distinguishes between the block itself and the m
 * <TYPE>.<NAME>[<KEY>] or module.<NAME>[<KEY>] (for example, azurerm_resource_group.rg["a_group"], azurerm_resource_group.rg["another_group"], etc.) refers to individual instances.
 
 This is different from resources and modules without count or for_each, which can be referenced without an index or key.
+
+
+for
+----
+
+Die for-Schleife bezieht sich hier auf einzelne Werte und nicht auf Ressourcen oder Inline Blocks wie bei counter oder for_each.
+
+Allgemeine Syntax:
+
+``[FOR <ITEM> in <LIST> : <OUTPUT>]``
+
+Loop über list und output map
+
+``{for <ITEM> in <LIST> : <OUTPUT_KEY> => <OUTPUT_VALUE>}``
+
+Loop über map und output map
+
+``{for <KEY>, <VALUE> in <MAP> : <OUTPUT_KEY> => <OUTPUT_VALUE>}``
+
+
+Beispiele Uppercase:
+
+.. code-block:: shell
+
+  variable "hosts" {
+    description = "Hostnames"
+    type = list(string)
+    default = ["asterix", "obelix", "idefix"]
+    }
+
+  output "upper_hosts" {
+    value = [for hosts in var.hosts : upper(hosts)]
+    }
+
+  
+Beispiel map:
+
+.. code-block:: shell
+
+    variable "cf_interface" {
+      description = "Cache Fusion Interface"
+      type        = map(string)
+      default = {
+        "asterix" = "192.168.0.1"
+        "obelix"  = "192.168.0.3"
+        "idefix"  = "192.168.0.5"
+      }
+    }
+
+    output "host_to_cf" {
+      value = { for host, cf in var.cf_interface : host => cf }
+    }
+
+
+Loops with string directive
+----------------------------
+
+Terraform unterstützt zwei Formen der string derictive: in for-loops und conditionals
+
+Syntax:
+
+``%{ for <ITEM> in <COLLECTION> } <BODY> %{ endfor }``
+
+COLLECTION ist dabei eine LIST oder MAP worüber iteriert wird. ITEM ist die lokale Variable die den Wert erhält.
+
+Die Syntax ist ähnlich zu Jinja2
+
+
+Beispiel for: 
+
+.. code-block:: shell
+
+  variable "hosts" {
+  description = "Hosts"
+  type        = list(string)
+  default     = ["asterix", "obelix", "idefix"]
+  }
+
+  output "for_directive" {
+    value = <<EOF
+      %{~for hosts in var.hosts}     <-- die ~ eleminiert die Leerzeichen und /n
+        ${hosts}                     <-- hier wird Variable abgefragt, daher $
+      %{~endfor}                     <-- muss auch hier stehen, sonst geht es nicht
+      EOF
+  }
+
+Beispiel if:
+
+.. code-block:: shell
+
+
+
+IF (conditionals)
+===================
+
+Syntax (wie c)
+
+``<CONDITION> ? <TRUE VAL> : <FALSE VAR>``
+
+Conditionals mit count
+-----------------------
+
+Beispiel einfaches if mit count: 
+
+.. code-block:: shell
+
+  var "autoshutdown" {
+    description = "Enable autoshutdown"
+    type = bool
+  }
+
+  resource "azurerm_dev_test_global_vm_shutdown_schedule" "nginxVMshutdown" {
+    count                 = var.autoshutdown ? 1 : 0     <-- wenn autoshutdown gesetzt, wird der block ausgeführt
+    for_each              = toset(var.hostname)
+    daily_recurrence_time = "1800"
+    location              = var.location
+    timezone              = "W. Europe Standard Time"
+    virtual_machine_id    = azurerm_linux_virtual_machine.nginx[each.key].id
+    notification_settings {
+      enabled = false
+    }
+}
+
+Ein if - else Konstrukt mit count ist schwieriger, da man hier mit einfachen, sich gegenseitig ausschließenden IF Anweiseungen arbeiten muss. 
+
+Beispiel Verwendung eines anderen Scriptes als POST Aktivität beim Erzeugen einer VM:
+
+.. code-block:: shell
+
+  variable "enable_new_script" {
+    description = "Verwende neues Script?"
+    type = bool
+    }
+
+  # dann ein Data mit zwei sich gegenseitig ausschließenden IF Statements 
+  data "template_file" "host_script_old" {
+    count = var.enable_new_script ? 0 : 1
+    template = file("${path.module}/host_script.sh")
+  }
+
+  data "template_file" "host_script_new" {
+    count = var.enable_new_script ? 1 : 0    <- hier umgekehrte Logik um das else hinzubekommen
+    template = file("${path.module}/host_script_new.sh")
+  }
+
+  # dann in der Erzeugung der VM
+  ...
+  user_data = (
+    length(data.template_file.host_script[*]) > 0       <- nur eines ist definiert durch if-else oben
+      ? data.template_file.host_script_old[0].rendered  <- der Wert steht dann an Index-Stelle 0
+      : data.template_file.host_script_new[0].rendered
+  )
+
+
+Conditionals mit for_each
+--------------------------
+
+.. code-block:: shell
+
+  var "autoshutdown" {
+    description = "Enable autoshutdown"
+    type = bool
+  }
+
+  resource "azurerm_dev_test_global_vm_shutdown_schedule" "nginxVMshutdown" {
+    for_each              = var.autoshutdown
+    for_each              = toset(var.hostname)
+    daily_recurrence_time = "1800"
+    location              = var.location
+    timezone              = "W. Europe Standard Time"
+    virtual_machine_id    = azurerm_linux_virtual_machine.nginx[each.key].id
+    notification_settings {
+      enabled = false
+    }
+}
+
 
 
 Tags
