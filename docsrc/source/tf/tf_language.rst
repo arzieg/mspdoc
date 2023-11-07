@@ -84,6 +84,11 @@ When for_each is set, Terraform distinguishes between the block itself and the m
 
 This is different from resources and modules without count or for_each, which can be referenced without an index or key.
 
+Einschränkungen: 
+
+* A given resource or module block cannot use both count and for_each.
+* for_each keys cannot be the result (or rely on the result of) of impure functions, as their evaluation is deferred during the main evaluation step.
+
 
 for
 ----
@@ -182,21 +187,17 @@ Syntax (wie c)
 
 ``<CONDITION> ? <TRUE VAL> : <FALSE VAR>``
 
-Conditionals mit count
------------------------
-
-Beispiel einfaches if mit count: 
+Beispiel mit einer for_each Schleife, wo man das per Host setzen kann:
 
 .. code-block:: shell
-
-  var "autoshutdown" {
-    description = "Enable autoshutdown"
-    type = bool
+ 
+  variable "autoshutdown_on_host" {
+    type = list(string)
   }
-
+  
   resource "azurerm_dev_test_global_vm_shutdown_schedule" "nginxVMshutdown" {
-    count                 = var.autoshutdown ? 1 : 0     <-- wenn autoshutdown gesetzt, wird der block ausgeführt
     for_each              = toset(var.hostname)
+    enabled               = contains(var.autoshutdown_on_host, each.key) ? true : false
     daily_recurrence_time = "1800"
     location              = var.location
     timezone              = "W. Europe Standard Time"
@@ -204,9 +205,10 @@ Beispiel einfaches if mit count:
     notification_settings {
       enabled = false
     }
-}
+  }
 
-Ein if - else Konstrukt mit count ist schwieriger, da man hier mit einfachen, sich gegenseitig ausschließenden IF Anweiseungen arbeiten muss. 
+
+Ein if - else Konstrukt mit count ist schwieriger, da man hier mit einfachen, sich gegenseitig ausschließenden IF Anweisungen arbeiten muss. 
 
 Beispiel Verwendung eines anderen Scriptes als POST Aktivität beim Erzeugen einer VM:
 
@@ -271,3 +273,30 @@ custom_tags      = { "Umgebung" = "Testumgebung", "Owner" = "Max Mustermann", "P
 Im tfstate dann z.B. direkt angeben über
 
 tags = custom_tags 
+
+Good to Know
+==============
+
+Die Reihenfolge des Löschens und Anlegens von Ressourcen kann man ggfs. beeinflussen, um ein Zero-Downtime Deployment hinzubekommen. Mit der lifecycle Option in 
+vielen Ressourcen kann man das beeinflussen: 
+
+Beispiel: ignoriere etwas
+
+.. code-block:: shell
+
+   lifecycle {
+    ignore_changes = [
+      custom_data,
+    ]
+  }
+
+
+Beispiel: erzeuge erst etwas und zerstörre danach
+
+.. code-block:: shell
+
+   lifecycle {
+     create_before_destroy = true
+  }
+
+
