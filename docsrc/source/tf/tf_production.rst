@@ -26,3 +26,5 @@ Checklist
   Kostenoptimierung,auto scaling  Verwendung ungenutzter Ressourcen  Spot Ressourcen,Auto Skalierung  Spot Instanzen  Reservierte Instanzen
   Dokumentation,Dokumentation von Architektur  Code  Betrieb  Playbooks  …,wiki  confluence
   Tests,Automatische Test (Code  Integration  Desaster),Terratest  inspec  serverspec  kitchen terraform
+
+
