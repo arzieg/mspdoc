@@ -326,7 +326,11 @@ corosync-cfgtool -s    -> Show corosync configuration
 crm corosync status    -> show corosync configuration
 
 
+cibadmin
+=========
+query and edit the Pacemaker configuration, runtime information vom Cluster
 
+ -Q --scope crm_config | grep no-quorum-policy
 
 
 
