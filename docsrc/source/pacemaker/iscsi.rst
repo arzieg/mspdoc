@@ -15,5 +15,10 @@ Löschen des Targets von der ISCSI discovery database
   ``iscsiadm -m discoverydb -t sendtargets -p <IP>:<port> -o delete``
 Überprüfen, ob noch Sesssions aktiv sind
   ``iscsiadm -m session``
-Pürfen und ggfs. löschen der Nodes unter
+Prüfen und ggfs. löschen der Nodes unter
   ``/etc/iscsi/nodes`` und ``/etc/iscsi/send_targets``
+
+Login / logout
+===============
+Login/logout:
+  ``iscsiadm -m node -p <node> -T <target>:lunXX --login | --logout ``
