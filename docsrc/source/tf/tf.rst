@@ -96,3 +96,11 @@ aztfexport config set telemetry_enabled false   -> telemetry Daten nicht senden
 aztfexport query -n "resourceGroup =~ 'myResourceGroup' and type contains 'Microsoft.Network'"  -> Query Beispiel
 
 aztfexport resource-group --non-interactive --hcl-only myResourceGroup  -> Export Beispiel
+
+aztfexport resource --non-interactive --hcl-only <RessourceID, also /subscriptions/...>  -> einzelne Ressource exportieren
+
+  Szenario: es wurde etwas manuell hinzugefügt. Mittels aztfexport das exportieren und dann in den Gesamtexport integrieren
+    aztfexport resource -o tempdir --hcl-only <resource_id>  (-o exportiere in das Verzeichnis)
+    aztfexport map --append `./tempdir/aztfexportResourceMapping.json` (füge das exportierte in den Gesamtexport ein)
+    terraform init --upgrade
+    terraform plan  (sollte dann keine Abweichungen anzeigen)
