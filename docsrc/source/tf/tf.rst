@@ -27,6 +27,7 @@ Prozess
    
   * terraform apply -var "resource_group_name=myNewResourceGroupName"   - einzelne Variablen übersteuern
   * terraform output resource_group_id  - Rückgabewerte abfrage, sofern man eine output.tf - Datei erzeugt hat
+  * terraform apply -refresh-only       - Status in TF aktualisieren, wenn man z.B. manuell eine Ressource gelöscht hat. 
 
 5. terraform show (was wurde angelegt)
 6. terraform state list (status der angelegten Objekte)
