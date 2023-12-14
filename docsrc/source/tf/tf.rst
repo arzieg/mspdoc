@@ -38,6 +38,11 @@ Remove single Resource
 terraform state list
 terraform state rm RESOURCE.ADDRESS
 
+Resource wurde in der Cloud angelegt, wird in TF nachgebaut:
+---------------------------------------------------------------
+tf plan -refresh-only   (um den Drift zw. OnPrem und Cloudconfig festzustellen)
+tf import azurerm_network_security_group.<SG-NAME> <ID>
+tf plan -refresh-only   (sollte dann idealerweise identisch sein)
 
 
 
