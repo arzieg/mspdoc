@@ -116,6 +116,7 @@ sudo /usr/sbin/crm_attribute -n hana_y04_glob_srHook -v SOK -t crm_config -s SAP
 sudo /usr/sbin/crm_attribute -n hana_y04_site_srHook_DC1 -v PRIM -t crm_config -s SAPHanaSR
 sudo /usr/sbin/crm_attribute -n hana_y04_site_srHook_DC2 -v SOK -t crm_config -s SAPHanaSR
 
+crm_attribute -n hana_y04_glob_sec -v DC2 -t crm_config -s SAPHanaSR
 
 
 /usr/lib/ocf/resource.d/suse/SAPHanaTopology
