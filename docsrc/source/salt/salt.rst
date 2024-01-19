@@ -82,6 +82,26 @@ JINJA:
 Debuging JINJA:
 salt 'suseminion1.pingu.box' slsutil.renderer /var/cache/salt/minion/files/base/top.sls
 
+im SALT Code auch häufig interressant, welche Werte haben meine JINJA Variablen
+
+.. code-block:: bash
+  
+  include:
+  - .CM_ssh
+  - .CM_ssh_static
+  - .CM_groups
+{%- set cmd = grains.get('backup_software')| upper -%}
+{%- set ret = 'NETBACKUP' in cmd -%}
+{%- do salt.log.error(cmd) -%}
+{%- do salt.log.error(ret) -%}
+{%- if 'NETBACKUP' in (grains.get('backup_software')| upper) %}
+  - .CM_netbackup
+{%-   endif %}
+  
+in der Datei /var/log/minion (wenn man auf Master auf Minion umgestellt hat), wird dann die Ausgabe geloggt, wenn man den salt-call mit -l error aufruft.
+z.B. salt-call -l error state.show_states
+
+
 EVENT DRIVEN INFRASTRUCTURE
 ---------------------------
 ``salt-run state.event pretty=True``  -> Realtime events anzeigen lassen
