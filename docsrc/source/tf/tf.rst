@@ -45,6 +45,11 @@ tf import azurerm_network_security_group.<SG-NAME> <ID>
 tf plan -refresh-only   (sollte dann idealerweise identisch sein)
 
 
+Debug
+======
+
+1. Set Log level using TF_LOG (export TF_LOG="DEBUG")
+2. Set up log file using TF_LOG_PATH (export TF_LOG_PATH="/home/vagrant/terraform-ec2-aws/terraform-debug.log")
 
 Variablen:
 ===========
@@ -110,3 +115,8 @@ aztfexport resource --non-interactive --hcl-only <RessourceID, also /subscriptio
     aztfexport map --append `./tempdir/aztfexportResourceMapping.json` (füge das exportierte in den Gesamtexport ein)
     terraform init --upgrade
     terraform plan  (sollte dann keine Abweichungen anzeigen)
+
+
+az account show --output table
+az account list --output table
+az account set --subscription="<ID>"
