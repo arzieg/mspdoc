@@ -274,6 +274,60 @@ Im tfstate dann z.B. direkt angeben über
 
 tags = custom_tags 
 
+
+Datenstrukturen
+================
+
+maps
+-----
+https://spacelift.io/blog/terraform-map-variable
+https://spacelift.io/blog/terraform-flatten
+
+Einfache als auch verschachtelte Key-Value Paar können über maps erstellt werden. 
+
+.. code-block:: shell
+
+  ## Hostname, static IP, Autoshutdown definition
+  variable "vm_name" {
+    type = map(object({
+      ip           = string
+      autoshutdown = bool
+
+    }))
+    default = {
+      "lascismp1" = {
+        ip           = "10.100.1.5",
+        autoshutdown = true
+      }
+      "lascismp2" = {
+        ip           = "10.100.1.6",
+        autoshutdown = false
+      }
+    }
+  }
+
+Dieser kann auch in einer for_each Schleife verwendet werden. 
+
+.. code-block:: shell
+
+  resource "azurerm_dev_test_global_vm_shutdown_schedule" "sumaVMshutdown" {
+    for_each              = var.vm_name
+    enabled               = each.value.autoshutdown
+    daily_recurrence_time = "1800"
+    location              = var.location
+    timezone              = "W. Europe Standard Time"
+    virtual_machine_id    = azurerm_linux_virtual_machine.susemanager-vm[each.key].id
+    notification_settings {
+      enabled = false
+    }
+  }
+
+
+
+
+
+
+
 Good to Know
 ==============
 

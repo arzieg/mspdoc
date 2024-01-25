@@ -51,6 +51,21 @@ Debug
 1. Set Log level using TF_LOG (export TF_LOG="DEBUG")
 2. Set up log file using TF_LOG_PATH (export TF_LOG_PATH="/home/vagrant/terraform-ec2-aws/terraform-debug.log")
 
+terraform console
+------------------
+ermöglicht den schnellen Blick auf Variablen und wie diese in tf umgesetzt werden
+
+Beispiel: 
+
+.. code-block:: bash
+  terraform console
+
+  var.hostname    -> zeige die Variable Hostname
+  local.var1     -> zeige die locale Variable var1
+  split(",", "follow,this,blog")  -> was erzeugt die Funktion split für ein Output
+
+
+
 Variablen:
 ===========
 
