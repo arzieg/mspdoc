@@ -44,3 +44,29 @@ See: https://regex101.com/r/Ly7O1x/3/
 And one with numbered capture groups instead (so cg1 = major, cg2 = minor, cg3 = patch, cg4 = prerelease and cg5 = buildmetadata) that is compatible with ECMA Script (JavaScript), PCRE (Perl Compatible Regular Expressions, i.e. Perl, PHP and R), Python and Go.
 
 See: https://regex101.com/r/vkijKf/1/
+
+
+Kleine Helferlein:
+--------------------
+du -hs * | sort -hr                                         Größe der Verzeichnisse
+find /tmp -type f -size +100000k -exec ls -lh {} \;         suche Dateien größer 10 MB  
+find /oracle/base/ -name "log_*.xml" -mtime +30 -exec ls -l {} \;
+find . -type f -size +10000k -name *.log -exec ls -lh {} \;
+find /opt/mapr/hadoop/hadoop-2.7.0/logs/userlogs -mtime +30 -exec rm -rf {} \;
+find . -mtime +7 -exec rm -rf {} \;
+find . -mtime +30 -exec ls -lh {} \;
+find  / -type f -mtime +30 -exec ls -l {} \;
+find /tmp -type f -size +50000k| xargs ls -lahS
+find <verzeichnis> -type d -links 2 -> zeige Verzeichnisse an, die keine Unterverzeichnisse haben
+tar -zcvpf backup_`date +"%Y%m%d_%H%M%S"`.tar.gz `find /opt/mapr/hadoop/hadoop-2.7.0/logs/userlogs -mtime +120`    -> backup, alles was älter als 120 Tage ist
+tar -zcvpf hostname_log.tgz /opt/mapr/logs
+ 
+tar -cf - /quelle | ssh user@example tar -xvf - -C /ziel/     - Das Verfahren hat Probleme mit symlinks, die ggfs. noch nicht angelegt sind
+mit bzip-Komprimmierung: 				tar -cjf - /quelle | ssh user@example tar -xjvf - -C /ziel/
+beibehaltung der Dateiberechtigungen: 	tar pcf - /quelle | ssh user@example tar -pxvf - -C /ziel/
+mit bzip-Komprimmierung+Dateiberech.	tar -pcjf - /quelle | ssh user@example tar -pxjvf - -C /ziel/
+tar cpf - /some/important/data | ssh user@destination-machine "tar xpf - -C /some/directory/"  -stabil, läuft gut
+  
+find /mnt/dump -type f -exec md5sum {} \;> /tmp/checksums.md 
+md5sum -c /tmp/checksums.md
+ 
