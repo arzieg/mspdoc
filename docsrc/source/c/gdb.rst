@@ -43,7 +43,9 @@ Start
          Wenn kein Core File gefunden wird, dann per ulimit -c prüfen, ob auf unlimited steht. Wenn ja, zeigt
          coredumpctl den Speicherort an.
 
-         coredumpctl debug (Ruft direkt GDB auf und lädt den Coredump)
+         coredumpctl debug (Ruft direkt GDB auf und lädt den letzten Coredump)
+
+         coredumpctl zeigt die coredumps an, dann mit *coredumpctl debug <pid>* ruft den coredump in gdb auf. Sehr praktisch
 
          in Linux Mint wird Core durch systemd geschrieben und komprimiert in /var/lib/systemd/coredump/<file>.zst
          Dies kann von gdb nicht gelesen werden. Vorgehen:
