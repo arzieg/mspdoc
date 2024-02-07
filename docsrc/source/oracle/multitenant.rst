@@ -213,7 +213,10 @@ Rechte für einzelne PDBs:
 
 Ressourcen
 ============
+Ressourcenpläne können auf Ebene der CDB und der PDB erstellt werden. 
 
+Shares
+-------
 Man kan Shares definieren, d.h. x% einer CPU Leistung (was auch immer das ist)
 Man definiert dann je PDB den Anteil an CPU Ressourcen: 
 Beispiel: 
@@ -224,6 +227,134 @@ Beispiel:
 
     pdb3  share=25%
 
+Man kann auch über 100% vergeben, dann ist der einzelne Share "weniger" Wert. Anteil an den Ressourcen = share/summe(shares).
+Die shares stellen MIN Werte da, d.h. wenn mehr freie Ressourcen zur Verfügung stehen, dann bekommt die PDB diese auch. 
+
+Limits
+-------
+Limits stellen harte Begrenzungen zur Nutzung von Ressourcen dar. Damit ist es also möglich, dass Ressourcen ungenutzt bleiben, obwohl die angefordert werden. 
+Daher ist mit Limits sehr vorsichtig umzugehen.
+
+
+Erstellung ohne Profile
+-------------------------
+Ein Ressourcen Plan wird mit dem PL/SQL-Package DBMS_RESOURCE_MANAGER erstellt.
+
+.. code-block:: bash
+
+    begin
+        DBMS_RESOURCE_MANAGER.CREATE_PENDING_AREA();
+        DBMS_RESOURCE_MANAGER.CREATE_CDB_PLAN(
+        plan => 'cdb_plan',
+        comment => 'CDB Resource Plan');
+        DBMS_RESOURCE_MANAGER.CREATE_CDB_PLAN_DIRECTIVE(
+        plan => 'cdb_plan', 
+        pluggable_database => '<pdb1>', 
+        shares => 5, 
+        utilization_limit => 25,
+        parallel_server_limit => 20);
+        DBMS_RESOURCE_MANAGER.CREATE_CDB_PLAN_DIRECTIVE(
+        plan => 'cdb_plan', 
+        pluggable_database => '<pdb2>', 
+        shares => 10, 
+        utilization_limit => 10,
+        parallel_server_limit => 20);
+        DBMS_RESOURCE_MANAGER.VALIDATE_PENDING_AREA();
+        DBMS_RESOURCE_MANAGER.SUBMIT_PENDING_AREA();
+    end;
+
+Erstellung mit Profile
+-----------------------
+Man kann auch Resourcenpläne (templates) erstellen und diese dann einzelnen PDBs zuordnen. 
+
+.. code-block:: bash
+
+    begin
+        DBMS_RESOURCE_MANAGER.CREATE_PENDING_AREA();
+        DBMS_RESOURCE_MANAGER.CREATE_CDB_PLAN(
+        plan => 'cdb_plan',
+        comment => 'CDB Resource Plan');
+        DBMS_RESOURCE_MANAGER.CREATE_CDB_PROFILE_DIRECTIVE(
+        plan => 'cdb_plan', 
+        profile => 'sla1', 
+        shares => 10, 
+        utilization_limit => 100,
+        parallel_server_limit => 100);
+        DBMS_RESOURCE_MANAGER.CREATE_CDB_PROFILE_DIRECTIVE(
+        plan => 'cdb_plan', 
+        profile => 'sla2', 
+        shares => 5, 
+        utilization_limit => 70,
+        parallel_server_limit => 70);
+        DBMS_RESOURCE_MANAGER.CREATE_CDB_PROFILE_DIRECTIVE(
+        plan => 'cdb_plan', 
+        profile => 'sla3', 
+        shares => 2, 
+        utilization_limit => 50,
+        parallel_server_limit => 50);
+        DBMS_RESOURCE_MANAGER.VALIDATE_PENDING_AREA();
+        DBMS_RESOURCE_MANAGER.SUBMIT_PENDING_AREA();
+    end;
+
+    
+        
+    ALTER SESSION SET container=<pdb>;
+    ALTER SYSTEM SET DB_PERFORMANCE_PROFILE=sla3 SCOPE=spfile;
+    ALTER PLUGGABLE DATABASE CLOSE IMMEDIATE;
+    ALTER PLUGGABLE DATABASE OPEN;
+    show parameter DB_PERFORMANCE_PROFILE
+    
+
+Damit über ein alter system nicht selber das Profil geändert werden kann, kann man ein lockdown Profil erzeugen. Hier möchte man nur das DB_PERFORMANCE_PROFILE nicht
+gesetzt werden kann.
+
+.. code-block:: bash
+
+    CREATE LOCKDOWN PROFILE rfix;
+    ALTER LOCKDOWN PROFILE rfix DISABLE STATEMENT = ('ALTER SYSTEM') CLAUSE=('SET') OPTION=('DB_PERFORMANCE_PROFILE');
+    col profile_name format a20
+    col rule_type format a20
+    col rule format a20
+    col clause format a10
+    col clause_option format a30
+    col option_value format a20
+    set linesize 400
+    select profile_name,rule_type,rule,clause,clause_option,status from dba_lockdown_profiles;
+    ALTER SESSION SET container=<pdb>;
+    ALTER SYSTEM SET pdb_lockdown=rfix;
+
+Anzeigen von CDB Ressourcenplänen
+-----------------------------------
+
+.. code-block:: bash
+
+    COLUMN PLAN FORMAT A30
+    COLUMN STATUS FORMAT A10
+    COLUMN COMMENTS FORMAT A35
+    SELECT PLAN, STATUS, COMMENTS FROM DBA_CDB_RSRC_PLANS ORDER BY PLAN;
+
+    set linesize 200
+    col PLAN HEADING 'Plan' FORMAT A24
+    col PLUGGABLE_DATABASE HEADING 'PDB' FORMAT A25
+    col PROFILE format a15
+
+    col SHARES HEADING 'Shares' FORMAT 999
+    col UTILIZATION_LIMIT HEADING 'Utilization|Limit' FORMAT 999
+    col PARALLEL_SERVER_LIMIT HEADING 'Parallel|Server|Limit' FORMAT 999 
+    SELECT PLAN, PLUGGABLE_DATABASE, PROFILE, SHARES, UTILIZATION_LIMIT, PARALLEL_SERVER_LIMIT FROM DBA_CDB_RSRC_PLAN_DIRECTIVES ORDER BY PLAN;
+
+Löschen von Ressourceplänen
+----------------------------
+
+.. code-block:: bash
+
+    begin
+        DBMS_RESOURCE_MANAGER.CREATE_PENDING_AREA();
+        DBMS_RESOURCE_MANAGER.DELETE_CDB_PLAN(plan => 'cdb_plan');
+        DBMS_RESOURCE_MANAGER.VALIDATE_PENDING_AREA();
+        DBMS_RESOURCE_MANAGER.SUBMIT_PENDING_AREA();
+    end;
+    /
 
 Memory Management für CDB/PDB
 ------------------------------
