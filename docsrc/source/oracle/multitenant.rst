@@ -483,8 +483,239 @@ Durch PDB Verschiebung wird DB Sitzung abgebrochen (behalten aber gleichen TNS A
 RAC oder Active Data Guard Lizenz notwendig. 
 
 
+Patchen
+=========
+
+Update
+-------
+
+1. Unplug der PDB
+
+.. code-block:: bash
+
+    
+    # Unplug der PDB aus Source
+    select file_name from dba_data_files;
+    alter pluggable database <pdb> close immediate;
+    alter pluggable database <pdb> unplug into '/tmp/<pdb>.xml';
+    drop pluggable database <pdb>;
+    
+    cat /tmp/$pdb_to_patch.xml
+
+2. copy aller Dateien zur neuen CDB
+3. Kompatibilitätsprüfung
+   
+.. code-block:: bash
+
+    # Kompatibilitätsprüfung für Plugin
+    export ORACLE_HOME=$ORACLE_HOME_MP
+    export ORACLE_SID=$ORACLE_SID_MP
+    SET SERVEROUTPUT ON
+    var compatible varchar2(300);
+    BEGIN
+        :compatible := 
+        CASE DBMS_PDB.CHECK_PLUG_COMPATIBILITY(
+         pdb_descr_file => '/tmp/<pdb>.xml',
+         pdb_name => '<pdb>')
+        WHEN TRUE THEN 'YES, the PDB is compatible. You can go on'
+                ELSE 'NO, PDB is not compatible and cannot be plugged in!'
+        END;
+    END;
+    /
+    exec DBMS_OUTPUT.PUT_LINE(:compatible);
+    exit
+
+Ergebnis sollte "NO, PDB is not compatible ..." sein.
+
+4. Status anschauen
+   
+.. code-block:: bash
+
+    COL time FORMAT a10
+    COL name FORMAT a15
+    COL cause FORMAT a10 WRAP
+    COL type FORMAT a8
+    COL message FORMAT a40 WRAP
+    COL action FORMAT a40 WRAP
+    COL con_id FORMAT 9999
+    COL line FORMAT 9999
+    COL error_number FORMAT 9999
+    SET LINESIZE 200 
+    SET PAGESIZE 1000
+    SELECT name,type,cause,message FROM pdb_plug_in_violations WHERE status='PENDING';
+
+Sollten nur Fehler auftreten, dass die Patchstände nicht i.O. sind. 
+
+5. PDB registrieren in der neuen CDB
+
+.. code-block:: bash
+
+    # Plug In
+    connect / as sysdba
+    CREATE PLUGGABLE DATABASE <pdb> USING '/tmp/<pdb>'
+        NOCOPY
+        SOURCE_FILE_NAME_CONVERT = ('/<source_sid>/', '/<dest_sid>/')
+        TEMPFILE REUSE; 
+    alter pluggable database <pdb> open;
+    show pdbs
+    exit
+
+show pdb zeigt die Datenbank im RESTRICTED Mode. 
+
+6. datapatch und danach status der pdb
+
+.. code-block:: bash
+
+    cd $ORACLE_HOME/OPatch
+    ./datapatch -verbose
+
+    sql / as sysdba
+    show pdbs
+
+Datenbank weiterhin in RESTRICTED Mode
+
+7. PDB stoppen/starten und utlrp durchführen
+
+.. code-block:: bash
+
+    alter pluggable database $pdb_to_patch close immediate;
+    alter pluggable database $pdb_to_patch open;
+    show pdbs
+
+    connect sys/<pwd>@<HOSTNAME>:1521/<pdb> as sysdba
+    @?/rdbms/admin/utlrp.sql
 
 
+Fallback/Downgrade
+-------------------
+PDB wieder auf die ungepatchte CDB verschieben und ein downgrade durchführen
+
+1. Kopieren der SQLpatch-Dateien vom gepatchten Oracle Home in das ungepatchte Oracle Home
+   Die Utility "datapatch" muß wissen, welche Schritte des Patch-Rollbacks in der PDB durchgeführt werden sollen. Dazu müssen die entsprechenden SQLPatch-Dateien 
+   in das ungepatchte Oracle Home kopiert werden (i.d.R. sind es ja mehrere DB Patch, JAVA Patch, OPatch ...).
+
+   .. code-block:: bash
+   
+    cp -R $ORACLE_HOME_PATCHED/sqlpatch/<PATCHNR> $ORACLE_HOME_OP/sqlpatch/.
+    
+2. unplug
+
+.. code-block:: bash
+
+    connect / as sysdba
+    select file_name from dba_data_files;
+    alter pluggable database <pdb> close immediate;
+    alter pluggable database <pdb> unplug into '/tmp/<pdb>.xml';
+    drop pluggable database <pdb>;
+    exit
+    
+    cat /tmp/<pdb>.xml
+
+3. Kopieren in das Zielverzeichnis
+
+.. code-block:: bash
+
+4. Kompatibilitätsprüfung
+
+.. code-block:: bash
+   
+    connect / as sysdba
+    SET SERVEROUTPUT ON
+    var compatible varchar2(300);
+    BEGIN
+        :compatible := 
+        CASE DBMS_PDB.CHECK_PLUG_COMPATIBILITY(
+        pdb_descr_file => '/tmp/$pdb_to_patch.xml',
+        pdb_name => '$pdb_to_patch')
+        WHEN TRUE THEN 'YES, the PDB is compatible. You can go on'
+                ELSE 'NO, PDB is not compatible and cannot be plugged in!'
+        END;
+    END;
+    /
+    exec DBMS_OUTPUT.PUT_LINE(:compatible);
+    exit
+
+Ergebnis: PDB ist nicht kompatibel
+
+5. Grund anschauen 
+
+.. code-block:: bash
+
+    connect / as sysdba
+    COL time FORMAT a10
+    COL name FORMAT a15
+    COL cause FORMAT a10 WRAP
+    COL type FORMAT a8
+    COL message FORMAT a40 WRAP
+    COL action FORMAT a40 WRAP
+    COL con_id FORMAT 9999
+    COL line FORMAT 9999
+    COL error_number FORMAT 9999
+    SET LINESIZE 200 
+    SET PAGESIZE 1000
+    SELECT name,type,cause,message FROM pdb_plug_in_violations WHERE status='PENDING';
+
+Ergebnis: CDB Version stimmt nicht mit PDB Version (höher) überein
+
+
+6. PDB registrieren
+
+.. code-block:: bash
+
+    connect / as sysdba
+    CREATE PLUGGABLE DATABASE <pdb> USING '/tmp/<pdb>.xml'
+    NOCOPY
+    SOURCE_FILE_NAME_CONVERT = ('/source_sid/', '/dest_sid/')
+    TEMPFILE REUSE; 
+    alter pluggable database <pdb> open;
+    show pdbs
+    exit
+    
+Ergebnis: PDB ist registriert, aber im RESTRICTED Mode
+
+7. datapatch durchführen
+
+.. code-block:: bash
+
+    cd $ORACLE_HOME/OPatch
+    ./datapatch -verbose
+
+8. utlrp.sql ausführen
+
+.. code-block:: bash
+
+    $ORACLE_HOME/bin/sqlplus /nolog << EOI
+    connect sys/<pwd>@HOSTNAME:1521/<pdb> as sysdba
+    @?/rdbms/admin/utlrp.sql
+    exit
+    
+9. PDB durchstarten
+
+.. code-block:: bash
+    
+    connect / as sysdba
+    alter pluggable database <pdb> close immediate;
+    alter pluggable database <pdb> open;
+    show pdbs
+    
+
+
+
+
+
+
+
+
+
+
+
+
+ToDo: 
+=====
+* mit Oracle 23 ist nur CDB/PDB erlaubt. Wie erfolgt der Update auf Oracle 19/NonCDB -> 23/CDB? Erst Wechsel von NonCDB->CDB und dann nach Oracle23 oder ist das ein Schritt? 
+* Anpassung Oracle emcadm2 notwendig? 
+* Usermanagement in c##
+* 
 
 
 
