@@ -699,6 +699,147 @@ Ergebnis: PDB ist registriert, aber im RESTRICTED Mode
     show pdbs
     
 
+Migration von NonCDB to CDB
+=============================
+
+1. Erstellen einer nonCDB
+   
+   .. code-block:: bash
+
+        dbca -silent -createDatabase \
+        -templateName General_Purpose.dbc \
+        -gdbname noncdb1 -sid noncdb1 -responseFile NO_VALUE \
+        -characterSet AL32UTF8 \
+        -sysPassword welcome1 \
+        -systemPassword welcome1 \
+        -createAsContainerDatabase false \
+        -databaseType MULTIPURPOSE \
+        -automaticMemoryManagement false \
+        -totalMemory 2048 \
+        -storageType FS \
+        -datafileDestination "$ORADATA_DIR" \
+        -redoLogFileSize 50 \
+        -emConfiguration NONE \
+        -ignorePreReqs
+
+2. Erzeugen der XML-Datei für Kompatibilitätscheck
+   
+    .. code-block:: bash
+       
+        export ORACLE_SID=noncdb1
+
+        connect / as sysdba
+        select file_name from dba_data_files;
+        shutdown immediate
+        startup mount
+        alter database open read only;
+        begin
+        dbms_pdb.describe(pdb_descr_file => '/tmp/noncdb1.xml');
+        end;
+        /
+        
+        shutdown immediate
+        
+        cat /tmp/noncdb1.xml
+        
+3. Vorbereiten der CDB
+   
+   .. code-block:: bash
+   
+        export new_pdb_name=<pdb>
+        mkdir -p /u01/app/oracle/oradata/$ORACLE_SID_CDB/<pdb>
+
+        scp /tmp/<pdb>.xml newCDB-host:/tmp
+
+4. Kompatibilitäts check gegen neue CDB
+   
+   .. code-block:: bash
+    
+        export new_pdb_name=<pdb>
+        export ORACLE_SID=<orasid-cdb>
+        
+        connect sys/<pwd>@<cdb> as sysdba
+        SET SERVEROUTPUT ON
+        var compatible varchar2(300);
+        BEGIN
+        :compatible := 
+        CASE DBMS_PDB.CHECK_PLUG_COMPATIBILITY(
+        pdb_descr_file => '/tmp/noncdb1.xml',
+        pdb_name => '<pdb>>')
+        WHEN TRUE THEN 'YES, the PDB is compatible. You can go on'
+                ELSE 'NO, PDB is not compatible and cannot be plugged in!'
+        END;
+        END;
+        /
+        exec DBMS_OUTPUT.PUT_LINE(:compatible);
+        
+5. Report anzeigen
+
+    .. code-block:: bash
+
+        COL time FORMAT a10
+        COL name FORMAT a15
+        COL cause FORMAT a10 WRAP
+        COL type FORMAT a8
+        COL message FORMAT a40 WRAP
+        COL action FORMAT a40 WRAP
+        COL con_id FORMAT 9999
+        COL line FORMAT 9999
+        COL error_number FORMAT 9999
+        SET LINESIZE 200
+        SELECT name,type,cause,message FROM pdb_plug_in_violations WHERE status='PENDING';
+
+6. registrieren der non-cdb kopie als pdb
+
+    .. code-block:: bash
+
+        connect / as sysdba
+        CREATE PLUGGABLE DATABASE <pdb> USING '/tmp/noncdb1.xml'
+        COPY
+        FILE_NAME_CONVERT = ('/NONCDB1/', '/$ORACLE_SID_CDB/<pdb>/')
+        USER_TABLESPACES=('users'); 
+        
+
+7. Prüfung
+
+    .. code-block:: bash
+
+        
+        connect / as sysdba
+        col name format a20
+        select v.con_id,v.name,v.open_mode,v.restricted,c.status
+        from v\$pdbs v,cdb_pdbs c
+        where v.con_id=c.pdb_id;
+        
+PDB hat den Status NEW
+
+8. PDB-spezifische Inhalte in der neuen PDB erstellen
+   Bevor die neue PDB geöffnet wird (und das ist ganz wichtig), muß die neue PDB erst die internen Strukturen einer PDB bekommen. Dazu wird das Skript noncdb_to_pdb.sql aus dem Verzeichnis $ORACLE_HOME/rdbms/admin gestartet
+   
+   .. code-block:: bash
+
+        connect / as sysdba
+        alter session set container=<pdb>;
+        @?/rdbms/admin/noncdb_to_pdb.sql
+        exit 
+        
+9.  PDB öffnen
+
+    .. code-block:: bash
+
+        sqlplus /nolog << EOI
+        connect / as sysdba
+        ALTER PLUGGABLE DATABASE $new_pdb_name open;
+        exit
+        EOI
+
+
+
+
+
+
+
+
 
 
 
