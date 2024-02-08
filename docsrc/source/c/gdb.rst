@@ -4,7 +4,11 @@
 GDB
 #####
 
-Quelle: https://developers.redhat.com/blog/2021/04/30/the-gdb-developers-gnu-debugger-tutorial-part-1-getting-started-with-the-debugger#why_another_gdb_tutorial_
+Quelle: 
+https://developers.redhat.com/blog/2021/04/30/the-gdb-developers-gnu-debugger-tutorial-part-1-getting-started-with-the-debugger#why_another_gdb_tutorial_
+https://developers.redhat.com/articles/2022/01/10/gdb-developers-gnu-debugger-tutorial-part-2-all-about-debuginfo
+https://sourceware.org/gdb/current/onlinedocs/gdb.html/
+
 
 Kompilierung
 =============
@@ -62,3 +66,34 @@ Befehlsautomatisierung:
 -x FILE    executes GDB commands from File after program is loaded and --ex commands execute
 
 --batch    exit immediately at the first command prompt
+
+
+Befehl-Kurzreferenz
+=====================
+
+.. list-table:: **Kurzreferenz**
+   :widths: 50 50
+   :header-rows: 1
+
+   * - Command
+     - Description
+   * - run or r
+     - Executes the program from start to end.
+   * - break or b
+     - Executes the program from start to end.
+   * - disable
+     - Disables a breakpoint
+   * - enable
+     - Enables a disabled breakpoint.
+   * - next
+     - Executes the next line of code without diving into functions.
+   * - step
+     - Goes to the next instruction, diving into the function.
+   * - list
+     - Displays the code.
+   * - print
+     - Displays the value of a variable.
+   * - clear
+     - Clears all breakpoints.
+   * - continue
+     - Continues normal execution
