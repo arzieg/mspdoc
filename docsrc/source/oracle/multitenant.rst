@@ -372,6 +372,117 @@ AMM = automatisches Management
     * PGA_AGGREGATE_TARGET
 
 
+Maximum Availability Architektur
+==================================
+
+RTO := Zeit für die Wiederherstellung nach einem Ausfall. 
+RPO := Bis zu welchem Zeitpunkt und Zustand kann ich wiederherstellen
+
+
+Dataguard
+==========
+ 
+ * wenn auf der primären Seite eine PDB angelegt wird, wird diese auch auf der standby Seite angelegt.
+ * Für produktive Umgebungen fehlt noch der TEMP Tablespace auf der Standby Seite, der vom TEMP Talbespace des primären Seite abweichen darf und daher manuell angelegt werden muss.
+ * Switchover
+
+.. code-block:: bash
+    dgmgrl 
+        connect sys/<passwort>@PDB-Prod
+        switchover to PDB-Repli;
+        show configuration verbose
+    exit
+    
+
+
+CLONING mit /ohne Dataguard
+=============================
+
+
+Cold Clone (Source R/O) := Während der Clone Erstellung wird die Source DB in den real-only Zustand versetzt. DB Blöcke werden von Source DB auf Clone DB 1:1 kopiert. 
+    Neue PDB als Clone der PDB$SEED werden automatisch auch auf Standby angelegt, da PDB$SEED (R/O) auch auf der Standby Seiten vorhanden. Es erfolgt keine Datenübertragung 
+    auf die StandBy Seite, da PDB$SEED da ja bereits vorhanden. 
+
+Hot Clone (Source R/W)  := 
+    PDB Hot Cloning geht mit 19c nur zur Primary CDB. Standby DB kann anschließend bspw. mit RMAN oder Cloning angelegt werden. 
+    Diese Einschränkung gilt, da 2 parallele Recovery Ströme mit 19c nicht mögliche sind (es läuft ja bereits auf CDB Ebene ein RecoveryStrom von Primary -> StandBy)
+
+    Trick: lokaler R/W Cline enier "PDB ohne Standby" in eine "PDB mit Standby". 
+      CDB DB link auf sich selbst anlegen, wird mit DG repliziert. Auf der Standby Seite wird der Link dann zu einem Link auf die Primary DB
+
+Remote Clone (Read/Only): 
+    1. DB User für Cloning auf Quell DB einrichten
+    2. DB Linkzur Siurce auf Primary CDB anlegen. 
+    3. DB Link zur Source auf Standy CDB als Parameter eintragen.
+    4. Source DB auf read-only setzen
+    5. Standby Absicherung mittels RMAN oder über weiteren Cold Clone der Primary ÜDB mit parallerler Absicherung auf Standby Seite. 
+
+Remote Clone (Read/Write)
+    tbd
+
+In Oracle 21c ff. gibt es eine PDB Recovery Isolation Mode, da spart man sich die Workarrounds, um ein Hot Clone zu machen. 
+
+In der Cloud gibt es noch ein **Refreshable PDB Switchover**. Hier erfolgt in einem zu definierenden Zyklus ein Fresch von PDB1 -> PDB1' 
+
+PDB und RAC
+============
+
+Spielvariante: PDB wird nur auf einer Instanz gestartet, in zweiter Instanz im Status mounted. Bei Ausfall open der Instanz. 
+                Wenn Auslastung zu hoch, weiterer RAC Server, dann verschieben auf einen anderen Server usw.
+
+PDB Placement: wie kann ich steuern, wo die PDB läuft?
+                ``srvctl add service -db CDB -service PDB1 -pdb PDB1 -prefered CDB1 -available CDB3,CDB2 -tafpolicy BASIC``
+
+in 23c neues Policy Management für automatische PDB Ressourcen Verteilung
+
+* die Clusterware erkenntn nun die betriebenen PDBs
+* automatische Verteilung von PDBs "Floating PDBs"
+* zusätzliche Cluster Attribute
+    * cardinalität - maximal die der CDB
+    * rank - je höher desto wichtiger
+    * mincpuunit (minimal garantierte CPU 1/100)
+    * maxcpu (maximales Limit PDB)
+
+Weiterhin ist *administrator mangaged* weiterhin möglich.      
+                 
+PDB verschieben
+===============
+* Zeichensatz in PDB ist kompatibel zu Zeichensatz in Ziel-CDB (Oracle Empfehlung: AL32UTF8)
+* Ziel CDB mit gleichen DB Optionen wie Source CDB
+* Wenn common user in der pdb eingesetzt werden, dann müssen die auf beiden Seiten existieren. 
+* typischerweise sollte auf beiden Seite der gleiche Patchlevel existieren. Es geht auch von alt nach neu, dann ein datapatch notwendig. 
+
+Vorgehen
+--------
+* xml Datei enthält Daten der PDB Struktur
+* pdb wird ausgehänt
+* pdb und xml werden auf Ziel übertragen
+* pdb Kompatibilität wird mit CDB geprüft
+    view: *pdb_plug_in_violations* prüfen
+* pdb wird eingehängt
+    eigentlich ein create Befehl. Hier zwei Möglichkeiten: COPY und NOCOPY. Bei NOCOPY stehen die Datenfiles bereits dort, wo sie hingehören. Bei COPY wird das noch dahin 
+    kopiert. Bei NOCOPY mit SOURCE_FILE_NAME_CONVERT wird source nach dest im xml-file umgesetzt. Bei COPY muss FILE_NAME_CONVERT angegeben.
+    TEMPFILE REUSE notwendig, wenn man das Tempfile mit kopiert, ansonsten muss man es neu anlegen. 
+* alte pdb wird gelöscht
+    ``DROP PLUGGABLE DATABASE <PDB> INCLUDING DATAFILES``
+
+Alternative zu unplug/plug (minimale Downtime)
+------------------------------------------------
+*  common user auf source db erstellen
+*  dblink von Ziel-CDB auf Source-CDB erstellen
+*  PDB von Ziel CDB über DBLink clonen
+     create pluggable database <pdb> from pdb_to_relocate@dblink file_name_convert = ('/$tns_source/','/$tns_dest/') relocate availability [NORMAL|MAX];
+     *relocate availability* bei einer Migration von einer PDB ok, wenn PDB in einer CDB mit mehreren PDBs nicht so sinnvoll. 
+*  PDB Clone konsistent machen
+*  PDB Clone aktualisieren bis ...
+*  ... PDB Clone aktivieren  (``alter pluggable database <pdbtorelocat> open;``)
+
+Wenn eine PDB von einem Server auf einen anderen HOST wechselt, ändert sich der HOST in der TNSAlias. Ziel stabiler TNS Alias. Lösung: remote Listener, 
+CDB registrieren als Service bei allen Remote Listenern
+Durch PDB Verschiebung wird DB Sitzung abgebrochen (behalten aber gleichen TNS Alias). Mit *Application Continuity* werden offene Transaktionen zwischengespeichert. Hier
+RAC oder Active Data Guard Lizenz notwendig. 
+
+
 
 
 
