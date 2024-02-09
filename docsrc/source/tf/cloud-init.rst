@@ -125,3 +125,60 @@ Möchte man das verhindern, dann wäre eine Möglichkeit, dass lifecycle Attribu
         admin_ssh_key, custom_data
         ]
     }
+
+
+CMD Run
+=========
+https://www.linode.com/docs/guides/run-shell-commands-with-cloud-init/
+
+here are two key features, however, that differentiate bootcmd. First, commands given in the **bootcmd** are executed early in the boot process. 
+These commands run among the first tasks of system on boot. Second, they run on every system boot. 
+Where **runcmd** commands **only run once, during initialization**, bootcmd commands become a part of your system’s boot process, recurring with each boot.
+
+.. code-block:: bash
+
+    bootcmd:
+     - [ cloud-init-per, instance, example-instance-echo, echo, "Instance initialization command executed successfully!" ]
+
+
+Run a Bash Script
+------------------
+If your script is hosted and accessible remotely, the most straightforward solution is to use a wget command to download it. From there, you can use a runcmd command 
+to execute the script. Object Storage can provide an effective way to host script files.
+However, most use cases favor adding the shell script directly as part of the cloud-init initialization, without hosting the script file elsewhere. 
+In such cases, you can use cloud-init’s write_files option to create the script file on initialization.
+
+.. code-block:: bash
+
+    # Register Host und run salt-highstate
+    write_files:
+    - path: /run/scripts/register.sh
+        content: |
+        #!/bin/bash
+        export HOSTNAMEFQDN="$HOSTNAME.clab.azr.ez.edeka.net"
+        hostnamectl set-hostname $HOSTNAMEFQDN
+        rm /etc/zypp/repos.d/*
+        sleep 5
+        curl -Sks https://<sumaproxy>/pub/bootstrap/salt-bootstrap-release-50-sle155-latest.sh | /bin/bash
+        if [[ $? -ne 0 ]]
+            then
+            echo "Exit with error"
+            exit 1
+        fi
+        sleep 60
+        source /usr/lib/venv-salt-minion/bin/activate
+        salt-call state.highstate
+        sleep 30
+        zypper -n up  >> /run/testing.txt            
+        permissions: '0755'
+
+    runcmd:
+    - [ sh, "/run/scripts/register.sh" ]
+
+
+Verify that Commands or Script has Run
+---------------------------------------
+
+.. code-block:: bash
+
+    sudo vi /var/log/cloud-init-output.log 
