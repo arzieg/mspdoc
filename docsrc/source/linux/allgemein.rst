@@ -70,3 +70,10 @@ tar cpf - /some/important/data | ssh user@destination-machine "tar xpf - -C /som
 find /mnt/dump -type f -exec md5sum {} \;> /tmp/checksums.md 
 md5sum -c /tmp/checksums.md
  
+
+RDP
+====
+zypper install -t pattern patterns-xfce-xfce_basis patterns-xfce-xfce patterns-xfce-xfce_office
+zypper in xrdp
+vi /etc/sysconfig/windowsmanager
+  Change DEFAULT_WM to DEFAULT_WM="xfce"

@@ -4,6 +4,11 @@
 Netcat
 ################
 
+Port offen:
+============
+nc -zv <host> <port>
+
+
 Remote Shell
 ==============
 Target Host: nc -lvp <port>
@@ -20,6 +25,9 @@ python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOC
 SSH
 =====
 
+Jumphost
+---------
+
 ssh über zwei Jumphosts:
     ssh -A -J <user@jmp1host>,<user@jmp2host> <user>@<zielhost>
     
@@ -29,3 +37,6 @@ ssh über zwei Jumphosts:
 
     dann mit <user>@<zielhost> anmelden
 
+Windows RDP über ssh
+---------------------
+ssh -L 9999:<windows terminalserver>:3389 -N <user>g@<linux jumphost>
