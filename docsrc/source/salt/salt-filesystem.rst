@@ -7,8 +7,6 @@ SALT Filesystem
 git-integration
 ================
 
-In diesem Beispiel problematisch *get_pillar_env*. Wenn immer saltenv angegeben wird, dann funktioniert es aber
-
 .. code-block:: bash
 
     fileserver_backend:
@@ -21,7 +19,7 @@ In diesem Beispiel problematisch *get_pillar_env*. Wenn immer saltenv angegeben 
     ext_pillar_first: True
     # arzieg - 20240213 git_pillar_base ist der Basisbranch (steht per default auch auf master lt. doku)
     #          Zusammen mit ext_pillar kann man ein Branch auch auf git_pillar_base matchen, hier insofern als
-    #          das master -> master gesetzt wird, wenn saltenv=LABOR gesetzt ist.
+    #          das master -> master gesetzt wird, wenn saltenv=<customEnv> gesetzt ist.
     #          Auf der Clientseite ist in der environment.conf saltenv=base gesetzt (Standard für SUSE Manager).
     #          ein salt-call pillar.items (a.k.a. saltenv=base) unterscheidet sich in der Anzahl der pillars von
     #          einem salt-call pillar.items saltenv=<customEnv>
@@ -34,9 +32,9 @@ In diesem Beispiel problematisch *get_pillar_env*. Wenn immer saltenv angegeben 
     ext_pillar:
         - git:
             - master file:///var/lib/salt/repos/repo1.git:
-            - env: LABOR
+            - env: <customEnv>
             - master file:///var/lib/salt/repos/repo2.git:
-            - env: LABOR
+            - env: <customEnv>
 
     git_pillar_branch: master
 
@@ -51,10 +49,10 @@ In diesem Beispiel problematisch *get_pillar_env*. Wenn immer saltenv angegeben 
     - branch
 
     gitfs_saltenv:
-    - LABOR:  # Configured explicitly to not have to rely on the fallback.
+    - <customEnv>:  # Configured explicitly to not have to rely on the fallback.
     - ref: master
     # Everything not listed here is not available as an environment.
     gitfs_saltenv_whitelist:
-    - LABOR
+    - <customEnv>
     - feature/.*
     - bugfix/.*
