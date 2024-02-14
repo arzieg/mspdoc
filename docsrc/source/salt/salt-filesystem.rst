@@ -56,3 +56,22 @@ git-integration
     - <customEnv>
     - feature/.*
     - bugfix/.*
+
+
+Helfer
+--------
+
+``salt-run fileserver.envs``    Anzeige der bekannten Environments (dies kann abweichen von den noch vorhanden Branches in git (-> siehe fileserver.update)
+
+``salt-run fileserver.update``  Update des Fileserver Caches
+
+``salt-run fileserver.dir_list``  Anzeige der Verzeichnisse mit Saltstates. Wenn ohne *saltenv* dann die lokalen, mit *saltenv=<env>* Anzeige des jeweiligen Environments.
+
+``salt-run fileserver.file_list``  Anzeige der Files mit Saltstates. Wenn ohne *saltenv* dann die lokalen, mit *saltenv=<env>* Anzeige des jeweiligen Environments.
+
+``salt-run git_pillar.update``
+This will not fast-forward the git_pillar cachedir on the master. All it does is perform a git fetch. If this runner is executed with -l debug, 
+you may see a log message that says that the repo is up-to-date. Keep in mind that Salt automatically fetches git_pillar repos roughly every 60 seconds 
+(or whatever loop_interval is set to). 
+
+

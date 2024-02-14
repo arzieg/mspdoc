@@ -37,6 +37,7 @@ ssh über zwei Jumphosts:
 
     dann mit <user>@<zielhost> anmelden
 
-Windows RDP über ssh
----------------------
-ssh -L 9999:<windows terminalserver>:3389 -N <user>g@<linux jumphost>
+Windows RDP über ssh-Jumphost
+------------------------------
+ssh -L 33389:<windows terminalserver>:3389 -N <user>@<linux jumphost>
+
