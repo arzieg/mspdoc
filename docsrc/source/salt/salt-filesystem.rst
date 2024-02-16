@@ -58,6 +58,52 @@ git-integration
     - bugfix/.*
 
 
+
+ext_pillar
+-----------
+
+.. code-block:: 
+
+    ext_pillar:
+    - git:
+        - master file:///var/lib/salt/repos/<repo1>.git:
+          - env: LABOR
+        - master file:///var/lib/salt/repos/<repo2>.git:
+          - env: LABOR
+
+
+Konfiguration, welcher Branch und welches git-repo für welches (SALT)-Environment genutzt wird. In diesem Beispiel bei (pillar)env=LABOR werden 
+aus repo1 und repo2 der master-Branch verwendet. Hier können nun mehrere Environments und Repos angegeben werden.
+
+Was noch nicht funktioniert hat (https://github.com/saltstack/salt/issues/65002)
+
+.. code-block:: 
+
+    ext_pillar:
+    - git: # global: for all accounts and envs
+        - master file:///var/lib/salt/repos/<repo1>.git:
+        - env: __env__
+    - git: # specific: only for specific envs.
+        - master file:///var/lib/salt/repos/<repo2>.git:
+        - env: __env__
+        - fallback: master
+
+
+
+
+git_pillar_base: <branch>
+--------------------------
+Standard Branch der verwendet wird, wenn in ext_pillar mehrere Branches angegeben werden. 
+
+git_pillar_branch: <branch>
+-----------------------------
+Wenn kein Branch angegeben wird, wird dieser hier verwendet
+
+
+
+
+
+
 Helfer
 --------
 
