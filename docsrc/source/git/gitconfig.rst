@@ -61,4 +61,7 @@ git remote -v (Anzeige aktuelle Konfiguration)
 git remote add upstream perso-github.com:octocat/Spoon-Knife.git 
 
 
-
+Cloning
+========
+Clonen einer lokalen git-Repostruktur in ein ausgechecktes Repo
+  git clone file://<full path to gitrepostruktur>.git /tmp/<myrepo>
