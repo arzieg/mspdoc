@@ -324,6 +324,90 @@ Dieser kann auch in einer for_each Schleife verwendet werden.
 
 
 
+Komplexere Datenstrukturen
+----------------------------
+Ein wenig komplexer: 
+
+Als Key wird ein Hostname definiert, dieser hat eine IP und ein Subnet. Wenn die IP nicht gesetzt ist, wird diese dynamisch vergeben, ansonsten statisch. 
+Der Variablenteil definiert zum einen das Hostname-Objekt und weiterhin eine Hilfsstruktur in der nur die Hostnamen enthalten sind, bei dem eine IP Definition vorgenommen wurde.
+
+.. code-block:: 
+
+  variable "vm_hostname" {
+    type = map(object({
+        ip     = string
+        subnet = string
+      }))
+    default = {}
+    }
+
+  locals {
+    static_ip = flatten([
+      for hostname, value in var.vm_hostname : {
+        hostname = hostname
+        ipaddr   = value.ip
+      } if value.ip != ""
+    ])
+  }
+
+
+Im der dazugehörigen tfvars kann das z.B. soll ausgeprägt sein:
+
+.. code-block:: bash
+
+  vm_hostname = {
+    lasc50001 = {
+      ip     = ""
+      subnet = "0-0"
+    }
+    lasc50001-bak = {
+      ip     = "10.10.50.72"
+      subnet = "0-1"
+    }
+  }
+
+und im tf code kann wie folgt darauf zugegriffen werden
+
+auf das Hilfskonstrukt z.B. bei der statischen Registrierung im DNS
+
+.. code-block:: bash
+
+  # --------------------------
+  # Create DNS for static ip
+  # --------------------------
+
+  resource "azurerm_private_dns_a_record" "vmCreateStaticEntry" {
+    for_each            = { for idx, v in local.static_ip : idx => v }
+    name                = each.value.hostname
+    zone_name           = data.azurerm_private_dns_zone.dns_zone.name
+    resource_group_name = <Ressourcegroup>
+    ttl                 = 31449600 # 52 weeks
+    records             = ["${each.value.ipaddr}"]
+  }
+
+bei der Erstellung der NICs. Für jeden Key (aka hostname) in der Struktur vm_hostname wird die IP entweder dynamisch zugewiesen oder statisch registriert.
+
+.. code-block:: bash
+
+  resource "azurerm_network_interface" "vm-nic" {
+  for_each            = var.vm_hostname
+  provider            = azurerm.nonprod
+  name                = "nic-${each.key}-${var.RG}-${each.value.subnet}"
+  location            = var.location
+  resource_group_name = data.azurerm_resource_group.rg.name
+  ip_configuration {
+    name                          = "ip-config-${each.value.subnet}"
+    subnet_id                     = data.azurerm_subnet.subnet[each.key].id
+    private_ip_address_allocation = each.value.ip == "" ? "Dynamic" : "Static"
+    private_ip_address            = each.value.ip == "" ? null : each.value.ip
+  }
+}
+
+
+
+
+
+
 
 
 
