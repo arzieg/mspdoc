@@ -113,4 +113,25 @@ Implementierung
         return 0;
     }
 
-    
+
+Erfahrung
+----------
+
+Wichtig ist das NULL Element. 
+
+Bei folgendem Code 
+
+.. code-block:: c
+
+    while ((token = strsep(&rest, &delimiter)) != NULL) {
+        tokens[i] = strdup(token);
+        i++;
+    }
+
+ist tokens wie folgt definiert worden: 
+
+.. code-block::c
+
+    tokens = (char **)malloc(sizeof(char *) * count);
+
+das letzte tokens[last] = '\0'; muss mit NULL terminiert werden, sonst passieren merkwürdige Dinge.
