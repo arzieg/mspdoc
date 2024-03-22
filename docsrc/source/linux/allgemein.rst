@@ -77,3 +77,9 @@ zypper install -t pattern patterns-xfce-xfce_basis patterns-xfce-xfce patterns-x
 zypper in xrdp
 vi /etc/sysconfig/windowsmanager
   Change DEFAULT_WM to DEFAULT_WM="xfce"
+
+
+user
+=====
+
+useradd -m -d /sapmnt/S77/s77adm -s /usr/bin/csh -c "SAP System Administrator" -u 56069 -g 1001 -G dba,oper,sapinst,asmoper,asmdba,oinstall s77adm
