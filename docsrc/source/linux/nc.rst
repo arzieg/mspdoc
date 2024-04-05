@@ -41,3 +41,17 @@ Windows RDP über ssh-Jumphost
 ------------------------------
 ssh -L 33389:<windows terminalserver>:3389 -N <user>@<linux jumphost>
 
+UDP Test
+=========
+https://unix.stackexchange.com/questions/235830/how-does-netcat-know-if-a-udp-port-is-open
+
+Test zwischen zwei Servern: 
+
+.. code-block:: 
+
+    a:~# nc -luk 10.12.0.12 667 // listen on UDP port 667
+    b:~# nc -uv 10.12.0.12 667  // check if port is open 
+    nc: 10.12.0.12 (10.12.0.12) 667 [667] open
+    I love stackexchange // send a message
+    a:~# nc -luk 10.12.0.12 667
+    I love stackexchange // receive the message.
