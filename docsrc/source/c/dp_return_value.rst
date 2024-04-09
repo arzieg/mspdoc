@@ -25,9 +25,50 @@ Pitfall: when you need to return a struct it is better to pass it as a parameter
 the struct parameter was filled with valid data or not
 
 Alternatives: 
+
     Exception -> nicht möglich
+    
     Logging
+    
     Panic
+    
     Long Jump -> sollte man nicht nutzen, weil dann das CleanUp ggfs. nicht funktioniert. Besser ist hier dann ein panic. 
 
+ 
+ A common mistake is to do
+
+.. code-block:: c
+
+    if (somecall() == -1) {
+            printf("somecall() failed\n");
+            if (errno == ...) { ... }
+        }
+
+where errno no longer needs to have the value it had upon return from somecall() (i.e., it may have been changed by the printf(3)).  If the value of errno should  be  preserved
+across a library call, it must be saved:
+
+.. code-block:: c
+
+        if (somecall() == -1) {
+            int errsv = errno;
+            printf("somecall() failed\n");
+            if (errsv == ...) { ... }
+        }
+
+On  some  ancient systems, <errno.h> was not present or did not declare errno, so that it was necessary to declare errno manually (i.e., extern int errno).  Do not do this.  It
+long ago ceased to be necessary, and it will cause problems with modern versions of the C library.
+
+Mit errno -l kann man sich die definierten Error-Codes für die Plattform ansehen (Enthalten im Paket moreutils)
+
+## Anzeigen des Fehlers
+
+mit der Funktion perror in <stdlib.h>
+
+    void perror(const char *s)
+    Bsp.: perror("open"); -> zeigt dann den Fehlercode an mit voranstehendem "open". 
+
+mit der Funktion strerror in <string.h>. strerror konvertiert nur die Nummer in einen Text, der dann ausgegeben werden kann. 
+
+    char *strerror(int errnum); 
+    Bsp.: write(2, strerror(errno), strlen(strerror(errno)));  // 2 = stderr, wandle errno in text, länge des Textes
 
