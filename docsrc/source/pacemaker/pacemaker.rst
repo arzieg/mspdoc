@@ -162,12 +162,15 @@ Wenn man sicher ist, wie der Zustand des Clusters ist, kann man das auch manuell
     
     # Datacenter manuell setzen
     crm_attribute -n hana_<sid>_glob_sec -v DC2 -t crm_config -s SAPHanaSR   # Failover DC
-    crm_attribute -n hana_<sid>_glob_prim -v DC1 -t crm_config -s SAPHanaSE  # Primary DC
+    crm_attribute -n hana_<sid>_glob_prim -v DC1 -t crm_config -s SAPHanaSR  # Primary DC
 
-    # srHook manuell setzen
-    crm_attribute -n hana_ysid>_glob_srHook -v SOK -t crm_config -s SAPHanaSR
+    # srHook global manuell setzen
+    crm_attribute -n hana_<sid>_glob_srHook -v SOK -t crm_config -s SAPHanaSR
 
-
+    # srHook je Site setzen
+    crm_attribute -n hana_<sid>_site_srHook_DC1 -v PRIM -t crm_config -s SAPHanaSR
+    crm_attribute -n hana_<sid>_site_srHook_DC2 -v SOK -t crm_config -s SAPHanaSR
+    
 
 Support
 ********
