@@ -32,3 +32,17 @@ No Autoindent:
 Line Numbers
 :set nu   - show 
 :set nonu - disable
+
+
+Files
+======
+:ls        = list buffer
+n <strg>   = Springe zu File nr. N
+:buffer N  = Springe zu File nr. N
+<strg>^    = Toggle zw. File % und # hin und her
+:bprevious = Springe eine Datei vor
+:bnext     = Zeige nächste Datei
+:bfirst    = erste Datei
+:blast     = letzte Datei
+
+
