@@ -45,4 +45,22 @@ n <strg>   = Springe zu File nr. N
 :bfirst    = erste Datei
 :blast     = letzte Datei
 
+Windows
+=========
+<strg>w+v  = veritkaler Split
+<strg>w+s  = horizontaler Split
 
+<strg>w+w oder <strg>w+<strg>w (geht schneller)  = toggle zum nächsten Fenster
+<strg>w+h  = springe nach links
+<strg>w+j  = springe nach unten
+<strg>w+k  = springe nach oben
+<strg>w+l  = springe nach rechts
+
+<strg>w+c  = close the active windows
+<strg>w+o  = close all windows except the active one
+
+<strgw>    = Verteile alle Fenster gleich
+<strg>w+_  = Maximize height of the active window
+<strg>w+|  = Maximize width of the active window
+[N]<strg>w+_ = Set active window height to [N] rows
+[N]<strg>w+| = Set active window width to [N] columns
