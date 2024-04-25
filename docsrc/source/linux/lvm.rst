@@ -54,3 +54,24 @@ pvdisplay -C --separator '  |  ' -o pv_name,vg_name
     vgck vg_orahome    -> zeigt das Problem
     vgck --updatemetadata vg_orahome    -> Problem fixen
     vgck vg_orahome    -> Problem sollte nicht mehr angezeigt werden
+
+
+Keine Device Nodes
+----------------------
+
+.. code-block:: bash
+
+    lvscan -v
+        inactive          '/dev/vg_s77/lv_s77' [36.00 MiB] inherit
+        inactive          '/dev/vg_orahome/lv_orahome' [60.00 GiB] inherit
+        inactive          '/dev/vg_orahome/lv_oraagent' [3.00 GiB] inherit
+
+    vgchange -a y vg_s77
+        1 logical volume(s) in volume group "vg_s77" now active
+    vgchange -a y vg_orahome
+        2 logical volume(s) in volume group "vg_orahome" now active
+    lvscan -v
+        ACTIVE            '/dev/vg_s77/lv_s77' [36.00 MiB] inherit
+        ACTIVE            '/dev/vg_orahome/lv_orahome' [60.00 GiB] inherit
+        ACTIVE            '/dev/vg_orahome/lv_oraagent' [3.00 GiB] inherit
+
