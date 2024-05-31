@@ -78,3 +78,8 @@ The routes can also be removed.
     
     Example removing 192.168.1.0 from eth0
     
+
+#######
+DNS
+#######
+systemctl restart nscd   - flush dns cache
