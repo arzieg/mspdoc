@@ -31,9 +31,13 @@ apt-cache
 
 dpkg
     * --list or -l 
+    * -L                    list files in package
     * --install
     * --remove
     * --purge
     * --update
-    * --contents
+    * --contents, -c <debfile>
 
+dpkg-query -L <package>   list files in package
+dpkg -s <package>         list metainformation of package
+apt show <package>        list metainformation of package
