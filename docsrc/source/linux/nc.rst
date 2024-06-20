@@ -51,7 +51,10 @@ Test zwischen zwei Servern:
 
     a:~# nc -luk 10.12.0.12 667 // listen on UDP port 667
     b:~# nc -uv 10.12.0.12 667  // check if port is open 
-    nc: 10.12.0.12 (10.12.0.12) 667 [667] open
+    
+    Sent a simple message:
+    a:~# nc -luk 10.12.0.12 667 // listen on UDP port 667
+    b:~# nc -u 10.12.0.12 667
     I love stackexchange // send a message
     a:~# nc -luk 10.12.0.12 667
     I love stackexchange // receive the message.
