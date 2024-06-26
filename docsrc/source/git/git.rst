@@ -26,6 +26,10 @@ git push --delete origin <tagname>
 git tag eddi-lorup-r19-2 eddi-lorup-r19-2^{} -f -a    - wie ändere ich eine TAG Nachricht (solange noch nicht gepusht)
 
 
+GIT History
+============
+git log --follow -p -- <file>      - zeige die Historie an
+
 Secrets ausversehen gepusht
 ============================
 
