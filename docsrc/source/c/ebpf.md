@@ -20,3 +20,17 @@ Coroot: https://github.com/coroot/coroot
 Coroot is an open-source APM & Observability tool, a DataDog and NewRelic alternative. Powered by eBPF for rapid insights into system performance.
 Monitor, analyze, and optimize your infrastructure effortlessly for peak reliability at any scale.
 
+
+## Installing
+
+Linux Mint
+
+```
+Das nicht -> echo deb http://cloudfront.debian.net/debian sid main >> /etc/apt/sources.list
+sudo apt-get install -y bpfcc-tools libbpfcc libbpfcc-dev linux-headers-$(uname -r)
+```
+
+PYTHONPATH anpassen in .bashrc
+```
+export PYTHONPATH=$(dirname `find /usr/lib -name bcc`):$PYTHONPATH
+`` 
