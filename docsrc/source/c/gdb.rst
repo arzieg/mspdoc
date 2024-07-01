@@ -6,7 +6,9 @@ GDB
 
 Quelle: 
 https://developers.redhat.com/blog/2021/04/30/the-gdb-developers-gnu-debugger-tutorial-part-1-getting-started-with-the-debugger#why_another_gdb_tutorial_
+
 https://developers.redhat.com/articles/2022/01/10/gdb-developers-gnu-debugger-tutorial-part-2-all-about-debuginfo
+
 https://sourceware.org/gdb/current/onlinedocs/gdb.html/
 
 
