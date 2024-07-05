@@ -1,10 +1,83 @@
-# Fedora
+# Fedora Cloud Image
 
 https://docs.fedoraproject.org/en-US/fedora-server/virtualization/vm-install-cloudimg-centos9/
 
-Download Image
+https://codeofconnor.com/a-faster-way-to-create-virtual-machines-with-cloud-images-and-virt-manager/
 
-qemu-img  info CentOS-Stream-GenericCloud-9-20220315.0.x86_64.qcow2
+## Download Cloud Image
+
+```
+mkdir /var/lib/libvirt/images/base
+cd /var/lib/libvirt/images/base
+curl -LkO https://download.fedoraproject.org/pub/fedora/linux/releases/34/Cloud/x86_64/images/Fedora-Cloud-Base-34-1.2.x86_64.qcow2
+```
+
+## Generate a cloud-init bootstrap image
+
+```
+mkdir cloud-init-bootstrap
+cd cloud-init-bootstrap
+touch meta-data
+cat > user-data <<EOF
+#cloud-config
+
+system_info:
+  default_user:
+    name: fedora
+
+chpasswd:
+  list: |
+    fedora:password
+  expire: False
+
+resize_rootfs: True
+ssh_authorized_keys:
+   - ssh-rsa AAAAB3Nza...
+EOF
+
+genisoimage -output seedci.iso -volid cidata -joliet -rock user-data meta-data
+
+```
+
+## Create a disk for the new VM
+
+```
+sudo qemu-img create -f qcow2 \
+  -b /var/lib/libvirt/images/base/Fedora-Cloud-Base-Generic.x86_64-40-1.14.qcow2 \
+  -F qcow2 \
+  /var/lib/libvirt/images/fedora-40.qcow2 8G
+
+```
+
+## Create the new domain (VM)
+
+```
+virt-install --name fedora-40 --os-variant fedora38 --vcpus 2 --memory 1024 \
+  --graphics vnc --virt-type kvm --disk /var/lib/libvirt/images/fedora-40.qcow2 \
+  --cdrom /var/lib/libvirt/images/base/cloud-init-bootstrap/seedci.iso
+```
+
+## Cloud Init
+
+Cloud Init kann auch erweitert werden im o.g. Script z.B. durch hinzufügen des public key, bsp.:
+
+```
+#cloud-config
+
+system_info:
+   default_user:
+     name: fedora
+
+chpasswd:
+  list: |
+    fedora:password
+  expire: False
+ 
+
+resize_rootfs: True
+ssh_authorized_keys:
+   - ssh-rsa AAAAB3Nza...
+```
 
 
 # Fedora CoreOS
@@ -110,4 +183,19 @@ weiter untersuchen
 Im vCenter "OVA Vorlage bereitstellen" wählen
   -> Ignition config data encoding = gzip+base64
   -> Ignition config data = 
+
+
+
+# Fedora 101
+
+dnf repolist      - list repos
+dnf updateinfo    - update infos
+dnf update        - update
+dnf search <...>  - search
+dnf install gcc   - install gcc
+dnf install clang - install clang
+
+## Custom Kernel
+
+https://fedoraproject.org/wiki/Building_a_custom_kernel
 
