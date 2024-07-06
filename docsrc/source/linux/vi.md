@@ -1,10 +1,4 @@
-.. _vi_allg:
-
-################
-VI Allgemein
-################
-
-
+# VI Allgemein
 
 :zR									-> Uncollapse all
 :set list / :set nolist				-> Anzeigen von special characters
@@ -34,8 +28,8 @@ Line Numbers
 :set nonu - disable
 
 
-Files
-======
+## Files
+
 :ls        = list buffer
 n <strg>   = Springe zu File nr. N
 :buffer N  = Springe zu File nr. N
@@ -45,8 +39,8 @@ n <strg>   = Springe zu File nr. N
 :bfirst    = erste Datei
 :blast     = letzte Datei
 
-Windows
-=========
+## Windows
+
 <strg>w+v  = veritkaler Split
 <strg>w+s  = horizontaler Split
 
@@ -64,3 +58,39 @@ Windows
 <strg>w+|  = Maximize width of the active window
 [N]<strg>w+_ = Set active window height to [N] rows
 [N]<strg>w+| = Set active window width to [N] columns
+
+
+
+
+# Plugin
+
+## python
+
+https://dev.to/jones268/use-vim-as-a-python-ide-31e6
+https://opensource.com/article/20/2/how-install-vim-plugins
+
+
+```
+sudo dnf install git git-all
+sudo dnf install vim
+```
+
+
+### install vim plugins
+
+
+```
+mkdir -p ~/.vim/pack/vendor/start
+
+git clone --depth 1 https://github.com/preservim/nerdtree.git  ~/.vim/pack/vendor/start/nerdtree
+git clone --recurse-submodules https://github.com/python-mode/python-mode.git ~/.vim/pack/vendor/start/python-mode
+```
+
+
+Starten mit 
+
+	vim
+	:NERDTree
+
+
+

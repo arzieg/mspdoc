@@ -31,3 +31,22 @@ Spezifische python version und packages
 conda create -n myenv python=3.9 scipy=0.17.3 astroid babel
 ```
 
+
+# venv
+
+fedora: install pip
+`sudo dnf install python3-pip`
+
+## install
+```
+python3 -m venv project_venv
+source project_venv/bin/activate
+python -m pip install requests
+deactivate
+```
+
+## delete
+`rm -rv project_venv`
+
+## update
+`python -m pip install --update requests`

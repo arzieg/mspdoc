@@ -23,7 +23,9 @@ Monitor, analyze, and optimize your infrastructure effortlessly for peak reliabi
 
 ## Installing
 
-Linux Mint
+https://github.com/iovisor/bcc/blob/master/INSTALL.md
+
+### Linux Mint
 
 ```
 Das nicht -> echo deb http://cloudfront.debian.net/debian sid main >> /etc/apt/sources.list
@@ -33,4 +35,9 @@ sudo apt-get install -y bpfcc-tools libbpfcc libbpfcc-dev linux-headers-$(uname 
 PYTHONPATH anpassen in .bashrc
 ```
 export PYTHONPATH=$(dirname `find /usr/lib -name bcc`):$PYTHONPATH
-`` 
+``` 
+
+### Fedora
+
+`sudo dnf install bcc`
+
