@@ -27,6 +27,18 @@ Line Numbers
 :set nu   - show 
 :set nonu - disable
 
+## Visual
+
+### Comment more lines out
+
+1. Go to start position
+2. \<ctrl\>+v
+3. go to end position
+4. \<shift\>+i
+5. insert #
+6. ESC
+
+
 
 ## Files
 

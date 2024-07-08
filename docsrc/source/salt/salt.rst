@@ -52,6 +52,7 @@ salt-state:
 
   salt '<host>' state.apply <saltstate-File>
   salt '<host>' state.apply <saltstate-File> test=True   -> only Test
+  venv-salt-call state.sls_id login_timeout 01_TEMPLATE.04_XHANA2R2.CM_hardening    -> specific state id in sls file
 
 vom Client: ``/usr/bin/salt-call state.highstate test=True``
 
@@ -79,6 +80,7 @@ salt '<host>  grains.items   -> get the grains.items (client key-value)
 
 JINJA:
 ------
+
 Debuging JINJA:
 salt 'suseminion1.pingu.box' slsutil.renderer /var/cache/salt/minion/files/base/top.sls
 
@@ -100,6 +102,13 @@ im SALT Code auch häufig interressant, welche Werte haben meine JINJA Variablen
   
 in der Datei /var/log/minion (wenn man auf Master auf Minion umgestellt hat), wird dann die Ausgabe geloggt, wenn man den salt-call mit -l error aufruft.
 z.B. salt-call -l error state.show_states
+
+Ändern von Variablen in einem File 
+----------------------------------
+Man kann jinja verwenden in einem config-file. Wenn man möchte, dass das auch verarbeitet wird beim salt-state, ist bei der funktion file.managed die option 
+*template: jinja* mit anzugeben, ansonsten sieht man in der Datei immer nur den jinja code und nicht die Werte.
+
+
 
 
 EVENT DRIVEN INFRASTRUCTURE
