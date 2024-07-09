@@ -44,6 +44,12 @@ export PYTHONPATH=$(dirname `find /usr/lib -name bcc`):$PYTHONPATH
 
 `sudo dnf install bcc`
 
+`sudo dnf in libbpf-devel`   // für /usr/include/bpf/bpf_helper_defs.h
+
+`sudo dnf install clang`     // besser als gcc für ebpf? 
+
+Bei c-Programmen ist darauf zu achten, dass \#include \<linux/types.h\> als erste Zeile enthalten ist.  
+
 
 # eBPF
 
