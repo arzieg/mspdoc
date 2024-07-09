@@ -306,3 +306,10 @@ Show SGA Usage
 ```
 	   
 https://dbsguru.com/step-by-step-how-to-increase-sga-size-in-oracle/
+
+## AHF
+
+```
+tfactl stopahf                  // Oracle ahf stoppen
+neu: ahfctl stopahf
+```
