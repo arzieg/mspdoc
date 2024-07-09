@@ -164,8 +164,8 @@ Format:
 ```
 
 
-Praktische Probleme:
------------------------
+### Praktische Probleme:
+
 Symlink setzen: https://stackoverflow.com/questions/22673022/check-file-exists-and-create-a-symlink
 
 Probleme mit dem Fileserver:

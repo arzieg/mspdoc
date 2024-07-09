@@ -1,9 +1,4 @@
-.. _nginx_allg:
-
-
-#######
-nginx
-#######
+# nginx
 
 ## Reverse Proxy zum SUMA im OnPrem-Labor
 
@@ -59,3 +54,8 @@ server {
 3. Die benötigten Zertifikatsdateien auf dem nginx-Server zur Verfügung stellen. Diese werden vom SUMA kopiert. 
 
 4. nginx Konfiguration laden: `nginx -t; systemctl reload nginx`
+
+
+## Quellen
+
+https://www.digitalocean.com/community/tools/nginx   - Konfigurationstool für nginx
