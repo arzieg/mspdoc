@@ -134,3 +134,39 @@ exec_fn = b.load_func("hello_exec", BPF.RAW_TRACEPOINT)
 timer_fn = b.load_func("hello_timer", BPF.RAW_TRACEPOINT)
 ```
 
+
+
+## Network - Hello World
+
+*code-Beispiel*
+
+```
+#include <linux/types.h>
+#include <bpf/bpf_helpers.h>
+#include <linux/bpf.h>
+
+int counter = 0;
+
+SEC("xdp")
+
+int hello(void *ctx) {
+  bpf_printk("Hello World %d", counter);
+  counter++;
+  return XDP_PASS;
+}
+
+char LICENSE[] SEC("license") = "Dual BSD/GPL";
+```
+
+*Makefile*
+
+```
+hello.bpf.o: %o: %c
+	clang \
+		-target bpf \
+		-I/usr/include/linux/ \
+		-I/usr/include/bpf/ \
+        -I/usr/src/kernels/${shell uname -r}/tools/lib/ \
+		-g \
+		-O2 -c $< -o $@
+```
