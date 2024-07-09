@@ -12,6 +12,9 @@ github: libbpf-bootstrap, demo BPF applications: https://github.com/libbpf/libbp
 github: XDP Tutorial https://github.com/xdp-project/xdp-tutorial
 github: Utilities and example programs for use with XDP, https://github.com/xdp-project/xdp-tools
 
+API:
+https://libbpf.readthedocs.io/en/latest/api.html
+
 
 Monitoring-Project:
 
@@ -43,6 +46,12 @@ export PYTHONPATH=$(dirname `find /usr/lib -name bcc`):$PYTHONPATH
 
 
 # eBPF
+
+## Allgemein
+
+Linux Tracing Events: /sys/kernel/debug/tracing/events/
+
+
 
 ## BPF Maps
 
@@ -99,4 +108,23 @@ Signature: `long bpf_tail_call(void *ctx, struct bpf_map *prog_array_map, u32 in
 * index indicates which of that set of eBPF programs should be invoked.
 
 This helper is somewhat unusual in that if it succeeds, it never returns. The currently running eBPF program is replaced on the stack by the program being called.
+
+Im Programm müssen dann die einzelnen c-Programme (=Funktionen hier) aufrufbar sein. Im python code werden diese einzelnen ebpf-programme dann registriert
+
+```
+...
+b = BPF(text=program)                                              
+b.attach_raw_tracepoint(tp="sys_enter", fn_name="hello")           <- Eintrittspunkt
+
+ignore_fn = b.load_func("ignore_opcode", BPF.RAW_TRACEPOINT)       <- einzelne Programme registrieren, müssen alle vom selben "Typ" sein
+exec_fn = b.load_func("hello_exec", BPF.RAW_TRACEPOINT)
+timer_fn = b.load_func("hello_timer", BPF.RAW_TRACEPOINT)
+...
+b = BPF(text=program)                                              
+b.attach_raw_tracepoint(tp="sys_enter", fn_name="hello")           
+
+ignore_fn = b.load_func("ignore_opcode", BPF.RAW_TRACEPOINT)       
+exec_fn = b.load_func("hello_exec", BPF.RAW_TRACEPOINT)
+timer_fn = b.load_func("hello_timer", BPF.RAW_TRACEPOINT)
+```
 
