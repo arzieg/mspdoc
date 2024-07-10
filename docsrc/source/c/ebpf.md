@@ -48,6 +48,8 @@ export PYTHONPATH=$(dirname `find /usr/lib -name bcc`):$PYTHONPATH
 
 `sudo dnf install clang`     // besser als gcc für ebpf? 
 
+`sudo dnf install bpftool`
+
 Bei c-Programmen ist darauf zu achten, dass \#include \<linux/types.h\> als erste Zeile enthalten ist.  
 
 
@@ -138,7 +140,7 @@ timer_fn = b.load_func("hello_timer", BPF.RAW_TRACEPOINT)
 
 ## Network - Hello World
 
-*code-Beispiel*
+### code-Beispiel
 
 ```
 #include <linux/types.h>
@@ -170,3 +172,226 @@ hello.bpf.o: %o: %c
 		-g \
 		-O2 -c $< -o $@
 ```
+
+*Fileinfo*
+
+```
+fedora@localhost c3]$ file hello.bpf.o
+hello.bpf.o: ELF 64-bit LSB relocatable, eBPF, version 1 (SYSV), with debug_info, not stripped
+```
+
+*Objectdump*
+
+```
+[fedora@localhost c3]$ llvm-objdump -S hello.bpf.o
+
+hello.bpf.o:	file format elf64-bpf
+
+Disassembly of section xdp:
+
+0000000000000000 <hello>:
+;   bpf_printk("Hello World %d", counter);
+       0:	18 06 00 00 00 00 00 00 00 00 00 00 00 00 00 00	r6 = 0x0 ll
+       2:	61 63 00 00 00 00 00 00	r3 = *(u32 *)(r6 + 0x0)
+       3:	18 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00	r1 = 0x0 ll
+       5:	b7 02 00 00 0f 00 00 00	r2 = 0xf
+       6:	85 00 00 00 06 00 00 00	call 0x6
+;   counter++;
+       7:	61 61 00 00 00 00 00 00	r1 = *(u32 *)(r6 + 0x0)
+       8:	07 01 00 00 01 00 00 00	r1 += 0x1
+       9:	63 16 00 00 00 00 00 00	*(u32 *)(r6 + 0x0) = r1
+;   return XDP_PASS;
+      10:	b7 00 00 00 02 00 00 00	r0 = 0x2
+      11:	95 00 00 00 00 00 00 00	exit
+```
+eBPF instructions are generally 8 bytes long, and since on a 64-bit platform each memory location can hold 8 bytes.
+Unofficial ebf spec: https://github.com/iovisor/bpf-docs/blob/master/eBPF.md
+
+BPF Standard Documentation: https://github.com/ietf-wg-bpf/ebpf-docs?tab=readme-ov-file
+
+### Objectfile laden
+
+`sudo bpftool prog load hello.bpf.o /sys/fs/bpf/hello`
+
+`sudo ls /sys/fs/bpf`
+
+### Details 
+
+```
+sudo bpftool prog list
+
+61: xdp  name hello  tag d35b94b4c0c10efb  gpl
+	loaded_at 2024-07-10T19:10:03+0000  uid 0
+	xlated 96B  jited 72B  memlock 4096B  map_ids 16,17
+	btf_id 66
+```
+
+```
+sudo bpftool prog show id 61 --pretty
+{
+    "id": 61,
+    "type": "xdp",
+    "name": "hello",
+    "tag": "d35b94b4c0c10efb",
+    "gpl_compatible": true,
+    "loaded_at": 1720638603,
+    "uid": 0,
+    "orphaned": false,
+    "bytes_xlated": 96,
+    "jited": true,
+    "bytes_jited": 72,
+    "bytes_memlock": 4096,
+    "map_ids": [16,17
+    ],
+    "btf_id": 66
+}
+```
+
+Das bpf Programm tag ist einmalig im System. 
+
+*Anzeige des übersetzten BPF Programms:* 
+
+```
+fedora@localhost c3]$ sudo bpftool prog dump xlated name hello
+int hello(void * ctx):
+; bpf_printk("Hello World %d", counter);
+   0: (18) r6 = map[id:16][0]+0
+   2: (61) r3 = *(u32 *)(r6 +0)
+   3: (18) r1 = map[id:17][0]+0
+   5: (b7) r2 = 15
+   6: (85) call bpf_trace_printk#-108704
+; counter++;
+   7: (61) r1 = *(u32 *)(r6 +0)
+   8: (07) r1 += 1
+   9: (63) *(u32 *)(r6 +0) = r1
+; return XDP_PASS;
+  10: (b7) r0 = 2
+  11: (95) exit
+```
+
+*Anzeige des Just in Time Interpretercodes:*
+
+```
+[fedora@localhost c3]$ sudo bpftool prog dump jited name hello
+int hello(void * ctx):
+bpf_prog_d35b94b4c0c10efb_hello:
+; bpf_printk("Hello World %d", counter);
+   0:	endbr64
+   4:	nopl   0x0(%rax,%rax,1)
+   9:	xchg   %ax,%ax
+   b:	push   %rbp
+   c:	mov    %rsp,%rbp
+   f:	endbr64
+  13:	push   %rbx
+  14:	movabs $0xffffb2b24036a000,%rbx
+  1e:	mov    0x0(%rbx),%edx
+  21:	movabs $0xffff9e7d47f03cf8,%rdi
+  2b:	mov    $0xf,%esi
+  30:	call   0xfffffffff71174a8
+; counter++;
+  35:	mov    0x0(%rbx),%edi
+  38:	add    $0x1,%rdi
+  3c:	mov    %edi,0x0(%rbx)
+; return XDP_PASS;
+  3f:	mov    $0x2,%eax
+  44:	pop    %rbx
+  45:	leave
+  46:	ret
+  47:	int3
+```
+### Attach to a event
+
+```sudo bpftool net attach xdp id 61 dev enp1s0
+
+sudo bpftool net list
+
+xdp:
+eth0(2) driver id 61
+
+tc:
+
+flow_dissector:
+
+netfilter:
+```
+
+ip link zeigt das bpf Programm was am Interface eth0 gebunden ist
+
+```
+[fedora@localhost c3]$ ip link
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 xdp qdisc fq_codel state UP mode DEFAULT group default qlen 1000
+    link/ether 52:54:00:18:a1:63 brd ff:ff:ff:ff:ff:ff
+    prog/xdp id 61 
+    altname enp1s0
+```
+
+Zeige die Trace-Informationen an (je empfangenen IP Paket ein Traceeintrag)
+
+`sudo cat /sys/kernel/debug/tracing/trace_pipe` oder `sudo bpftool prog tracelog`
+
+### Zugriff auf Daten vom eBPF Programm über bpftool
+
+eBPF Maps sind Datenstrukturen, die vom User Space angesprochen werden können. Diese Maps können z.B. verwendet werden, um Stati auszulesen. 
+
+Über `sudo bpftool prog list` listet man die eBPF Programme. In der Kurzzusammenfassung werden die mapid's ausgegeben. 
+
+Über 
+
+```
+[fedora@localhost c3]$ sudo bpftool map list
+16: array  name hello.bss  flags 0x400
+	key 4B  value 4B  max_entries 1  memlock 8192B
+	btf_id 66
+17: array  name hello.rodata  flags 0x80
+	key 4B  value 15B  max_entries 1  memlock 264B
+	btf_id 66  frozen
+```
+
+wird die map list ausgegeben, u.a. auch die beiden Maps für das Beispielprogramm. Die Werte können ausgelesen werden (aber nur, wenn mit der
+DEBUG Option (-g) das BPF Programm compliert wurde): 
+
+```
+[fedora@localhost c3]$ sudo bpftool map dump name hello.bss  oder sudo bpftool map dump id 16
+[{
+        "value": {
+            ".bss": [{
+                    "counter": 34196
+                }
+            ]
+        }
+    }
+]
+```
+
+### Detach eBPF Programm
+
+Das Programm bleibt weiterhin im Kernel geladen! Es wird nur vom Netzwerkinterface getrennt. 
+
+```
+sudo bpftool net detach xdp dev enp1s0
+
+[fedora@localhost c3]$ sudo bpftool net list
+xdp:
+
+tc:
+
+flow_dissector:
+
+netfilter:
+```
+
+### Unload eBPF Programm
+
+`rm /sys/fs/bpf/hello`
+
+`sudo bpftool prog show name hello`
+#
+
+
+
+
+
+
+
