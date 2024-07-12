@@ -82,6 +82,8 @@ ssh_authorized_keys:
 
 # Fedora CoreOS
 
+Container OS: https://fedoraproject.org/coreos/
+
 ## Produce Ignition File
 
 https://docs.fedoraproject.org/en-US/fedora-coreos/producing-ign/
@@ -117,6 +119,9 @@ passwd:
 Erstelle ignition file
 ```
 ./butane --pretty --strict fcos.bu > fcos.ign
+
+# zweiter Test
+./butane --pretty --strict -d . fcos.bu > fcos.ign
 ```
 
 ## Fedora Core OS
