@@ -387,7 +387,8 @@ netfilter:
 `rm /sys/fs/bpf/hello`
 
 `sudo bpftool prog show name hello`
-#
+
+
 
 
 

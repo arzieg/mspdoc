@@ -199,6 +199,7 @@ dnf update        - update
 dnf search <...>  - search
 dnf install gcc   - install gcc
 dnf install clang - install clang
+dnf repoquery -l <...>   - show files in package
 
 ## Custom Kernel
 
