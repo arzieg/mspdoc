@@ -18,7 +18,7 @@ LVM
 echo "- - -" > /sys/class/scsi_host/host0/scan  (rescan-scsi-bus.sh -a bei vmware hilft häufig)
 pvcreate /dev/sdd
 vgextend vg_test /dev/sdd
-lvresize –L +10G /dev/mapper/vg_test_lv_test  (ging beim letzten Mal nicht, SLES15, lvextend verwendet)
+lvresize --resizefs --size +10GB /dev/mapper/vg_test_lv_test
 (lvextend -l +100%FREE /dev/mapper/vg_test_lv_test) <- nimm den freien Rest und wachse bis dahin
 (lvextend -L +100G /dev/vg_spacewalk/lv_spacewalk) <- volume soll um 100 GB wachsen
 (lvextend -L 100G /dev/vg_spacewalk/lv_spacewalk)  <- volume soll final 100 GB groß sein
@@ -30,7 +30,7 @@ lvresize –L +10G /dev/mapper/vg_test_lv_test  (ging beim letzten Mal nicht, SL
     xfs_growfs
     Bsp.: xfs_growfs /var/spacewalk
 ## Oder Alternativ ( Dann kann auch resize2fs o. xfs_growfs verzichtet werden
-    lvresize -r –L +10G /dev/mapper/vg_test_lv_test
+    lvresize --resizefs --size +15GB /dev/vg_system/lv_root
     
 
 Volume erzeugen (https://www.thomas-krenn.com/de/wiki/LVM_Grundkonfiguration)

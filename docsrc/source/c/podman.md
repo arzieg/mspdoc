@@ -68,9 +68,11 @@ docker:
 
 2. Download and store the public GPG key that must be used to validate signatures for images from the registry
 
+als root
+
 ```
-sudo mkdir -p /etc/pki/containers
-sudo wget -O /etc/pki/containers/GPG-KEY-oracle https://container-trust.oci.oraclecloud.com/podman/GPG-KEY-oracle
+mkdir -p /etc/pki/containers
+wget -O /etc/pki/containers/GPG-KEY-oracle https://container-trust.oci.oraclecloud.com/podman/GPG-KEY-oracle
 ```
 
 3. Edit the container policy configuration to add the location of the public GPG key that must be used to validate the signatures for images that are pulled from a particular registry. The policy configuration is in JSON format and is at /etc/containers/policy.json.
