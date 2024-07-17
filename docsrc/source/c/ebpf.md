@@ -390,6 +390,14 @@ netfilter:
 
 
 
+# CO-RE, BTF, and Libbpf
+
+## Overview
+
+CO-RE = Compile once, run everywhere
+
+
+
 
 
 
