@@ -354,3 +354,210 @@ container-registry.oracle.com/os/oraclelinux  8           dfce5863ff0f  2 months
 ```
 
 ## Provision Shared Devices for Oracle ASM
+
+2 x 50 GB je Pod für ASM Disks
+
+```
+# for i in f g h i; do echo dd if=/dev/zero of=/dev/sd$i bs=1024k count=1024; done
+
+Execute files
+```
+
+## Create Public and Private Networks for Oracle RAC on Podman
+
+Zwischen zwei Hosts
+
+```
+# podman network create -d bridge --subnet=10.0.20.0/24 --gateway=10.0.20.1 -o parent=ens33 rac_eth0pub1_nw
+# podman network create -d bridge --subnet=192.168.17.0/24 -o parent=ens35 rac_eth1priv1_nw
+# podman network create -d bridge --subnet=192.168.18.0/24 -o parent=ens36 rac_eth2priv2_nw
+```
+
+Ausnahme: container laufen auf dem selben Host
+```
+podman network create --subnet 192.5.0.0/16 newnet
+# podman network create -d bridge --subnet=10.0.20.0/24 --gateway=10.0.20.1 rac_eth0pub1_nw
+# podman network create -d bridge --subnet=192.168.17.0/24 rac_eth1priv1_nw
+# podman network create -d bridge --subnet=192.168.18.0/24 rac_eth2priv2_nw
+
+
+# podman network ls
+NETWORK ID    NAME              DRIVER
+2f259bab93aa  podman            bridge
+65f93e2266e6  rac_eth0pub1_nw   bridge
+c41d547c3401  rac_eth1priv1_nw  bridge
+c83d993ca85b  rac_eth2priv2_nw  bridge
+```
+## create pod
+
+--cpu-rt-runtime=95000  entfernt
+--dns-search entfernt
+--device angepasst
+--memory-swap angepasst
+
+NODE 1:
+
+```
+# podman create -t -i \
+  --hostname racnode1 \
+  --shm-size 2G \
+  --dns-search=example.info \
+  --device=/dev/sdf:/dev/asm-disk1:rw  \
+  --device=/dev/sdg:/dev/asm-disk2:rw  \
+  --privileged=false  \
+  --volume /scratch/software/stage:/software/stage \
+  --volume /scratch/rac/cluster01/node1:/u01 \
+  --cpuset-cpus 0-3 \
+  --memory 16G \
+  --memory-swap 32G \
+  --sysctl kernel.shmall=2097152  \
+  --sysctl "kernel.sem=250 32000 100 128" \
+  --sysctl kernel.shmmax=8589934592  \
+  --sysctl kernel.shmmni=4096 \
+  --sysctl 'net.ipv4.conf.eth1.rp_filter=2' \
+  --sysctl 'net.ipv4.conf.eth2.rp_filter=2' \
+  --cap-add=SYS_NICE \
+  --cap-add=SYS_RESOURCE \
+  --cap-add=NET_ADMIN \
+  --cap-add=AUDIT_WRITE \
+  --cap-add=AUDIT_CONTROL \
+  --restart=always \
+  --ulimit rtprio=99  \
+  --systemd=true \
+  --name racnode1 \
+oracle/database-rac:19.22-slim
+```
+
+NODE 2:
+
+```
+# podman create -t -i \
+  --hostname racnode2 \
+  --shm-size 2G \
+  --dns-search=example.info \
+  --device=/dev/sdh:/dev/asm-disk1:rw  \
+  --device=/dev/sdi:/dev/asm-disk2:rw  \
+  --privileged=false  \
+  --volume /scratch/rac/cluster01/node2:/u01 \
+  --cpuset-cpus 0-3 \
+  --memory 16G \
+  --memory-swap 32G \
+  --sysctl kernel.shmall=2097152  \
+  --sysctl "kernel.sem=250 32000 100 128" \
+  --sysctl kernel.shmmax=8589934592  \
+  --sysctl kernel.shmmni=4096 \
+  --sysctl 'net.ipv4.conf.eth1.rp_filter=2' \
+  --sysctl 'net.ipv4.conf.eth2.rp_filter=2' \
+  --cap-add=SYS_NICE \
+  --cap-add=SYS_RESOURCE \
+  --cap-add=NET_ADMIN \
+  --cap-add=AUDIT_WRITE \
+  --cap-add=AUDIT_CONTROL \
+  --restart=always \
+  --ulimit rtprio=99  \
+  --name racnode2 \
+oracle/database-rac:19.22-slim
+```
+
+## Assign Networks to the Oracle RAC Containers
+
+Use these procedures to assign networks to each of the Oracle Real Application Clusters (Oracle RAC) nodes that you create in the Oracle RAC on Podman containers.
+
+To ensure that the network interface name used by each node for a given network is the same, each node must use the exact same order of the disconnect and connect commands to the associated networks. For example, consistently across all nodes, the eth0 interface is public. The eth1 interface is the first private network interface, and the eth2 interface is the second private network interface.
+
+NODE 1:
+
+```
+# podman network disconnect podman racnode1
+# podman network connect rac_eth0pub1_nw --ip 10.0.20.150 racnode1
+# podman network connect rac_eth1priv1_nw --ip 192.168.17.150  racnode1
+# podman network connect rac_eth2priv2_nw --ip 192.168.18.150  racnode1
+```
+
+NODE 2:
+
+```
+# podman network disconnect podman racnode2
+# podman network connect rac_eth0pub1_nw --ip 10.0.20.151 racnode2
+# podman network connect rac_eth1priv1_nw --ip 192.168.17.151  racnode2
+# podman network connect rac_eth2priv2_nw --ip 192.168.18.151  racnode2
+```
+
+## Start the Podman Containers and Connect to the Network
+
+NODE1:
+
+```
+# systemctl start podman-rac-cgroup.service
+# podman start racnode1
+```
+
+NODE2:
+```
+# systemctl start podman-rac-cgroup.service
+# podman start racnode2
+```
+
+## Adjust Memlock Limits
+
+To ensure that the container total memory is included in calculating host memlock limit, adjust the limit in containers after Podman containers are created.
+
+In beiden Containern!
+
+```
+podman exec -ti racnode1 /bin/bash
+
+CONTAINER_MEMORY=$(cat /sys/fs/cgroup/memory/memory.limit_in_bytes)
+echo $CONTAINER_MEMORY
+echo $((($CONTAINER_MEMORY/1024)*9/10))
+
+grep memlock /etc/security/limits.d/oracle-database-preinstall-19c.conf
+
+sed -i -e 's,<found value>,<new calculated value>,g' /etc/security/limits.d/oracle-database-preinstall-19c.conf
+
+# Ebenso für die grid
+
+grep memlock /etc/security/limits.d/grid-database-preinstall-19c.conf
+sed -i -e 's,<found value>,<new calculated value>,g' /etc/security/limits.d/grid-database-preinstall-19c.conf
+
+```
+
+## Download Oracle Grid Infrastructure and Oracle Database Software
+
+und ablegen in /scratch/software/stage
+
+# Install GRID
+
+https://docs.oracle.com/en/database/oracle/oracle-database/19/racpd/example-installing-oracle-grid-infrastructure-and-oracle-rac-podman.html#GUID-B4949A10-6FEB-4AE5-90BF-4DFEE410A068
+
+## Create Paths and Change Permissions
+
+NODE 1:
+
+```
+# podman exec racnode1 /bin/bash -c "mkdir -p /u01/app/oraInventory"
+# podman exec racnode1 /bin/bash -c "mkdir -p /u01/app/grid"
+# podman exec racnode1 /bin/bash -c "mkdir -p /u01/app/19c/grid"
+# podman exec racnode1 /bin/bash -c "chown -R grid:oinstall /u01/app/grid"
+# podman exec racnode1 /bin/bash -c "chown -R grid:oinstall /u01/app/19c/grid"
+# podman exec racnode1 /bin/bash -c "chown -R grid:oinstall /u01/app/oraInventory"
+# podman exec racnode1 /bin/bash -c "mkdir -p /u01/app/oracle"
+# podman exec racnode1 /bin/bash -c "mkdir -p /u01/app/oracle/product/19c/dbhome_1"
+# podman exec racnode1 /bin/bash -c "chown -R oracle:oinstall /u01/app/oracle"
+# podman exec racnode1 /bin/bash -c "chown -R oracle:oinstall /u01/app/oracle/product/19c/dbhome_1"
+```
+
+NODE 2:
+
+``` 
+# podman exec racnode2 /bin/bash -c "mkdir -p /u01/app/oraInventory"
+# podman exec racnode2 /bin/bash -c "mkdir -p /u01/app/grid"
+# podman exec racnode2 /bin/bash -c "mkdir -p /u01/app/19c/grid"
+# podman exec racnode2 /bin/bash -c "chown -R grid:oinstall /u01/app/grid"
+# podman exec racnode2 /bin/bash -c "chown -R grid:oinstall /u01/app/19c/grid"
+# podman exec racnode2 /bin/bash -c "chown -R grid:oinstall /u01/app/oraInventory"
+# podman exec racnode2 /bin/bash -c "mkdir -p /u01/app/oracle"
+# podman exec racnode2 /bin/bash -c "mkdir -p /u01/app/oracle/product/19c/dbhome_1"
+# podman exec racnode2 /bin/bash -c "chown -R oracle:oinstall /u01/app/oracle"
+# podman exec racnode2 /bin/bash -c "chown -R oracle:oinstall /u01/app/oracle/product/19c/dbhome_1"
+```
