@@ -246,8 +246,10 @@ vi hostfile
 10.0.20.161 racnode2-vip.example.info racnode2-vip
 
 ## Private IPs
-192.168.17.150 racnode1-priv.example.info racnode1-priv
-192.168.17.151 racnode2-priv.example.info racnode2-priv
+192.168.17.150 racnode1-priv1.example.info racnode1-priv1
+192.168.17.151 racnode2-priv1.example.info racnode2-priv1
+192.168.18.150 racnode1-priv2.example.info racnode1-priv2
+192.168.18.151 racnode2-priv2.example.info racnode2-priv2
 ```
 
 create setupContainerEnv.sh
@@ -394,6 +396,10 @@ c83d993ca85b  rac_eth2priv2_nw  bridge
 --dns-search entfernt
 --device angepasst
 --memory-swap angepasst
+--sysctl "net.ipv4.ping_group_range=0 2147483647" \ hinzugefügt wg. ping
+--cap-add=NET_RAW \ hinzugefügt wg. ping
+
+
 
 NODE 1:
 
@@ -416,9 +422,11 @@ NODE 1:
   --sysctl kernel.shmmni=4096 \
   --sysctl 'net.ipv4.conf.eth1.rp_filter=2' \
   --sysctl 'net.ipv4.conf.eth2.rp_filter=2' \
+  --sysctl "net.ipv4.ping_group_range=0 2147483647" \
   --cap-add=SYS_NICE \
   --cap-add=SYS_RESOURCE \
   --cap-add=NET_ADMIN \
+  --cap-add=NET_RAW \
   --cap-add=AUDIT_WRITE \
   --cap-add=AUDIT_CONTROL \
   --restart=always \
@@ -448,9 +456,11 @@ NODE 2:
   --sysctl kernel.shmmni=4096 \
   --sysctl 'net.ipv4.conf.eth1.rp_filter=2' \
   --sysctl 'net.ipv4.conf.eth2.rp_filter=2' \
+  --sysctl "net.ipv4.ping_group_range=0 2147483647" \
   --cap-add=SYS_NICE \
   --cap-add=SYS_RESOURCE \
   --cap-add=NET_ADMIN \
+  --cap-add=NET_RAW \
   --cap-add=AUDIT_WRITE \
   --cap-add=AUDIT_CONTROL \
   --restart=always \
@@ -561,3 +571,80 @@ NODE 2:
 # podman exec racnode2 /bin/bash -c "chown -R oracle:oinstall /u01/app/oracle"
 # podman exec racnode2 /bin/bash -c "chown -R oracle:oinstall /u01/app/oracle/product/19c/dbhome_1"
 ```
+
+## Passwortlose ssh Anmeldung einrichten
+
+root-User auf beiden Knoten
+
+```
+mkdir ~/.ssh; chmod 700 ~/.ssh
+/usr/bin/ssh-keygen -t rsa -b 2048 -q -N '' -f /root/.ssh/id_rsa
+ssh-copy-id -i ~/.ssh/id_rsa.pub root@racnode1
+ssh-copy-id -i ~/.ssh/id_rsa.pub root@racnode2
+ssh racnode1 date && ssh racnode2 date
+```
+
+oracle-User auf beiden Knoten
+
+```
+mkdir ~/.ssh; chmod 700 ~/.ssh
+/usr/bin/ssh-keygen -t rsa -b 2048 -q -N '' -f ~/.ssh/id_rsa
+ssh-copy-id -i ~/.ssh/id_rsa.pub oracle@racnode1
+ssh-copy-id -i ~/.ssh/id_rsa.pub oracle@racnode2
+ssh racnode1 date && ssh racnode2 date
+```
+
+## Modify sshd_config
+
+X11 Zugriff
+
+/etc/ssh/sshd_config
+
+```
+X11Forwarding yes
+X11UseLocalhost no
+X11DisplayOffset 10
+```
+
+```
+# systemctl daemon-reload
+# systemctl restart sshd
+```
+
+## symlinke für PoC
+
+auf beiden Knoten
+
+```
+cd /
+ln -s u01 oracle
+
+chmod 777 /u01
+mkdir /oracle/grid
+chown grid:oinstall /oracle/grid
+```
+
+
+## Grafische Installation
+
+per MobaXTerm, podman-Host ist ssh-Jumphost! 
+https://docs.oracle.com/en/database/oracle/oracle-database/19/racpd/start-oracle-grid-infrastructure-installer-ha.html
+
+## 
+
+
+
+https://superuser.com/questions/1746588/ping-does-not-work-on-a-rootless-ubuntu-podman-container-on-fedora
+
+setcap cap_net_raw+p /usr/bin/ping
+
+https://serverfault.com/questions/1039884/alpine-ping-operation-not-permitted/1039895#1039895
+[root@racnode1 tmp]# sysctl -a|grep ping_group_range
+sysctl: reading key "kernel.unprivileged_userns_apparmor_policy"
+net.ipv4.ping_group_range = 0   0
+-> echo "net.ipv4.ping_group_range = 0 2147483647" >> /etc/sysctl.conf
+
+
+expand auskommentieren
+domain setzen
+dnsmasq --no-daemon
