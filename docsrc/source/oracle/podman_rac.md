@@ -703,17 +703,17 @@ racnode-cman4         IN A    10.0.20.182
 **Create reversezonefile**
 
 ```
+$ORIGIN 20.0.10.in-addr.arpa.
 $TTL 86400
-@       IN SOA  example.info. root.example.info. (
+@       IN SOA  racnode-dns.example.info. root.example.info. (
         2014090402      ; serial
         3600      ; refresh
         1800      ; retry
-        604800      ; expire
-        86400 )    ; minimum
+        604800      ; expire                                                                                                      86400 )    ; minimum
 ; Name server's
-2         IN      NS     example.info.
+        IN      NS     racnode-dns.example.info.
 ; Name server hostname to IP resolve.
-        IN PTR  racnode-dns.example.info.
+2       IN PTR  racnode-dns.example.info.
 ; Second RAC Cluster on Same Subnet on Docker
 150     IN PTR  racnode1.example.info.
 151     IN PTR  racnode2.example.info.
@@ -797,5 +797,126 @@ cd ..
 podman image list
 ```
 
+## Config
 
+**shared hostfile**
+
+```
+mkdir /scratch/secrets
+
+vi hostfile
+
+127.0.0.1 localhost
+::1 localhost ip6-localhost ip6-loopback
+
+## Public IP addresses
+10.0.20.150 racnode1.example.info racnode1
+10.0.20.151 racnode2.example.info racnode2
+
+## Virtual IP addresses
+10.0.20.160 racnode1-vip.example.info racnode1-vip
+10.0.20.161 racnode2-vip.example.info racnode2-vip
+
+## Private IPs
+192.168.17.150 racnode1-priv1.example.info racnode1-priv1
+192.168.17.151 racnode2-priv1.example.info racnode2-priv1
+192.168.18.150 racnode1-priv2.example.info racnode1-priv2
+192.168.18.151 racnode2-priv2.example.info racnode2-priv2
+
+10.0.20.170 racnode-scan.example.info racnode-scan.example.info
+10.0.20.171 racnode-scan.example.info racnode-scan.example.info
+10.0.20.172 racnode-scan.example.info racnode-scan.example.info
+```
+
+**Passwort**
+
+```
+openssl rand -out /scratch/secrets/pwd.key -hex 64
+echo "Welcome1" > /scratch/secrets/common_os_pwdfile
+
+openssl enc -aes-256-cbc -salt -in /scratch/secrets/common_os_pwdfile -out /scratch/secrets/common_os_pwdfile.enc -pass file:/scratch/secrets/pwd.key
+rm -f /scratch/secrets/common_os_pwdfile
+chmod 400 /scratch/secrets/common_os_pwdfile.enc; chmod 400 /scratch/secrets/pwd.key
+```
+
+## Create RAC Node1
+
+
+rausgenommen: 
+--cpu-rt-runtime=95000 --ulimit rtprio=99  \
+-e CMAN_HOSTNAME=racnode-cman \
+-e CMAN_IP=10.0.20.3 \
+ --volume /dev/shm \  
+
+```
+podman create -t -i \
+  --hostname racnode1 \
+  --volume /boot:/boot:ro \
+  --tmpfs /dev/shm:rw,exec,size=4G \
+  --volume /scratch/secrets/hostfile:/etc/hosts  \
+  --volume /scratch/secrets/:/scratch/secrets/:ro \
+  --volume /etc/localtime:/etc/localtime:ro \
+  --cpuset-cpus 0-3 \
+  --memory 16G \
+  --memory-swap 16G \
+  --sysctl kernel.shmall=2097152  \
+  --sysctl "kernel.sem=250 32000 100 128" \
+  --sysctl kernel.shmmax=8589934592  \
+  --sysctl kernel.shmmni=4096 \
+  --dns-search=example.info \
+  --dns=10.0.20.2 \
+  --device=/dev/sdf:/dev/asm_disk1  \
+  --device=/dev/sdg:/dev/asm_disk2 \
+  --privileged=false  \
+  --cap-add=SYS_NICE \
+  --cap-add=SYS_RESOURCE \
+  --cap-add=NET_ADMIN \
+  -e DNS_SERVERS=10.0.20.2 \
+  -e NODE_VIP=10.0.20.160 \
+  -e VIP_HOSTNAME=racnode1-vip  \
+  -e PRIV_IP=192.168.17.150 \
+  -e PRIV_HOSTNAME=racnode1-priv \
+  -e PUBLIC_IP=10.0.20.150 \
+  -e PUBLIC_HOSTNAME=racnode1  \
+  -e SCAN_NAME=racnode-scan \
+  -e SCAN_IP=10.0.20.170  \
+  -e OP_TYPE=INSTALL \
+  -e DOMAIN=example.info \
+  -e ASM_DEVICE_LIST=/dev/asm_disk1,/dev/asm_disk2 \
+  -e ASM_DISCOVERY_DIR=/dev \
+  -e COMMON_OS_PWD_FILE=common_os_pwdfile.enc \
+  -e PWD_KEY=pwd.key \
+  --restart=always --tmpfs=/run -v /sys/fs/cgroup:/sys/fs/cgroup:ro \
+  --name racnode1 \
+  oracle/database-rac:19.3.0
+  ```
+
+### Assign Networks to the Oracle RAC Containers
+
+Use these procedures to assign networks to each of the Oracle Real Application Clusters (Oracle RAC) nodes that you create in the Oracle RAC on Podman containers.
+
+To ensure that the network interface name used by each node for a given network is the same, each node must use the exact same order of the disconnect and connect commands to the associated networks. For example, consistently across all nodes, the eth0 interface is public. The eth1 interface is the first private network interface, and the eth2 interface is the second private network interface.
+
+NODE 1:
+
+```
+podman network disconnect podman racnode1
+podman network connect rac_eth0pub1_nw --ip 10.0.20.150 racnode1
+podman network connect rac_eth1priv1_nw --ip 192.168.17.150  racnode1
+podman network connect rac_eth2priv2_nw --ip 192.168.18.150  racnode1
+
+podman start racnode1
+podman logs -f racnode1
+```
+
+
+
+NODE 2:
+
+```
+# podman network disconnect podman racnode2
+# podman network connect rac_eth0pub1_nw --ip 10.0.20.151 racnode2
+# podman network connect rac_eth1priv1_nw --ip 192.168.17.151  racnode2
+# podman network connect rac_eth2priv2_nw --ip 192.168.18.151  racnode2
+```
 
