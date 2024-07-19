@@ -14,4 +14,4 @@ xs org     -> welche Org Einheiten gibt es
 xs spaces -> welche Schema/Spaces sind definiert
 xs target -o HANACockpit -s SAP   -> Scope setzen
 xs apps   -> zeige die Apps an in diesem Scope (um die URL z.B. zu erfahren)
-
+xs logs --recent|--all <app>   -> zeige logs
