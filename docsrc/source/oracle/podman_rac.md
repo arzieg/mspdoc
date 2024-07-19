@@ -647,4 +647,155 @@ net.ipv4.ping_group_range = 0   0
 
 expand auskommentieren
 domain setzen
+in der /etc/hosts 3 x IP Adressen für scan-host
 dnsmasq --no-daemon
+
+
+chown oracle:dba /dev/asm-disk*
+
+
+# New Try
+
+https://eclipsys.ca/get-your-oracle-real-application-clusters-rac-21c-up-and-running-in-docker-the-easy-way/
+
+## Configure DNS server for RAC
+
+cd <gitrepo>/docker-images/OracleDatabase/RAC/OracleDNSServer/dockerfiles/latest
+
+**Create Zonefile**
+
+```
+$TTL 86400
+@       IN SOA  example.info.   root (
+        2014090401    ; serial
+        3600    ; refresh
+        1800    ; retry
+        604800    ; expire
+        86400 )  ; minimum
+; Name server's
+                IN NS      example.info.
+                IN A       10.0.20.2
+; Name server hostname to IP resolve.
+;@ORIGIN  eot.us.oracle.com.
+;@               IN      NS      gns.eot.us.oracle.com.
+racserver-dns                        IN A    10.0.20.2
+racnode1                             IN A    10.0.20.150
+racnode2                             IN A    10.0.20.151
+racnode1-vip                         IN A    10.0.20.160
+racnode2-vip                         IN A    10.0.20.161
+racnode1-priv1                       IN A    192.168.17.150
+racnode2-priv1                       IN A    192.168.17.151
+racnode1-priv2                       IN A    192.168.18.150
+racnode2-priv2                       IN A    192.168.18.151
+racnode-scan                         IN A    10.0.20.170
+racnode-scan                         IN A    10.0.20.171
+racnode-scan                         IN A    10.0.20.172
+racnode-gns1                         IN A    10.0.20.175
+racnode-gns2                         IN A    10.0.20.176
+
+; CMAN Server Entry
+;racnode-cman1         IN A    172.16.1.2
+racnode-cman2         IN A    10.0.20.180
+racnode-cman3         IN A    10.0.20.181
+racnode-cman4         IN A    10.0.20.182
+```
+
+**Create reversezonefile**
+
+```
+$TTL 86400
+@       IN SOA  example.info. root.example.info. (
+        2014090402      ; serial
+        3600      ; refresh
+        1800      ; retry
+        604800      ; expire
+        86400 )    ; minimum
+; Name server's
+2         IN      NS     example.info.
+; Name server hostname to IP resolve.
+        IN PTR  racnode-dns.example.info.
+; Second RAC Cluster on Same Subnet on Docker
+150     IN PTR  racnode1.example.info.
+151     IN PTR  racnode2.example.info.
+151     IN PTR  racnode2.example.info.
+160     IN PTR  racnode1-vip.example.info.
+161     IN PTR  racnode2-vip.example.info.
+
+; SCAN IPs
+170     IN PTR  racnode-scan.example.info.
+171     IN PTR  racnode-scan.example.info.
+172     IN PTR  racnode-scan.example.info.
+
+;GNS
+175     IN PTR  racnode-gns1.example.info.
+176     IN PTR  racnode-gns2.example.info.
+
+; CMAN Server Entry
+180       IN PTR  racnode-cman2.example.info.
+181       IN PTR  racnode-cman3.example.info.
+182       IN PTR  racnode-cman4.example.info.
+```
+
+
+Nur zweck Proof-of-concept. Später überlegen, ob man das im DNS einträgt
+DNS Pod: https://github.com/oracle/docker-images/blob/main/OracleDatabase/RAC/OracleDNSServer/README.md
+
+Einiges ist bei Oracle nur nach Anmeldung möglich. Wenn aus einem github Repo dann ein podman build aufgerufen wird, kann dies scheitern. 
+Daher `podman login container-registry.oracle.com`
+
+Beim Buildscript ist ein Fehler erschienen:
+
+```
+./buildContainerImage.sh -v latest
+...
+Error: unknown flag: --build-arg http_proxy
+```
+
+Hier werden die --build-arg Parameter in einfachen Anführungsstrichen übergeben, das kann podman-build nicht verarbeiten. Im Script die doppelten Anführungsstriche angepasst (also gelöscht)
+
+```
+# Proxy settings
+if [ -n "${http_proxy-}" ]; then
+  PROXY_SETTINGS+=(--build-arg http_proxy=${http_proxy})
+fi
+
+if [ -n "${https_proxy-}" ]; then
+  PROXY_SETTINGS+=(--build-arg https_proxy=${https_proxy})
+fi
+```
+
+**Podman create**
+
+```
+podman create -t -i \
+ --hostname racnode-dns  \
+ --dns-search="example.info" \
+ --cap-add=SYS_ADMIN  \
+ --network  rac_eth0pub1_nw \
+ --ip 10.0.20.2 \
+ --env SETUP_DNS_CONFIG_FILES="setup_true" \
+ --env DOMAIN_NAME="example.info" \
+ --env RAC_NODE_NAME_PREFIX="racnode" \
+ --name racnode-dns \
+ oracle/rac-dnsserver:latest
+```
+
+`podman start racnode-dns`
+`podman logs -f racnode-dns`
+
+## create RAC Image
+
+Es wird vermehrt Speicherplatz unter /var/tmp benötigt. Ich hatte hier ein symlink auf ein Ordner gesetzt mit mehr Diskspeicher
+
+```
+cd <gitrepo>/docker-images/OracleDatabase/RAC/OracleRealApplicationClusters/dockerfiles/19.3.0
+cp LINUX.X64_193000_grid_home.zip 
+cp LINUX.X64_193000_db_home.zip
+cd ..
+./buildContainerImage.sh -v 19.3.0
+
+podman image list
+```
+
+
+

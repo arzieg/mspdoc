@@ -1,19 +1,49 @@
-.. _hana_usermanagement:
+# HANA Usermanagement
 
-####################
-HANA Usermanagement
-#####################
+## hdbuserstore
 
-hdbuserstore
-*****************
 hdbuserstore list           - definierte Keys im Userstore
 hdbuserstore delete <Key>   - löschen eines Keys
 hdbuserstore set            - Key definieren, Bsp: hdbuserstore set BACKUP lavdb10y03101:31013 BACKUPUSER <Passwort>
 
 
-#####################
-HANA Ports
-#####################
+## Password reset
+
+
+### Password neu setzen
+
+Hier noch das Problem, dass SYSTEM sich nach dem Start nicht selber ändern darf.
+
+```
+/usr/sap/<SID>/HDB<instance>/exe/sapcontrol -nr <instance> -function StopSystem HDB
+/usr/sap/<SID>/HDB<instance>/hdbenv.sh
+/usr/sap/<SID>/HDB<instance>/exe/hdbnameserver -resetUserSystem
+```
+
+HANA starten und danach Passwort wieder neu setzen
+
+
+### Sofern es einen User mit "USER ADMIN" Rechten gibt: 
+
+```
+# If you want to find all the users who have "USER ADMIN" privilege, please use below SQL:
+SELECT GP.GRANTEE FROM GRANTED_PRIVILEGES GP WHERE GP.PRIVILEGE='USER ADMIN'
+```
+
+Dann mit dem User anmelden. 
+
+```
+ALTER USER SYSTEM DISABLE PASSWORD LIFETIME;
+ALTER USER SYSTEM ACTIVATE USER NOW;
+ALTER USER SYSTEM RESET CONNECT ATTEMPTS;
+ALTER USER SYSTEM ENABLE CLIENT CONNECT;
+--ALTER USER SYSTEM PASSWORD "password" NO FORCE_FIRST_PASSWORD_CHANGE;
+CONNECT SYSTEM PASSWORD "password";
+```
+
+
+
+# HANA Ports
 
 
 xs-admin-login
