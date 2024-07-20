@@ -396,6 +396,11 @@ netfilter:
 
 CO-RE = Compile once, run everywhere
 
+bpttool btf list           Liste der geladenen BTF Objekte
+bpftool btf dump id <id>   Untersuchung der Struktur eines bpf Programms 
+bpftool btf dump file /sys/kernel/btf/vmlinux format c > vmlinux.h                erzeuge eine header Datei aus der Struktur von vmlinux
+bpftool gen skeleton hello-buffer-config.bpf.o > hello-buffer-config.skel.h       erzeuge eine header Datei aus der Objekt-Datei
+
 
 
 
