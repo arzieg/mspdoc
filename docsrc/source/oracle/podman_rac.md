@@ -250,6 +250,10 @@ vi hostfile
 192.168.17.151 racnode2-priv1.example.info racnode2-priv1
 192.168.18.150 racnode1-priv2.example.info racnode1-priv2
 192.168.18.151 racnode2-priv2.example.info racnode2-priv2
+
+10.0.20.170 racnode-scan.example.info racnode-scan.example.info
+10.0.20.171 racnode-scan.example.info racnode-scan.example.info
+10.0.20.172 racnode-scan.example.info racnode-scan.example.info
 ```
 
 create setupContainerEnv.sh
@@ -267,6 +271,7 @@ cat /opt/scripts/startup/resolv.conf > /etc/resolv.conf
 cat /opt/scripts/startup/hostfile > /etc/hosts
 systemctl reset-failed
 ```
+
 
 ### Create a Containerfile for Oracle RAC on Podman Image
 
@@ -329,9 +334,7 @@ CMD ["/usr/sbin/init"]
 # export http_proxy=http-proxy
 # export https_proxy=https-proxy
 # export version=19.22
-# podman build --force-rm=true --no-cache=true --build-arg \
-http_proxy=${http_proxy} --build-arg https_proxy=${https_proxy} \
--t oracle/database-rac:$version-slim  -f Containerfile .
+# podman build --force-rm=true --no-cache=true --build-arg http_proxy=${http_proxy} --build-arg https_proxy=${https_proxy} -t oracle/database-rac:$version-slim  -f Containerfile .
 ```
 
 ```
@@ -370,17 +373,17 @@ Execute files
 Zwischen zwei Hosts
 
 ```
-# podman network create -d bridge --subnet=10.0.20.0/24 --gateway=10.0.20.1 -o parent=ens33 rac_eth0pub1_nw
-# podman network create -d bridge --subnet=192.168.17.0/24 -o parent=ens35 rac_eth1priv1_nw
-# podman network create -d bridge --subnet=192.168.18.0/24 -o parent=ens36 rac_eth2priv2_nw
+podman network create -d bridge --subnet=10.0.20.0/24 --gateway=10.0.20.1 -o parent=ens33 rac_eth0pub1_nw
+podman network create -d bridge --subnet=192.168.17.0/24 -o parent=ens35 rac_eth1priv1_nw
+podman network create -d bridge --subnet=192.168.18.0/24 -o parent=ens36 rac_eth2priv2_nw
 ```
 
 Ausnahme: container laufen auf dem selben Host
 ```
 podman network create --subnet 192.5.0.0/16 newnet
-# podman network create -d bridge --subnet=10.0.20.0/24 --gateway=10.0.20.1 rac_eth0pub1_nw
-# podman network create -d bridge --subnet=192.168.17.0/24 rac_eth1priv1_nw
-# podman network create -d bridge --subnet=192.168.18.0/24 rac_eth2priv2_nw
+podman network create -d bridge --subnet=10.0.20.0/24 --gateway=10.0.20.1 rac_eth0pub1_nw
+podman network create -d bridge --subnet=192.168.17.0/24 rac_eth1priv1_nw
+podman network create -d bridge --subnet=192.168.18.0/24 rac_eth2priv2_nw
 
 
 # podman network ls
@@ -407,12 +410,13 @@ NODE 1:
 # podman create -t -i \
   --hostname racnode1 \
   --shm-size 2G \
+  --volume /dev/shm \
   --dns-search=example.info \
   --device=/dev/sdf:/dev/asm-disk1:rw  \
   --device=/dev/sdg:/dev/asm-disk2:rw  \
   --privileged=false  \
   --volume /scratch/software/stage:/software/stage \
-  --volume /scratch/rac/cluster01/node1:/u01 \
+  --volume /scratch/rac/cluster01/node1:/oracle \
   --cpuset-cpus 0-3 \
   --memory 16G \
   --memory-swap 32G \
@@ -442,11 +446,12 @@ NODE 2:
 # podman create -t -i \
   --hostname racnode2 \
   --shm-size 2G \
+  --volume /dev/shm \
   --dns-search=example.info \
   --device=/dev/sdh:/dev/asm-disk1:rw  \
   --device=/dev/sdi:/dev/asm-disk2:rw  \
   --privileged=false  \
-  --volume /scratch/rac/cluster01/node2:/u01 \
+  --volume /scratch/rac/cluster01/node2:/oracle \
   --cpuset-cpus 0-3 \
   --memory 16G \
   --memory-swap 32G \
@@ -478,19 +483,19 @@ To ensure that the network interface name used by each node for a given network 
 NODE 1:
 
 ```
-# podman network disconnect podman racnode1
-# podman network connect rac_eth0pub1_nw --ip 10.0.20.150 racnode1
-# podman network connect rac_eth1priv1_nw --ip 192.168.17.150  racnode1
-# podman network connect rac_eth2priv2_nw --ip 192.168.18.150  racnode1
+podman network disconnect podman racnode1
+podman network connect rac_eth0pub1_nw --ip 10.0.20.150 racnode1
+podman network connect rac_eth1priv1_nw --ip 192.168.17.150  racnode1
+podman network connect rac_eth2priv2_nw --ip 192.168.18.150  racnode1
 ```
 
 NODE 2:
 
 ```
-# podman network disconnect podman racnode2
-# podman network connect rac_eth0pub1_nw --ip 10.0.20.151 racnode2
-# podman network connect rac_eth1priv1_nw --ip 192.168.17.151  racnode2
-# podman network connect rac_eth2priv2_nw --ip 192.168.18.151  racnode2
+podman network disconnect podman racnode2
+podman network connect rac_eth0pub1_nw --ip 10.0.20.151 racnode2
+podman network connect rac_eth1priv1_nw --ip 192.168.17.151  racnode2
+podman network connect rac_eth2priv2_nw --ip 192.168.18.151  racnode2
 ```
 
 ## Start the Podman Containers and Connect to the Network
@@ -839,6 +844,9 @@ rm -f /scratch/secrets/common_os_pwdfile
 chmod 400 /scratch/secrets/common_os_pwdfile.enc; chmod 400 /scratch/secrets/pwd.key
 ```
 
+Hier hat sich gezeigt, dass es einen Unterschied gibt ob ich diesen Befehl auf SUSE absetze und dann per Oracle Linux wieder entschlüssel :-( . Daher wurde pwd.key und common_os_pwdfile auf Oracle Linux erstelle und dann per `podman cp <containerid>:<pfad zu datei> <locale datei>` kopiert. 
+
+
 ## Create RAC Node1
 
 
@@ -867,7 +875,7 @@ podman create -t -i \
   --dns=10.0.20.2 \
   --device=/dev/sdf:/dev/asm_disk1  \
   --device=/dev/sdg:/dev/asm_disk2 \
-  --privileged=false  \
+  --privileged=true  \
   --cap-add=SYS_NICE \
   --cap-add=SYS_RESOURCE \
   --cap-add=NET_ADMIN \
