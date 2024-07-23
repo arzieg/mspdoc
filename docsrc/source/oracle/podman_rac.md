@@ -138,6 +138,7 @@ Vorgesehen sind dafür 2 x 80 GB Disks
 
 ```
 
+
 ## Check Shared Memory File System Mount
 
 ```
@@ -320,7 +321,7 @@ RUN dnf install -y oracle-database-preinstall-19c systemd vim passwd openssh-ser
 USER root
 WORKDIR /root
 VOLUME ["/stage/software"]
-VOLUME ["/u01"]
+VOLUME ["/oracle"]
 CMD ["/usr/sbin/init"]
 # End of the Containerfile
 ```
@@ -360,10 +361,10 @@ container-registry.oracle.com/os/oraclelinux  8           dfce5863ff0f  2 months
 
 ## Provision Shared Devices for Oracle ASM
 
-2 x 50 GB je Pod für ASM Disks
+2 x 50 GB für ASM Disks
 
 ```
-# for i in f g h i; do echo dd if=/dev/zero of=/dev/sd$i bs=1024k count=1024; done
+# for i in f g ;  do echo dd if=/dev/zero of=/dev/sd$i bs=1024k count=1024; done
 
 Execute files
 ```
@@ -448,8 +449,8 @@ NODE 2:
   --shm-size 2G \
   --volume /dev/shm \
   --dns-search=example.info \
-  --device=/dev/sdh:/dev/asm-disk1:rw  \
-  --device=/dev/sdi:/dev/asm-disk2:rw  \
+  --device=/dev/sdf:/dev/asm-disk1:rw  \
+  --device=/dev/sdg:/dev/asm-disk2:rw  \
   --privileged=false  \
   --volume /scratch/rac/cluster01/node2:/oracle \
   --cpuset-cpus 0-3 \
