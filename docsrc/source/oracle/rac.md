@@ -61,68 +61,27 @@ crsctl start cluster -all		// Start der CRS auf allen Knoten
    `$GRID_ORACLE_HOME/bin/crsctl enable crs`
 
 3) Shutdown the services on each node as follow:
-
-# $GRID_ORACLE_HOME/bin/crsctl stop crs
-
+   `$GRID_ORACLE_HOME/bin/crsctl stop crs`
 
 4) Verify the services were/are down (repeat this step on each node):
-
-# $GRID_ORACLE_HOME/bin/crsctl status resource -t
-
+   `$GRID_ORACLE_HOME/bin/crsctl status resource -t`
 
 5) Then start the services on node #1 as follow (only on first node):
-
-# $GRID_ORACLE_HOME/bin/crsctl start crs
-
+   `$GRID_ORACLE_HOME/bin/crsctl start crs`
 
 6) Wait 1 minute, then validate the services started & diskgroups were mounted (only on first node):
-
-# $GRID_ORACLE_HOME/bin/crsctl status resource -t
-
+   `$GRID_ORACLE_HOME/bin/crsctl status resource -t`
 
 7) Then start the services on node #2 as follow:
-
-# $GRID_ORACLE_HOME/bin/crsctl start crs
+  `$GRID_ORACLE_HOME/bin/crsctl start crs`
 
 8) Wait 1 minute, then validate the services started & diskgroups were mounted on node #2:
-
-# $GRID_ORACLE_HOME/bin/crsctl status resource -t
-
+  `$GRID_ORACLE_HOME/bin/crsctl status resource -t`
 
 9) If there are more nodes in the RAC, then repeat the same steps (7-8).
-
- 
-
 10) Then check the status of the clusterware globally as follows:
+ `crsctl check cluster -all`
 
-# crsctl check cluster -all
-
-Sample output:
-
-[root@asmgrid1 ~]# crsctl check cluster -all
-**************************************************************
-asmgrid1:
-CRS-4537: Cluster Ready Services is online
-CRS-4529: Cluster Synchronization Services is online
-CRS-4533: Event Manager is online
-**************************************************************
-
-asmgrid2:
-CRS-4537: Cluster Ready Services is online
-CRS-4529: Cluster Synchronization Services is online
-CRS-4533: Event Manager is online
-**************************************************************
- 
-
-Note 1: Alternatively, you can stop and start the cluster globally as follows:
-
-Stop:
-[root@asmgrid1 ~]# crsctl stop cluster  -all   [-f]
-  
-
-Start:
-[root@asmgrid1 ~]# crsctl start cluster  -all   
-  
  
 
 
