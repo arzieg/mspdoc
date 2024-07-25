@@ -402,6 +402,33 @@ bpftool btf dump file /sys/kernel/btf/vmlinux format c > vmlinux.h              
 bpftool gen skeleton hello-buffer-config.bpf.o > hello-buffer-config.skel.h       erzeuge eine header Datei aus der Objekt-Datei
 
 
+## Compiling eBPF Programs for CO-RE
+
+You have to pass the -g flag to Clang so that it includes debug information, which is necessary for BTF. However, the -g flag also adds DWARF debugging information to the output object file, but that’s not needed by eBPF programs, so you can reduce the size of the object by running the following command to strip it out: `llvm-strip -g <object file>`
+
+The -O2 optimization flag (level 2 or higher) is required for Clang to produce BPF bytecode that will pass the verifier.
+
+If you’re using certain macros defined by libbpf, you’ll need to specify the target architecture at compile time. You can do this by setting -D __TARGET_ARCH_($ARCH) where $ARCH is an architecture name like arm64, amd64, and so on.
+
+Example Makefile: 
+
+```
+hello-buffer-config.bpf.o: %.o: %.c
+  clang \
+  -target bpf \
+  -D __TARGET_ARCH_$(ARCH) \
+  -I/usr/include/$(shell uname -m)-linux-gnu \
+  -Wall \
+  -O2 -g \
+  -c $< -o $@
+  llvm-strip -g $@
+```
+
+
+## CO-RE User Space Code
+
+You can use bpftool to auto-generate this skeleton code from existing eBPF objects in ELF file format, like this:
+`bpftool gen skeleton hello-buffer-config.bpf.o > hello-buffer-config.skel.h`
 
 
 
