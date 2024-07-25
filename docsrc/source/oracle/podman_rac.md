@@ -660,6 +660,9 @@ dnsmasq --no-daemon
 chown oracle:dba /dev/asm-disk*
 
 
+
+------------------------------------------------------------------------------------------------------------------------------------------
+
 # New Try
 
 https://eclipsys.ca/get-your-oracle-real-application-clusters-rac-21c-up-and-running-in-docker-the-easy-way/
