@@ -97,7 +97,7 @@ zypper in skopeo
 
 siehe podman-Doku
     signierte Images
-    /etc/containers/registry.conf erweitern
+    /etc/containers/registries.conf erweitern
         unqualified-search-registries = ["container-registry.oracle.com", ....
 
 ## sysctl settings on host
@@ -413,14 +413,14 @@ NODE 1:
   --shm-size 2G \
   --volume /dev/shm \
   --dns-search=example.info \
-  --device=/dev/sdf:/dev/asm-disk1:rw  \
-  --device=/dev/sdg:/dev/asm-disk2:rw  \
+  --device=/dev/sdk:/dev/asm-disk1:rw  \
+  --device=/dev/sdl:/dev/asm-disk2:rw  \
   --privileged=false  \
   --volume /scratch/software/stage:/software/stage \
   --volume /scratch/rac/cluster01/node1:/oracle \
   --cpuset-cpus 0-3 \
   --memory 16G \
-  --memory-swap 32G \
+  --memory-swap 16G \
   --sysctl kernel.shmall=2097152  \
   --sysctl "kernel.sem=250 32000 100 128" \
   --sysctl kernel.shmmax=8589934592  \
@@ -449,13 +449,13 @@ NODE 2:
   --shm-size 2G \
   --volume /dev/shm \
   --dns-search=example.info \
-  --device=/dev/sdf:/dev/asm-disk1:rw  \
-  --device=/dev/sdg:/dev/asm-disk2:rw  \
+  --device=/dev/sdk:/dev/asm-disk1:rw  \
+  --device=/dev/sdl:/dev/asm-disk2:rw  \
   --privileged=false  \
   --volume /scratch/rac/cluster01/node2:/oracle \
   --cpuset-cpus 0-3 \
   --memory 16G \
-  --memory-swap 32G \
+  --memory-swap 16G \
   --sysctl kernel.shmall=2097152  \
   --sysctl "kernel.sem=250 32000 100 128" \
   --sysctl kernel.shmmax=8589934592  \
@@ -687,7 +687,8 @@ $TTL 86400
 ; Name server hostname to IP resolve.
 ;@ORIGIN  eot.us.oracle.com.
 ;@               IN      NS      gns.eot.us.oracle.com.
-racserver-dns                        IN A    10.0.20.2
+; Hosts in this Domain
+racnode-dns                          IN A    10.0.20.2
 racnode1                             IN A    10.0.20.150
 racnode2                             IN A    10.0.20.151
 racnode1-vip                         IN A    10.0.20.160
@@ -718,7 +719,8 @@ $TTL 86400
         2014090402      ; serial
         3600      ; refresh
         1800      ; retry
-        604800      ; expire                                                                                                      86400 )    ; minimum
+        604800      ; expire
+        86400 )    ; minimum
 ; Name server's
         IN      NS     racnode-dns.example.info.
 ; Name server hostname to IP resolve.

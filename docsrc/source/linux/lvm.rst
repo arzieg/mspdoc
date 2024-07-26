@@ -75,3 +75,6 @@ Keine Device Nodes
         ACTIVE            '/dev/vg_orahome/lv_orahome' [60.00 GiB] inherit
         ACTIVE            '/dev/vg_orahome/lv_oraagent' [3.00 GiB] inherit
 
+## Wipe
+
+wipefs -a /dev/<device>   - löschen aller Partitonen auf der Disk
