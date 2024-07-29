@@ -928,9 +928,9 @@ podman logs -f racnode1
 NODE 2:
 
 ```
-# podman network disconnect podman racnode2
-# podman network connect rac_eth0pub1_nw --ip 10.0.20.151 racnode2
-# podman network connect rac_eth1priv1_nw --ip 192.168.17.151  racnode2
-# podman network connect rac_eth2priv2_nw --ip 192.168.18.151  racnode2
+podman network disconnect podman racnode2
+podman network connect rac_eth0pub1_nw --ip 10.0.20.151 racnode2
+podman network connect rac_eth1priv1_nw --ip 192.168.17.151  racnode2
+podman network connect rac_eth2priv2_nw --ip 192.168.18.151  racnode2
 ```
 
