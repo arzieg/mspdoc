@@ -475,6 +475,44 @@ NODE 2:
 oracle/database-rac:19.22-slim
 ```
 
+--- versuch mit pods mit oracle rac storage container, hier wurde erst nfs aufgesetzt
+
+# podman create -t -i \
+  --hostname racnode1 \
+  --shm-size 2G \
+  --volume /dev/shm \
+  --dns-search=example.info \
+  --privileged=false  \
+  --volume /scratch/software/stage:/software/stage \
+  --volume /scratch/rac/cluster01/node1:/oracle \
+  --volume crsstorage:/crs \
+  --cpuset-cpus 0-3 \
+  --memory 16G \
+  --memory-swap 16G \
+  --sysctl kernel.shmall=2097152  \
+  --sysctl "kernel.sem=250 32000 100 128" \
+  --sysctl kernel.shmmax=8589934592  \
+  --sysctl kernel.shmmni=4096 \
+  --sysctl 'net.ipv4.conf.eth1.rp_filter=2' \
+  --sysctl 'net.ipv4.conf.eth2.rp_filter=2' \
+  --sysctl "net.ipv4.ping_group_range=0 2147483647" \
+  --cap-add=SYS_NICE \
+  --cap-add=SYS_RESOURCE \
+  --cap-add=NET_ADMIN \
+  --cap-add=NET_RAW \
+  --cap-add=AUDIT_WRITE \
+  --cap-add=AUDIT_CONTROL \
+  --restart=always \
+  --ulimit rtprio=99  \
+  --systemd=true \
+  --name racnode1 \
+oracle/database-rac:19.22-slim
+
+
+
+---
+
+
 ## Assign Networks to the Oracle RAC Containers
 
 Use these procedures to assign networks to each of the Oracle Real Application Clusters (Oracle RAC) nodes that you create in the Oracle RAC on Podman containers.
@@ -934,3 +972,55 @@ podman network connect rac_eth1priv1_nw --ip 192.168.17.151  racnode2
 podman network connect rac_eth2priv2_nw --ip 192.168.18.151  racnode2
 ```
 
+
+
+----------------------------------------------------------------------------------------------------------------
+Building a storage container
+
+https://github.com/oracle/docker-images/blob/main/OracleDatabase/RAC/OracleRACStorageServer/README.md
+
+cd <git-cloned-path>/docker-images/OracleDatabase/RAC/OracleRACStorageServer/dockerfiles
+./buildDockerImage.sh -v latest
+
+Wird vorher eigentlich schon gemacht, hier wenn man mit dem Storage anfängt 
+docker network create --driver=bridge --subnet=192.168.17.0/24 rac_eth1priv1_nw
+
+mkdir -p /scratch/rac/cluster01/asmdisks
+
+podman run -d -t \
+ --hostname racnode-storage \
+ --dns-search=example.info  \
+ --cap-add SYS_ADMIN \
+ --cap-add AUDIT_WRITE \
+ --cap-add NET_ADMIN \
+ --volume /scratch/rac/cluster01/asmdisks:/oradata \
+ --volume /scratch/rac/cluster01/asmdisks:/crs \
+ --network=rac_eth1priv1_nw \
+ --ip=192.168.17.80 \
+ --systemd=always \
+ --restart=always \
+ --name racnode-storage \
+ localhost/oracle/rac-storage-server:latest
+
+
+ Das anlegen der 5 devices a 10 GB (default) dauert dann ein wenig
+
+ podman exec racnode-storage tail -f /tmp/storage_setup.log
+
+NFS Volume anlegen
+
+  podman volume create --driver local \
+  --opt type=nfs \
+  --opt   o=addr=192.168.17.80,rw,bg,hard,tcp,vers=3,timeo=600,rsize=32768,wsize=32768,actimeo=0 \
+  --opt device=192.168.17.80:/oradata \
+  racstorage
+
+Clusterware Files
+  podman volume create --driver local \
+  --opt type=nfs \
+  --opt o=addr=192.168.17.80,rw,bg,hard,tcp,vers=3,timeo=600,rsize=32768,wsize=32768,actimeo=0,noac \
+  --opt device=:/crs \
+  crsstorage
+
+podman network disconnect podman racracnode-storage
+podman network connect rac_eth1priv1_nw --ip 192.168.17.80  racnode-storage

@@ -193,7 +193,8 @@ unpause       Resume all processes for one or more containers
 unshare       Run a command as a specified user
 untag         Remove a secondary name from an image in local storage on the host system
 version       Show version information for Podman
-volume        Manage container storage volumes
+volume        Manage container storage volumes  
+  prune       Löschen von nicht mehr genutzten Volumes
 wait          Block processes on one or more containers until a specified condition is fulfilled
 ```
 

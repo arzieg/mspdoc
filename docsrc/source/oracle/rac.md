@@ -152,7 +152,7 @@ enabled the tracing of CVU as: `$export SRVM_TRACE=true`, dann den gewünschten 
 ```
 set linesize 200;
 select name, state from V$ASM_DISKGROUP;    -> Anzeige Diskgruppen
-ALTER DISKGROUP data1 MOUNT;                -> Mounte diskgruppe
+ALTER DISKGROUP data MOUNT;                -> Mounte diskgruppe
 
 col name for a10
 col percentage for 999.99
