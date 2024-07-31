@@ -483,9 +483,9 @@ oracle/database-rac:19.22-slim
   --volume /dev/shm \
   --dns-search=example.info \
   --privileged=false  \
+  --volume racstorage:/oradata \
   --volume /scratch/software/stage:/software/stage \
   --volume /scratch/rac/cluster01/node1:/oracle \
-  --volume crsstorage:/crs \
   --cpuset-cpus 0-3 \
   --memory 16G \
   --memory-swap 16G \
@@ -506,6 +506,8 @@ oracle/database-rac:19.22-slim
   --ulimit rtprio=99  \
   --systemd=true \
   --name racnode1 \
+  --log-level=error \
+  --cap-add CAP_SYS_ADMIN \
 oracle/database-rac:19.22-slim
 
 
@@ -994,14 +996,14 @@ podman run -d -t \
  --cap-add AUDIT_WRITE \
  --cap-add NET_ADMIN \
  --volume /scratch/rac/cluster01/asmdisks:/oradata \
- --volume /scratch/rac/cluster01/asmdisks:/crs \
  --network=rac_eth1priv1_nw \
  --ip=192.168.17.80 \
  --systemd=always \
  --restart=always \
  --name racnode-storage \
- localhost/oracle/rac-storage-server:latest
+ localhost/oracle/rac-storage-server:19.3.0
 
+ --volume /scratch/rac/cluster01/asmdisks:/crs \
 
  Das anlegen der 5 devices a 10 GB (default) dauert dann ein wenig
 
@@ -1019,8 +1021,8 @@ Clusterware Files
   podman volume create --driver local \
   --opt type=nfs \
   --opt o=addr=192.168.17.80,rw,bg,hard,tcp,vers=3,timeo=600,rsize=32768,wsize=32768,actimeo=0,noac \
-  --opt device=:/crs \
+  --opt device=192.168.17.80:/crs \
   crsstorage
 
-podman network disconnect podman racracnode-storage
+podman network disconnect podman racnode-storage
 podman network connect rac_eth1priv1_nw --ip 192.168.17.80  racnode-storage
