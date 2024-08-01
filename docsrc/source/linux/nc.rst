@@ -58,3 +58,4 @@ Test zwischen zwei Servern:
     I love stackexchange // send a message
     a:~# nc -luk 10.12.0.12 667
     I love stackexchange // receive the message.
+
