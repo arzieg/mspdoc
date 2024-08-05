@@ -18,6 +18,16 @@ zypper in podman
 zypper in podman-docker
 ```
 
+```
+Oracle Linux 8
+https://oracle-base.com/articles/linux/podman-install-on-oracle-linux-ol8
+
+für azure:
+dnf install cifs-utils
+
+```
+
+
 ## Configuration
 
 ### /etc/containers/registries.conf

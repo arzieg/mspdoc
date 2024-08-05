@@ -118,6 +118,8 @@ net.core.rmem_default = 262144
 
 Vorgesehen sind dafür 2 x 80 GB Disks
 
+Single Node 1 x 80 GB, dann ohne Index
+
 ```
 # pvcreate /dev/sdc /dev/sdd
 # vgcreate vg_scratch1 /dev/sdc
@@ -239,22 +241,22 @@ vi hostfile
 ::1 localhost ip6-localhost ip6-loopback
 
 ## Public IP addresses
-10.0.20.150 racnode1.example.info racnode1
-10.0.20.151 racnode2.example.info racnode2
+172.16.1.150 racnode1.example.com racnode1
+172.16.1.151 racnode2.example.com racnode2
 
 ## Virtual IP addresses
-10.0.20.160 racnode1-vip.example.info racnode1-vip
-10.0.20.161 racnode2-vip.example.info racnode2-vip
+172.16.1.160 racnode1-vip.example.com racnode1-vip
+172.16.1.161 racnode2-vip.example.com racnode2-vip
 
 ## Private IPs
-192.168.17.150 racnode1-priv1.example.info racnode1-priv1
-192.168.17.151 racnode2-priv1.example.info racnode2-priv1
-192.168.18.150 racnode1-priv2.example.info racnode1-priv2
-192.168.18.151 racnode2-priv2.example.info racnode2-priv2
+192.168.17.150 racnode1-priv1.example.com racnode1-priv1
+192.168.17.151 racnode2-priv1.example.com racnode2-priv1
+192.168.18.150 racnode1-priv2.example.com racnode1-priv2
+192.168.18.151 racnode2-priv2.example.com racnode2-priv2
 
-10.0.20.170 racnode-scan.example.info racnode-scan
-10.0.20.171 racnode-scan.example.info racnode-scan
-10.0.20.172 racnode-scan.example.info racnode-scan
+172.16.1.170 racnode-scan.example.com racnode-scan
+172.16.1.171 racnode-scan.example.com racnode-scan
+172.16.1.172 racnode-scan.example.com racnode-scan
 ```
 
 create setupContainerEnv.sh
@@ -267,7 +269,7 @@ chmod 660 /dev/asm-disk1
 chmod 660 /dev/asm-disk2
 ip route del default
 # In the ip route command, replace with appropriate gateway IP
-ip route add default via 10.0.20.1
+ip route add default via 172.16.1.1
 cat /opt/scripts/startup/resolv.conf > /etc/resolv.conf
 cat /opt/scripts/startup/hostfile > /etc/hosts
 systemctl reset-failed
@@ -374,15 +376,16 @@ Execute files
 Zwischen zwei Hosts
 
 ```
-podman network create -d bridge --subnet=10.0.20.0/24 --gateway=10.0.20.1 -o parent=ens33 rac_eth0pub1_nw
+podman network create -d bridge --subnet=172.16.1.0/24 --gateway=172.16.1.1 -o parent=ens33 rac_eth0pub1_nw
 podman network create -d bridge --subnet=192.168.17.0/24 -o parent=ens35 rac_eth1priv1_nw
 podman network create -d bridge --subnet=192.168.18.0/24 -o parent=ens36 rac_eth2priv2_nw
+
 ```
 
 Ausnahme: container laufen auf dem selben Host
 ```
 podman network create --subnet 192.5.0.0/16 newnet
-podman network create -d bridge --subnet=10.0.20.0/24 --gateway=10.0.20.1 rac_eth0pub1_nw
+podman network create -d bridge --subnet=172.16.1.0/24 --gateway=172.16.1.1 rac_eth0pub1_nw
 podman network create -d bridge --subnet=192.168.17.0/24 rac_eth1priv1_nw
 podman network create -d bridge --subnet=192.168.18.0/24 rac_eth2priv2_nw
 
@@ -596,19 +599,20 @@ To ensure that the network interface name used by each node for a given network 
 NODE 1:
 
 ```
-podman network disconnect podman racnode1
-podman network connect rac_eth0pub1_nw --ip 10.0.20.150 racnode1
-podman network connect rac_eth1priv1_nw --ip 192.168.17.150  racnode1
-podman network connect rac_eth2priv2_nw --ip 192.168.18.150  racnode1
+podman network disconnect podman racnodep1
+podman network connect rac_pub1_nw --ip 172.16.1.150 racnodep1
+podman network connect rac_priv1_nw --ip 192.168.17.150  racnodep1
+podman network connect rac_priv1_nw --ip 192.168.18.150  racnodep1
 ```
 
 NODE 2:
 
 ```
-podman network disconnect podman racnode2
-podman network connect rac_eth0pub1_nw --ip 10.0.20.151 racnode2
-podman network connect rac_eth1priv1_nw --ip 192.168.17.151  racnode2
-podman network connect rac_eth2priv2_nw --ip 192.168.18.151  racnode2
+podman network disconnect podman racnodep2
+podman network connect rac_pub1_nw --ip 172.16.1.151 racnodep2
+podman network connect rac_priv1_nw --ip 192.168.17.151  racnodep2
+podman network connect rac_priv1_nw --ip 192.168.18.151  racnodep2
+
 ```
 
 ## Start the Podman Containers and Connect to the Network
@@ -787,45 +791,45 @@ cd <gitrepo>/docker-images/OracleDatabase/RAC/OracleDNSServer/dockerfiles/latest
 
 ```
 $TTL 86400
-@       IN SOA  example.info.   root (
+@       IN SOA  example.com.   root (
         2014090401    ; serial
         3600    ; refresh
         1800    ; retry
         604800    ; expire
         86400 )  ; minimum
 ; Name server's
-                IN NS      example.info.
-                IN A       10.0.20.2
+                IN NS      example.com.
+                IN A       172.16.1.2
 ; Name server hostname to IP resolve.
 ;@ORIGIN  eot.us.oracle.com.
 ;@               IN      NS      gns.eot.us.oracle.com.
 ; Hosts in this Domain
-racnode-dns                          IN A    10.0.20.2
-racnode1                             IN A    10.0.20.150
-racnode2                             IN A    10.0.20.151
-racnode1-vip                         IN A    10.0.20.160
-racnode2-vip                         IN A    10.0.20.161
+racnode-dns                          IN A    172.16.1.2
+racnode1                             IN A    172.16.1.150
+racnode2                             IN A    172.16.1.151
+racnode1-vip                         IN A    172.16.1.160
+racnode2-vip                         IN A    172.16.1.161
 racnode1-priv1                       IN A    192.168.17.150
 racnode2-priv1                       IN A    192.168.17.151
 racnode1-priv2                       IN A    192.168.18.150
 racnode2-priv2                       IN A    192.168.18.151
-racnode-scan                         IN A    10.0.20.170
-racnode-scan                         IN A    10.0.20.171
-racnode-scan                         IN A    10.0.20.172
-racnode-gns1                         IN A    10.0.20.175
-racnode-gns2                         IN A    10.0.20.176
+racnode-scan                         IN A    172.16.1.170
+racnode-scan                         IN A    172.16.1.171
+racnode-scan                         IN A    172.16.1.172
+racnode-gns1                         IN A    172.16.1.175
+racnode-gns2                         IN A    172.16.1.176
 
 ; CMAN Server Entry
 ;racnode-cman1         IN A    172.16.1.2
-racnode-cman2         IN A    10.0.20.180
-racnode-cman3         IN A    10.0.20.181
-racnode-cman4         IN A    10.0.20.182
+racnode-cman2         IN A    172.16.1.180
+racnode-cman3         IN A    172.16.1.181
+racnode-cman4         IN A    172.16.1.182
 ```
 
 **Create reversezonefile**
 
 ```
-$ORIGIN 20.0.10.in-addr.arpa.
+$ORIGIN 1.16.172.in-addr.arpa.
 $TTL 86400
 @       IN SOA  racnode-dns.example.info. root.example.info. (
         2014090402      ; serial
@@ -887,24 +891,88 @@ if [ -n "${https_proxy-}" ]; then
 fi
 ```
 
+** Bridge erzeugen **
+
+```
+podman network create --driver=bridge --subnet=172.16.1.0/24 rac_pub1_nw
+podman network create --driver=bridge --subnet=192.168.17.0/24 rac_priv1_nw
+podman network create --driver=bridge --subnet=192.168.18.0/24 rac_priv2_nw
+```
+
 **Podman create**
 
 ```
-podman create -t -i \
- --hostname racnode-dns  \
- --dns-search="example.info" \
- --cap-add=SYS_ADMIN  \
- --network  rac_eth0pub1_nw \
- --ip 10.0.20.2 \
- --env SETUP_DNS_CONFIG_FILES="setup_true" \
- --env DOMAIN_NAME="example.info" \
- --env RAC_NODE_NAME_PREFIX="racnode" \
- --name racnode-dns \
+podman create --hostname racdns \
+  --dns-search=example.com \
+  --cap-add=AUDIT_WRITE \
+  -e DOMAIN_NAME="example.com" \
+  -e WEBMIN_ENABLED=false \
+  -e RAC_NODE_NAME_PREFIXP="racnodep" \
+  -e SETUP_DNS_CONFIG_FILES="setup_true"  \
+  --privileged=false \
+  --name rac-dnsserver \
  oracle/rac-dnsserver:latest
 ```
 
-`podman start racnode-dns`
-`podman logs -f racnode-dns`
+** Podman start **
+
+```
+podman network disconnect podman rac-dnsserver
+podman network connect rac_pub1_nw --ip 172.16.1.2 rac-dnsserver
+podman network connect rac_priv1_nw --ip 192.168.17.2 rac-dnsserver
+podman start rac-dnsserver
+```
+
+`podman logs -f rac-dnsserver`
+
+
+
+## Building a storage container
+
+https://github.com/oracle/docker-images/blob/main/OracleDatabase/RAC/OracleRACStorageServer/README.md
+
+cd <git-cloned-path>/docker-images/OracleDatabase/RAC/OracleRACStorageServer/dockerfiles
+./buildDockerImage.sh -v latest
+
+Wird vorher eigentlich schon gemacht, hier wenn man mit dem Storage anfängt 
+docker network create --driver=bridge --subnet=192.168.17.0/24 rac_priv1_nw
+
+mkdir -p /scratch/rac/cluster01/asmdisks
+
+yum -y install nfs-utils auf dem Host (nicht dem POD!)
+
+
+podman run -d -t \
+ --hostname racnode-storage \
+ --dns-search=example.com  \
+ --cap-add SYS_ADMIN \
+ --cap-add AUDIT_WRITE \
+ --cap-add NET_ADMIN \
+ --volume /scratch/rac/cluster01/asmdisks/:/oradata \
+ --network=rac_priv1_nw \
+ --ip=192.168.17.80 \
+ --systemd=always \
+ --restart=always \
+ --name racnode-storage \
+ localhost/oracle/rac-storage-server:latest
+
+ 
+ Das anlegen der 5 devices a 10 GB (default) dauert dann ein wenig
+
+ podman exec racnode-storage tail -f /tmp/storage_setup.log
+
+NFS Volume anlegen
+
+  podman volume create --driver local \
+  --opt type=nfs \
+  --opt   o=addr=192.168.17.80,rw,bg,hard,tcp,vers=3,timeo=600,rsize=32768,wsize=32768,actimeo=0 \
+  --opt device=192.168.17.80:/oradata \
+  racstorage
+
+ 
+
+===========================================================================================
+===========================================================================================
 
 ## create RAC Image
 
@@ -933,12 +1001,12 @@ vi hostfile
 ::1 localhost ip6-localhost ip6-loopback
 
 ## Public IP addresses
-10.0.20.150 racnode1.example.info racnode1
-10.0.20.151 racnode2.example.info racnode2
+172.16.1.150 racnode1.example.info racnode1
+172.16.1.151 racnode2.example.info racnode2
 
 ## Virtual IP addresses
-10.0.20.160 racnode1-vip.example.info racnode1-vip
-10.0.20.161 racnode2-vip.example.info racnode2-vip
+172.16.1.160 racnode1-vip.example.info racnode1-vip
+172.16.1.161 racnode2-vip.example.info racnode2-vip
 
 ## Private IPs
 192.168.17.150 racnode1-priv1.example.info racnode1-priv1
@@ -946,9 +1014,9 @@ vi hostfile
 192.168.18.150 racnode1-priv2.example.info racnode1-priv2
 192.168.18.151 racnode2-priv2.example.info racnode2-priv2
 
-10.0.20.170 racnode-scan.example.info racnode-scan.example.info
-10.0.20.171 racnode-scan.example.info racnode-scan.example.info
-10.0.20.172 racnode-scan.example.info racnode-scan.example.info
+172.16.1.170 racnode-scan.example.info racnode-scan.example.info
+172.16.1.171 racnode-scan.example.info racnode-scan.example.info
+172.16.1.172 racnode-scan.example.info racnode-scan.example.info
 ```
 
 **Passwort**
@@ -971,7 +1039,7 @@ Hier hat sich gezeigt, dass es einen Unterschied gibt ob ich diesen Befehl auf S
 rausgenommen: 
 --cpu-rt-runtime=95000 --ulimit rtprio=99  \
 -e CMAN_HOSTNAME=racnode-cman \
--e CMAN_IP=10.0.20.3 \
+-e CMAN_IP=172.16.1.3 \
  --volume /dev/shm \  
 
 ```
@@ -990,22 +1058,22 @@ podman create -t -i \
   --sysctl kernel.shmmax=8589934592  \
   --sysctl kernel.shmmni=4096 \
   --dns-search=example.info \
-  --dns=10.0.20.2 \
+  --dns=172.16.1.2 \
   --device=/dev/sdf:/dev/asm_disk1  \
   --device=/dev/sdg:/dev/asm_disk2 \
   --privileged=true  \
   --cap-add=SYS_NICE \
   --cap-add=SYS_RESOURCE \
   --cap-add=NET_ADMIN \
-  -e DNS_SERVERS=10.0.20.2 \
-  -e NODE_VIP=10.0.20.160 \
+  -e DNS_SERVERS=172.16.1.2 \
+  -e NODE_VIP=172.16.1.160 \
   -e VIP_HOSTNAME=racnode1-vip  \
   -e PRIV_IP=192.168.17.150 \
   -e PRIV_HOSTNAME=racnode1-priv \
-  -e PUBLIC_IP=10.0.20.150 \
+  -e PUBLIC_IP=172.16.1.150 \
   -e PUBLIC_HOSTNAME=racnode1  \
   -e SCAN_NAME=racnode-scan \
-  -e SCAN_IP=10.0.20.170  \
+  -e SCAN_IP=172.16.1.170  \
   -e OP_TYPE=INSTALL \
   -e DOMAIN=example.info \
   -e ASM_DEVICE_LIST=/dev/asm_disk1,/dev/asm_disk2 \
@@ -1027,7 +1095,7 @@ NODE 1:
 
 ```
 podman network disconnect podman racnode1
-podman network connect rac_eth0pub1_nw --ip 10.0.20.150 racnode1
+podman network connect rac_eth0pub1_nw --ip 172.16.1.150 racnode1
 podman network connect rac_eth1priv1_nw --ip 192.168.17.150  racnode1
 podman network connect rac_eth2priv2_nw --ip 192.168.18.150  racnode1
 
@@ -1041,7 +1109,7 @@ NODE 2:
 
 ```
 podman network disconnect podman racnode2
-podman network connect rac_eth0pub1_nw --ip 10.0.20.151 racnode2
+podman network connect rac_eth0pub1_nw --ip 172.16.1.151 racnode2
 podman network connect rac_eth1priv1_nw --ip 192.168.17.151  racnode2
 podman network connect rac_eth2priv2_nw --ip 192.168.18.151  racnode2
 ```
@@ -1049,54 +1117,3 @@ podman network connect rac_eth2priv2_nw --ip 192.168.18.151  racnode2
 
 
 ----------------------------------------------------------------------------------------------------------------
-Building a storage container
-
-https://github.com/oracle/docker-images/blob/main/OracleDatabase/RAC/OracleRACStorageServer/README.md
-
-cd <git-cloned-path>/docker-images/OracleDatabase/RAC/OracleRACStorageServer/dockerfiles
-./buildDockerImage.sh -v latest
-
-Wird vorher eigentlich schon gemacht, hier wenn man mit dem Storage anfängt 
-docker network create --driver=bridge --subnet=192.168.17.0/24 rac_eth1priv1_nw
-
-mkdir -p /scratch/rac/cluster01/asmdisks
-
-podman run -d -t \
- --hostname racnode-storage \
- --dns-search=example.info  \
- --cap-add SYS_ADMIN \
- --cap-add AUDIT_WRITE \
- --cap-add NET_ADMIN \
- --volume /scratch/rac/cluster01/asmdisks:/oradata \
- --network=rac_eth1priv1_nw \
- --ip=192.168.17.80 \
- --systemd=always \
- --restart=always \
- --name racnode-storage \
- localhost/oracle/rac-storage-server:19.3.0
-
- --volume /scratch/rac/cluster01/asmdisks:/crs \
-
- Das anlegen der 5 devices a 10 GB (default) dauert dann ein wenig
-
- podman exec racnode-storage tail -f /tmp/storage_setup.log
-
-NFS Volume anlegen
-
-  podman volume create --driver local \
-  --opt type=nfs \
-  --opt   o=addr=192.168.17.80,rw,bg,hard,tcp,vers=3,timeo=600,rsize=32768,wsize=32768,actimeo=0 \
-  --opt device=192.168.17.80:/oradata/ \
-  racstorage
-  
-Clusterware Files
-  podman volume create --driver local \
-  --opt type=nfs \
-  --opt o=addr=192.168.17.80,rw,bg,hard,tcp,vers=3,timeo=600,rsize=32768,wsize=32768,actimeo=0,noac \
-  --opt device=192.168.17.80:/crs \
-  crsstorage
-
-podman network disconnect podman racnode-storage
-podman network connect rac_eth1priv1_nw --ip 192.168.17.80  racnode-storage
-
-
