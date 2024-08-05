@@ -252,9 +252,9 @@ vi hostfile
 192.168.18.150 racnode1-priv2.example.info racnode1-priv2
 192.168.18.151 racnode2-priv2.example.info racnode2-priv2
 
-10.0.20.170 racnode-scan.example.info racnode-scan.example.info
-10.0.20.171 racnode-scan.example.info racnode-scan.example.info
-10.0.20.172 racnode-scan.example.info racnode-scan.example.info
+10.0.20.170 racnode-scan.example.info racnode-scan
+10.0.20.171 racnode-scan.example.info racnode-scan
+10.0.20.172 racnode-scan.example.info racnode-scan
 ```
 
 create setupContainerEnv.sh
@@ -418,6 +418,8 @@ NODE 1:
   --privileged=false  \
   --volume /scratch/software/stage:/software/stage \
   --volume /scratch/rac/cluster01/node1:/oracle \
+  --volume /boot:/boot:ro \
+  --volume /etc/localtime:/etc/localtime:ro \
   --cpuset-cpus 0-3 \
   --memory 16G \
   --memory-swap 16G \
@@ -453,6 +455,8 @@ NODE 2:
   --device=/dev/sdl:/dev/asm-disk2:rw  \
   --privileged=false  \
   --volume /scratch/rac/cluster01/node2:/oracle \
+  --volume /boot:/boot:ro \
+  --volume /etc/localtime:/etc/localtime:ro \
   --cpuset-cpus 0-3 \
   --memory 16G \
   --memory-swap 16G \
@@ -483,10 +487,10 @@ oracle/database-rac:19.22-slim
   --volume /dev/shm \
   --dns-search=example.info \
   --privileged=false  \
-  --volume racstorage:/oradata \
+  --volume /scratch/rac/cluster01/asmdisks/asm_disk01.img:/dev/asm-disk1:rw \
+  --volume /scratch/rac/cluster01/asmdisks/asm_disk02.img:/dev/asm-disk2:rw \
   --volume /scratch/software/stage:/software/stage \
   --volume /scratch/rac/cluster01/node1:/oracle \
-  --cpuset-cpus 0-3 \
   --memory 16G \
   --memory-swap 16G \
   --sysctl kernel.shmall=2097152  \
@@ -502,14 +506,82 @@ oracle/database-rac:19.22-slim
   --cap-add=NET_RAW \
   --cap-add=AUDIT_WRITE \
   --cap-add=AUDIT_CONTROL \
+  --cap-add CAP_SYS_ADMIN \
   --restart=always \
   --ulimit rtprio=99  \
   --systemd=true \
   --name racnode1 \
   --log-level=error \
-  --cap-add CAP_SYS_ADMIN \
 oracle/database-rac:19.22-slim
 
+
+podman create -t -i \
+  --hostname racnode2 \
+  --shm-size 2G \
+  --volume /dev/shm \
+  --dns-search=example.info \
+  --privileged=false  \
+  --volume /scratch/rac/cluster01/asmdisks/asm_disk01.img:/dev/asm-disk1:rw \
+  --volume /scratch/rac/cluster01/asmdisks/asm_disk02.img:/dev/asm-disk2:rw \
+  --volume /scratch/software/stage:/software/stage \
+  --volume /scratch/rac/cluster01/node2:/oracle \
+  --memory 16G \
+  --memory-swap 16G \
+  --sysctl kernel.shmall=2097152  \
+  --sysctl "kernel.sem=250 32000 100 128" \
+  --sysctl kernel.shmmax=8589934592  \
+  --sysctl kernel.shmmni=4096 \
+  --sysctl 'net.ipv4.conf.eth1.rp_filter=2' \
+  --sysctl 'net.ipv4.conf.eth2.rp_filter=2' \
+  --sysctl "net.ipv4.ping_group_range=0 2147483647" \
+  --cap-add=SYS_NICE \
+  --cap-add=SYS_RESOURCE \
+  --cap-add=NET_ADMIN \
+  --cap-add=NET_RAW \
+  --cap-add=AUDIT_WRITE \
+  --cap-add=AUDIT_CONTROL \
+  --cap-add CAP_SYS_ADMIN \
+  --restart=always \
+  --ulimit rtprio=99  \
+  --systemd=true \
+  --name racnode2 \
+  --log-level=error \
+oracle/database-rac:19.22-slim
+
+
+
+# podman create -t -i \
+  --hostname racnode2 \
+  --tmpfs /dev/shm:rw,exec,size=4G \
+  --dns-search=example.info \
+  --privileged=true  \
+  --volume racstorage:/oradata \
+  --volume /scratch/software/stage:/software/stage \
+  --volume /scratch/rac/cluster01/node2:/oracle \
+  --memory 16G \
+  --memory-swap 16G \
+  --sysctl kernel.shmall=2097152  \
+  --sysctl "kernel.sem=250 32000 100 128" \
+  --sysctl kernel.shmmax=8589934592  \
+  --sysctl kernel.shmmni=4096 \
+  --sysctl 'net.ipv4.conf.eth1.rp_filter=2' \
+  --sysctl 'net.ipv4.conf.eth2.rp_filter=2' \
+  --sysctl "net.ipv4.ping_group_range=0 2147483647" \
+  --cap-add=SYS_NICE \
+  --cap-add=SYS_RESOURCE \
+  --cap-add=NET_ADMIN \
+  --cap-add=NET_RAW \
+  --cap-add=AUDIT_WRITE \
+  --cap-add=AUDIT_CONTROL \
+  --cap-add CAP_SYS_ADMIN \
+  --restart=always \
+  --ulimit rtprio=99  \
+  --systemd=true \
+  --name racnode2 \
+  --log-level=error \
+oracle/database-rac:19.22-slim
+
+```
 
 
 ---
@@ -1014,9 +1086,9 @@ NFS Volume anlegen
   podman volume create --driver local \
   --opt type=nfs \
   --opt   o=addr=192.168.17.80,rw,bg,hard,tcp,vers=3,timeo=600,rsize=32768,wsize=32768,actimeo=0 \
-  --opt device=192.168.17.80:/oradata \
+  --opt device=192.168.17.80:/oradata/ \
   racstorage
-
+  
 Clusterware Files
   podman volume create --driver local \
   --opt type=nfs \
@@ -1026,3 +1098,5 @@ Clusterware Files
 
 podman network disconnect podman racnode-storage
 podman network connect rac_eth1priv1_nw --ip 192.168.17.80  racnode-storage
+
+
