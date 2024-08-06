@@ -1,11 +1,10 @@
 .. _lnx_allg:
 
-################
-Linux Allgemein
-################
 
-Linux Kernel Release Nummerierung:
-----------------------------------
+# Linux Allgemein
+
+
+## Linux Kernel Release Nummerierung:
 
 Quelle: https://www.youtube.com/watch?v=VfEHZnwdpw4&list=PL03Lrmd9CiGdBvVUXpZCKK88-Vpd5VwEo&index=5
 
@@ -23,8 +22,7 @@ Quelle: https://www.youtube.com/watch?v=VfEHZnwdpw4&list=PL03Lrmd9CiGdBvVUXpZCKK
     * Backport ca. 2 Jahre
     * Release jedes Jahr
   
-Semantische Versionierung
---------------------------
+## Semantische Versionierung
 
 Quelle: https://semver.org/
 
@@ -46,8 +44,8 @@ And one with numbered capture groups instead (so cg1 = major, cg2 = minor, cg3 =
 See: https://regex101.com/r/vkijKf/1/
 
 
-Kleine Helferlein:
---------------------
+## Kleine Helferlein:
+
 du -hs * | sort -hr                                         Größe der Verzeichnisse
 find /tmp -type f -size +100000k -exec ls -lh {} \;         suche Dateien größer 10 MB  
 find /oracle/base/ -name "log_*.xml" -mtime +30 -exec ls -l {} \;
@@ -71,15 +69,19 @@ find /mnt/dump -type f -exec md5sum {} \;> /tmp/checksums.md
 md5sum -c /tmp/checksums.md
  
 
-RDP
-====
+## RDP
+
 zypper install -t pattern patterns-xfce-xfce_basis patterns-xfce-xfce patterns-xfce-xfce_office
 zypper in xrdp
 vi /etc/sysconfig/windowsmanager
   Change DEFAULT_WM to DEFAULT_WM="xfce"
 
 
-user
-=====
+## User
+
 
 useradd -m -d /sapmnt/S77/s77adm -s /usr/bin/csh -c "SAP System Administrator" -u 56069 -g 1001 -G dba,oper,sapinst,asmoper,asmdba,oinstall s77adm
+
+
+## ipmi
+`ipmitool power status -I lanplus -H timo-ipmi -U hacluster -P "xxx" -L Operator`
