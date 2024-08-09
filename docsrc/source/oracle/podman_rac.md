@@ -488,10 +488,9 @@ oracle/database-rac:19.22-slim
   --hostname racnode1 \
   --shm-size 2G \
   --volume /dev/shm \
-  --dns-search=example.info \
+  --dns-search=example.com \
   --privileged=false  \
-  --volume /scratch/rac/cluster01/asmdisks/asm_disk01.img:/dev/asm-disk1:rw \
-  --volume /scratch/rac/cluster01/asmdisks/asm_disk02.img:/dev/asm-disk2:rw \
+  --volume racstorage:/oradata \
   --volume /scratch/software/stage:/software/stage \
   --volume /scratch/rac/cluster01/node1:/oracle \
   --memory 16G \
@@ -518,46 +517,16 @@ oracle/database-rac:19.22-slim
 oracle/database-rac:19.22-slim
 
 
-podman create -t -i \
-  --hostname racnode2 \
-  --shm-size 2G \
-  --volume /dev/shm \
-  --dns-search=example.info \
-  --privileged=false  \
-  --volume /scratch/rac/cluster01/asmdisks/asm_disk01.img:/dev/asm-disk1:rw \
-  --volume /scratch/rac/cluster01/asmdisks/asm_disk02.img:/dev/asm-disk2:rw \
-  --volume /scratch/software/stage:/software/stage \
-  --volume /scratch/rac/cluster01/node2:/oracle \
-  --memory 16G \
-  --memory-swap 16G \
-  --sysctl kernel.shmall=2097152  \
-  --sysctl "kernel.sem=250 32000 100 128" \
-  --sysctl kernel.shmmax=8589934592  \
-  --sysctl kernel.shmmni=4096 \
-  --sysctl 'net.ipv4.conf.eth1.rp_filter=2' \
-  --sysctl 'net.ipv4.conf.eth2.rp_filter=2' \
-  --sysctl "net.ipv4.ping_group_range=0 2147483647" \
-  --cap-add=SYS_NICE \
-  --cap-add=SYS_RESOURCE \
-  --cap-add=NET_ADMIN \
-  --cap-add=NET_RAW \
-  --cap-add=AUDIT_WRITE \
-  --cap-add=AUDIT_CONTROL \
-  --cap-add CAP_SYS_ADMIN \
-  --restart=always \
-  --ulimit rtprio=99  \
-  --systemd=true \
-  --name racnode2 \
-  --log-level=error \
-oracle/database-rac:19.22-slim
+
 
 
 
 # podman create -t -i \
   --hostname racnode2 \
-  --tmpfs /dev/shm:rw,exec,size=4G \
-  --dns-search=example.info \
-  --privileged=true  \
+  --shm-size 2G \
+  --volume /dev/shm \
+  --dns-search=example.com \
+  --privileged=false  \
   --volume racstorage:/oradata \
   --volume /scratch/software/stage:/software/stage \
   --volume /scratch/rac/cluster01/node2:/oracle \
@@ -599,19 +568,19 @@ To ensure that the network interface name used by each node for a given network 
 NODE 1:
 
 ```
-podman network disconnect podman racnodep1
-podman network connect rac_pub1_nw --ip 172.16.1.150 racnodep1
-podman network connect rac_priv1_nw --ip 192.168.17.150  racnodep1
-podman network connect rac_priv1_nw --ip 192.168.18.150  racnodep1
+podman network disconnect podman racnode1
+podman network connect rac_pub1_nw --ip 172.16.1.150 racnode1
+podman network connect rac_priv1_nw --ip 192.168.17.150  racnode1
+podman network connect rac_priv2_nw --ip 192.168.18.150  racnode1
 ```
 
 NODE 2:
 
 ```
-podman network disconnect podman racnodep2
-podman network connect rac_pub1_nw --ip 172.16.1.151 racnodep2
-podman network connect rac_priv1_nw --ip 192.168.17.151  racnodep2
-podman network connect rac_priv1_nw --ip 192.168.18.151  racnodep2
+podman network disconnect podman racnode2
+podman network connect rac_pub1_nw --ip 172.16.1.151 racnode2
+podman network connect rac_priv1_nw --ip 192.168.17.151  racnode2
+podman network connect rac_priv2_nw --ip 192.168.18.151  racnode2
 
 ```
 
