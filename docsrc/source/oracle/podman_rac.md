@@ -171,9 +171,9 @@ WantedBy=multi-user.target
 ```
 
 ```
-# systemctl daemon-reload
-# systemctl enable podman-restart.service
-# systemctl enable podman-rac-cgroup.service --now
+systemctl daemon-reload
+systemctl enable podman-restart.service
+systemctl enable podman-rac-cgroup.service --now
 ```
 
 
@@ -484,17 +484,21 @@ oracle/database-rac:19.22-slim
 
 --- versuch mit pods mit oracle rac storage container, hier wurde erst nfs aufgesetzt
 
+--shm-size 2G \
+--volume /dev/shm \
+  
+
+
 # podman create -t -i \
   --hostname racnode1 \
-  --shm-size 2G \
-  --volume /dev/shm \
+  --tmpfs /dev/shm:rw,exec,size=4G \  
   --dns-search=example.com \
   --privileged=false  \
   --volume racstorage:/oradata \
   --volume /scratch/software/stage:/software/stage \
   --volume /scratch/rac/cluster01/node1:/oracle \
   --memory 16G \
-  --memory-swap 16G \
+  --memory-swap 32G \
   --sysctl kernel.shmall=2097152  \
   --sysctl "kernel.sem=250 32000 100 128" \
   --sysctl kernel.shmmax=8589934592  \
@@ -512,26 +516,23 @@ oracle/database-rac:19.22-slim
   --restart=always \
   --ulimit rtprio=99  \
   --systemd=true \
+  --cpu-rt-runtime=95000 \
   --name racnode1 \
   --log-level=error \
 oracle/database-rac:19.22-slim
 
 
 
-
-
-
 # podman create -t -i \
   --hostname racnode2 \
-  --shm-size 2G \
-  --volume /dev/shm \
+  --tmpfs /dev/shm:rw,exec,size=4G \  
   --dns-search=example.com \
   --privileged=false  \
   --volume racstorage:/oradata \
   --volume /scratch/software/stage:/software/stage \
   --volume /scratch/rac/cluster01/node2:/oracle \
   --memory 16G \
-  --memory-swap 16G \
+  --memory-swap 32G \
   --sysctl kernel.shmall=2097152  \
   --sysctl "kernel.sem=250 32000 100 128" \
   --sysctl kernel.shmmax=8589934592  \
@@ -548,6 +549,7 @@ oracle/database-rac:19.22-slim
   --cap-add CAP_SYS_ADMIN \
   --restart=always \
   --ulimit rtprio=99  \
+  --cpu-rt-runtime=95000 \
   --systemd=true \
   --name racnode2 \
   --log-level=error \
