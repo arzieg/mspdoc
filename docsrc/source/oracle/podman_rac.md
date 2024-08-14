@@ -379,15 +379,28 @@ Zwischen zwei Hosts
 podman network create -d bridge --subnet=172.16.1.0/24 --gateway=172.16.1.1 -o parent=ens33 rac_eth0pub1_nw
 podman network create -d bridge --subnet=192.168.17.0/24 -o parent=ens35 rac_eth1priv1_nw
 podman network create -d bridge --subnet=192.168.18.0/24 -o parent=ens36 rac_eth2priv2_nw
+```
 
+```
+podman network create -d bridge --subnet=172.16.1.0/24 --gateway=172.16.1.1 -o parent=ens33 rac_eth0pub1_nw
+podman network create -d bridge --subnet=192.168.17.0/24 -o parent=ens35 rac_eth1priv1_nw
+podman network create -d bridge --subnet=192.168.18.0/24 -o parent=ens36 rac_eth2priv2_nw
 ```
 
 Ausnahme: container laufen auf dem selben Host
 ```
 podman network create --subnet 192.5.0.0/16 newnet
-podman network create -d bridge --subnet=172.16.1.0/24 --gateway=172.16.1.1 rac_eth0pub1_nw
-podman network create -d bridge --subnet=192.168.17.0/24 rac_eth1priv1_nw
-podman network create -d bridge --subnet=192.168.18.0/24 rac_eth2priv2_nw
+podman network create -d bridge --subnet=172.16.1.0/24 --gateway=172.16.1.1 rac_pub1_nw
+podman network create -d bridge --subnet=192.168.17.0/24 rac_priv1_nw
+podman network create -d bridge --subnet=192.168.18.0/24 rac_priv2_nw
+```
+
+Test macvlan: (eigentlich zw. zwei hosts)
+```
+podman network create -d macvlan --subnet=172.16.1.0/24 --gateway=172.16.1.1 -o parent=eth0 rac_pub1_nw
+podman network create -d macvlan --subnet=192.168.17.0/24 rac_priv1_nw
+podman network create -d macvlan --subnet=192.168.18.0/24 rac_priv2_nw
+```
 
 
 # podman network ls
@@ -415,7 +428,7 @@ NODE 1:
   --hostname racnode1 \
   --shm-size 2G \
   --volume /dev/shm \
-  --dns-search=example.info \
+  --dns-search=example.com \
   --device=/dev/sdk:/dev/asm-disk1:rw  \
   --device=/dev/sdl:/dev/asm-disk2:rw  \
   --privileged=false  \
@@ -453,7 +466,7 @@ NODE 2:
   --hostname racnode2 \
   --shm-size 2G \
   --volume /dev/shm \
-  --dns-search=example.info \
+  --dns-search=example.com \
   --device=/dev/sdk:/dev/asm-disk1:rw  \
   --device=/dev/sdl:/dev/asm-disk2:rw  \
   --privileged=false  \
@@ -491,7 +504,7 @@ oracle/database-rac:19.22-slim
 
 # podman create -t -i \
   --hostname racnode1 \
-  --tmpfs /dev/shm:rw,exec,size=4G \  
+  --volume /dev/shm \  
   --dns-search=example.com \
   --privileged=false  \
   --volume racstorage:/oradata \
@@ -525,9 +538,9 @@ oracle/database-rac:19.22-slim
 
 # podman create -t -i \
   --hostname racnode2 \
-  --tmpfs /dev/shm:rw,exec,size=4G \  
   --dns-search=example.com \
   --privileged=false  \
+  --tmpfs /dev/shm:rw,exec,size=4G \
   --volume racstorage:/oradata \
   --volume /scratch/software/stage:/software/stage \
   --volume /scratch/rac/cluster01/node2:/oracle \
@@ -629,41 +642,40 @@ sed -i -e 's,<found value>,<new calculated value>,g' /etc/security/limits.d/grid
 
 und ablegen in /scratch/software/stage
 
+## weitere Schweinereien
+
+https://cloud.google.com/bare-metal/docs/troubleshooting/troubleshoot-oracle-rac-issues?hl=de
+
+CRS root.sh oder OCSSD schlägt mit Fehler No Network HB fehl
+Das CRS-Skript root.sh schlägt mit dem folgenden Fehler fehl, wenn der Knoten die IP-Adresse 169.254.169.254 pingt:
+
+`has a disk HB, but no network HB`
+
+Die IP-Adresse 169.254.169.254 ist der Google Cloud-Metadatendienst, der die Instanz in Google Cloud registriert. Wenn Sie diese IP-Adresse blockieren, kann die Google Cloud-VM nicht gestartet werden. Dies kann wiederum die HAIP-Kommunikationsroute unterbrechen, sodass auf den RAC-Servern der Bare-Metal-Lösung HAIP-Kommunikationsprobleme auftreten.
+
+Um dieses Problem zu beheben, müssen Sie die IP-Adresse blockieren oder HAIP deaktivieren. Das folgende Beispiel zeigt, wie IP-Adressen mit route-Befehlen blockiert werden. Die Änderungen, die von der route-Anweisung vorgenommen werden, sind nicht dauerhaft. Daher müssen Sie die Systemstartscripts ändern.
+
+So beheben Sie das Problem:
+
+`/sbin/route add -host 169.254.169.254 reject`
+
+persistent: 
+`chmod +x /etc/rc.d/rc.local`
+Fügen Sie in der Datei /etc/rc.d/rc.local die folgenden Zeilen hinzu:
+```
+/sbin/route add -host 169.254.169.254 reject
+```
+
+Enable rc-local service
+```
+systemctl status rc-local.service
+systemctl enable rc-local.service
+systemctl start rc-local.service
+```
+
 # Install GRID
 
-https://docs.oracle.com/en/database/oracle/oracle-database/19/racpd/example-installing-oracle-grid-infrastructure-and-oracle-rac-podman.html#GUID-B4949A10-6FEB-4AE5-90BF-4DFEE410A068
-
-## Create Paths and Change Permissions
-
-NODE 1:
-
-```
-# podman exec racnode1 /bin/bash -c "mkdir -p /u01/app/oraInventory"
-# podman exec racnode1 /bin/bash -c "mkdir -p /u01/app/grid"
-# podman exec racnode1 /bin/bash -c "mkdir -p /u01/app/19c/grid"
-# podman exec racnode1 /bin/bash -c "chown -R grid:oinstall /u01/app/grid"
-# podman exec racnode1 /bin/bash -c "chown -R grid:oinstall /u01/app/19c/grid"
-# podman exec racnode1 /bin/bash -c "chown -R grid:oinstall /u01/app/oraInventory"
-# podman exec racnode1 /bin/bash -c "mkdir -p /u01/app/oracle"
-# podman exec racnode1 /bin/bash -c "mkdir -p /u01/app/oracle/product/19c/dbhome_1"
-# podman exec racnode1 /bin/bash -c "chown -R oracle:oinstall /u01/app/oracle"
-# podman exec racnode1 /bin/bash -c "chown -R oracle:oinstall /u01/app/oracle/product/19c/dbhome_1"
-```
-
-NODE 2:
-
-``` 
-# podman exec racnode2 /bin/bash -c "mkdir -p /u01/app/oraInventory"
-# podman exec racnode2 /bin/bash -c "mkdir -p /u01/app/grid"
-# podman exec racnode2 /bin/bash -c "mkdir -p /u01/app/19c/grid"
-# podman exec racnode2 /bin/bash -c "chown -R grid:oinstall /u01/app/grid"
-# podman exec racnode2 /bin/bash -c "chown -R grid:oinstall /u01/app/19c/grid"
-# podman exec racnode2 /bin/bash -c "chown -R grid:oinstall /u01/app/oraInventory"
-# podman exec racnode2 /bin/bash -c "mkdir -p /u01/app/oracle"
-# podman exec racnode2 /bin/bash -c "mkdir -p /u01/app/oracle/product/19c/dbhome_1"
-# podman exec racnode2 /bin/bash -c "chown -R oracle:oinstall /u01/app/oracle"
-# podman exec racnode2 /bin/bash -c "chown -R oracle:oinstall /u01/app/oracle/product/19c/dbhome_1"
-```
+nach interner doku
 
 ## Passwortlose ssh Anmeldung einrichten
 
@@ -687,36 +699,6 @@ ssh-copy-id -i ~/.ssh/id_rsa.pub oracle@racnode2
 ssh racnode1 date && ssh racnode2 date
 ```
 
-## Modify sshd_config
-
-X11 Zugriff
-
-/etc/ssh/sshd_config
-
-```
-X11Forwarding yes
-X11UseLocalhost no
-X11DisplayOffset 10
-```
-
-```
-# systemctl daemon-reload
-# systemctl restart sshd
-```
-
-## symlinke für PoC
-
-auf beiden Knoten
-
-```
-cd /
-ln -s u01 oracle
-
-chmod 777 /u01
-mkdir /oracle/grid
-chown grid:oinstall /oracle/grid
-```
-
 
 ## Grafische Installation
 
@@ -738,21 +720,57 @@ net.ipv4.ping_group_range = 0   0
 -> echo "net.ipv4.ping_group_range = 0 2147483647" >> /etc/sysctl.conf
 
 
-expand auskommentieren
-domain setzen
-in der /etc/hosts 3 x IP Adressen für scan-host
-dnsmasq --no-daemon
+## mgmtdb anlegen
+
+Nacharbeiten nach Word durchführen bis zum Punkt wo die mgmtdb angepasst wird, die muss ja erst einmal angelegt werden.
 
 
-chown oracle:dba /dev/asm-disk*
+sqlplus / as sysasm
+
+CREATE DISKGROUP DG_MGMTDB external REDUNDANCY
+  DISK '/oradata/asm_disk04.img';
+
+alter diskgroup DG_MGMTDB set attribute 'compatible.asm'='19.0.0.0.0';
+
+srvctl add mgmtlsnr 
+um Fehlermeldung *CRS-2510: Resource 'ora.MGMTLSNR' used in dependency 'hard' does not exist or is not registered.* zu vermeiden beim Anlegen der MGMT Datenbank.
+
+
 
 
 
 ------------------------------------------------------------------------------------------------------------------------------------------
-
+------------------------------------------------------------------------------------------------------------------------------------------
 # New Try
 
-https://eclipsys.ca/get-your-oracle-real-application-clusters-rac-21c-up-and-running-in-docker-the-easy-way/
+# Network
+
+
+Test macvlan: (eigentlich zw. zwei hosts)
+```
+podman network create -d macvlan --subnet=172.16.1.0/24 --gateway=172.16.1.1 -o parent=eth0 rac_pub1_nw
+podman network create -d macvlan --subnet=192.168.17.0/24 rac_priv1_nw
+podman network create -d macvlan --subnet=192.168.18.0/24 rac_priv2_nw
+```
+
+sonst
+** Bridge erzeugen (single Host) **
+
+```
+podman network create --driver=bridge --subnet=172.16.1.0/24 rac_pub1_nw
+podman network create --driver=bridge --subnet=192.168.17.0/24 rac_priv1_nw
+podman network create --driver=bridge --subnet=192.168.18.0/24 rac_priv2_nw
+```
+
+
+```
+[root@lasc53pod latest]# podman network ls
+NETWORK ID    NAME          DRIVER
+2f259bab93aa  podman        bridge
+0b560469e2e6  rac_priv1_nw  macvlan
+85c5e0aa3969  rac_priv2_nw  macvlan
+606a44672e40  rac_pub1_nw   macvlan
+``` 
 
 ## Configure DNS server for RAC
 
@@ -770,12 +788,12 @@ $TTL 86400
         86400 )  ; minimum
 ; Name server's
                 IN NS      example.com.
-                IN A       172.16.1.2
+                IN A       172.16.1.25
 ; Name server hostname to IP resolve.
 ;@ORIGIN  eot.us.oracle.com.
 ;@               IN      NS      gns.eot.us.oracle.com.
 ; Hosts in this Domain
-racnode-dns                          IN A    172.16.1.2
+racnode-dns                          IN A    172.16.1.25
 racnode1                             IN A    172.16.1.150
 racnode2                             IN A    172.16.1.151
 racnode1-vip                         IN A    172.16.1.160
@@ -802,36 +820,36 @@ racnode-cman4         IN A    172.16.1.182
 ```
 $ORIGIN 1.16.172.in-addr.arpa.
 $TTL 86400
-@       IN SOA  racnode-dns.example.info. root.example.info. (
+@       IN SOA  racnode-dns.example.com. root.example.com. (
         2014090402      ; serial
         3600      ; refresh
         1800      ; retry
         604800      ; expire
         86400 )    ; minimum
 ; Name server's
-        IN      NS     racnode-dns.example.info.
+        IN      NS     racnode-dns.example.com.
 ; Name server hostname to IP resolve.
-2       IN PTR  racnode-dns.example.info.
+25      IN PTR  racnode-dns.example.com.
 ; Second RAC Cluster on Same Subnet on Docker
-150     IN PTR  racnode1.example.info.
-151     IN PTR  racnode2.example.info.
-151     IN PTR  racnode2.example.info.
-160     IN PTR  racnode1-vip.example.info.
-161     IN PTR  racnode2-vip.example.info.
+150     IN PTR  racnode1.example.com.
+151     IN PTR  racnode2.example.com.
+151     IN PTR  racnode2.example.com.
+160     IN PTR  racnode1-vip.example.com.
+161     IN PTR  racnode2-vip.example.com.
 
 ; SCAN IPs
-170     IN PTR  racnode-scan.example.info.
-171     IN PTR  racnode-scan.example.info.
-172     IN PTR  racnode-scan.example.info.
+170     IN PTR  racnode-scan.example.com.
+171     IN PTR  racnode-scan.example.com.
+172     IN PTR  racnode-scan.example.com.
 
 ;GNS
-175     IN PTR  racnode-gns1.example.info.
-176     IN PTR  racnode-gns2.example.info.
+175     IN PTR  racnode-gns1.example.com.
+176     IN PTR  racnode-gns2.example.com.
 
 ; CMAN Server Entry
-180       IN PTR  racnode-cman2.example.info.
-181       IN PTR  racnode-cman3.example.info.
-182       IN PTR  racnode-cman4.example.info.
+180       IN PTR  racnode-cman2.example.com.
+181       IN PTR  racnode-cman3.example.com.
+182       IN PTR  racnode-cman4.example.com.
 ```
 
 
@@ -862,13 +880,7 @@ if [ -n "${https_proxy-}" ]; then
 fi
 ```
 
-** Bridge erzeugen **
 
-```
-podman network create --driver=bridge --subnet=172.16.1.0/24 rac_pub1_nw
-podman network create --driver=bridge --subnet=192.168.17.0/24 rac_priv1_nw
-podman network create --driver=bridge --subnet=192.168.18.0/24 rac_priv2_nw
-```
 
 **Podman create**
 
@@ -889,8 +901,8 @@ podman create --hostname racdns \
 
 ```
 podman network disconnect podman rac-dnsserver
-podman network connect rac_pub1_nw --ip 172.16.1.2 rac-dnsserver
-podman network connect rac_priv1_nw --ip 192.168.17.2 rac-dnsserver
+podman network connect rac_pub1_nw --ip 172.16.1.25 rac-dnsserver
+podman network connect rac_priv1_nw --ip 192.168.17.25 rac-dnsserver
 podman start rac-dnsserver
 ```
 
@@ -899,6 +911,8 @@ podman start rac-dnsserver
 
 
 ## Building a storage container
+
+die scheint nur mit bridge Netzwerk zu funktionieren (macvlan irgendwie nicht erfolgreich beim podman create, obwohl im container selbst dann per nfs gemountet werden konnte)
 
 https://github.com/oracle/docker-images/blob/main/OracleDatabase/RAC/OracleRACStorageServer/README.md
 
@@ -928,7 +942,7 @@ podman run -d -t \
  localhost/oracle/rac-storage-server:latest
 
  
- Das anlegen der 5 devices a 10 GB (default) dauert dann ein wenig
+ Das Anlegen der 5 devices a 10 GB (default) dauert dann ein wenig
 
  podman exec racnode-storage tail -f /tmp/storage_setup.log
 
@@ -941,6 +955,20 @@ NFS Volume anlegen
   racstorage
 
  
+## Host vorbereiten
+
+```
+fs.aio-max-nr = 1048576
+fs.file-max = 6815744
+net.core.rmem_max = 4194304
+net.core.rmem_default = 262144
+net.core.wmem_max = 1048576
+net.core.wmem_default = 262144
+net.core.rmem_default = 262144
+```
+
+
+
 
 ===========================================================================================
 ===========================================================================================
@@ -954,6 +982,7 @@ cd <gitrepo>/docker-images/OracleDatabase/RAC/OracleRealApplicationClusters/dock
 cp LINUX.X64_193000_grid_home.zip 
 cp LINUX.X64_193000_db_home.zip
 cd ..
+export TMPDIR=/var/lib/containers/storage/tmp
 ./buildContainerImage.sh -v 19.3.0
 
 podman image list
@@ -972,22 +1001,22 @@ vi hostfile
 ::1 localhost ip6-localhost ip6-loopback
 
 ## Public IP addresses
-172.16.1.150 racnode1.example.info racnode1
-172.16.1.151 racnode2.example.info racnode2
+172.16.1.150 racnode1.example.com racnode1
+172.16.1.151 racnode2.example.com racnode2
 
 ## Virtual IP addresses
-172.16.1.160 racnode1-vip.example.info racnode1-vip
-172.16.1.161 racnode2-vip.example.info racnode2-vip
+172.16.1.160 racnode1-vip.example.com racnode1-vip
+172.16.1.161 racnode2-vip.example.com racnode2-vip
 
 ## Private IPs
-192.168.17.150 racnode1-priv1.example.info racnode1-priv1
-192.168.17.151 racnode2-priv1.example.info racnode2-priv1
-192.168.18.150 racnode1-priv2.example.info racnode1-priv2
-192.168.18.151 racnode2-priv2.example.info racnode2-priv2
+192.168.17.150 racnode1-priv1.example.com racnode1-priv1
+192.168.17.151 racnode2-priv1.example.com racnode2-priv1
+192.168.18.150 racnode1-priv2.example.com racnode1-priv2
+192.168.18.151 racnode2-priv2.example.com racnode2-priv2
 
-172.16.1.170 racnode-scan.example.info racnode-scan.example.info
-172.16.1.171 racnode-scan.example.info racnode-scan.example.info
-172.16.1.172 racnode-scan.example.info racnode-scan.example.info
+172.16.1.170 racnode-scan.example.com racnode-scan.example.com
+172.16.1.171 racnode-scan.example.com racnode-scan.example.com
+172.16.1.172 racnode-scan.example.com racnode-scan.example.com
 ```
 
 **Passwort**
@@ -1008,7 +1037,7 @@ Hier hat sich gezeigt, dass es einen Unterschied gibt ob ich diesen Befehl auf S
 
 
 rausgenommen: 
---cpu-rt-runtime=95000 --ulimit rtprio=99  \
+
 -e CMAN_HOSTNAME=racnode-cman \
 -e CMAN_IP=172.16.1.3 \
  --volume /dev/shm \  
@@ -1018,8 +1047,10 @@ podman create -t -i \
   --hostname racnode1 \
   --volume /boot:/boot:ro \
   --tmpfs /dev/shm:rw,exec,size=4G \
-  --volume /scratch/secrets/hostfile:/etc/hosts  \
-  --volume /scratch/secrets/:/scratch/secrets/:ro \
+  --volume /scratch/rac/cluster01/rac_host_file:/etc/hosts  \
+  --volume /scratch/rac/cluster01/secrets/:/run/secrets/:ro \
+  --device=/dev/sdc:/dev/asm_disk1:rw  \
+  --device=/dev/sdd:/dev/asm_disk2:rw \
   --volume /etc/localtime:/etc/localtime:ro \
   --cpuset-cpus 0-3 \
   --memory 16G \
@@ -1028,15 +1059,13 @@ podman create -t -i \
   --sysctl "kernel.sem=250 32000 100 128" \
   --sysctl kernel.shmmax=8589934592  \
   --sysctl kernel.shmmni=4096 \
-  --dns-search=example.info \
-  --dns=172.16.1.2 \
-  --device=/dev/sdf:/dev/asm_disk1  \
-  --device=/dev/sdg:/dev/asm_disk2 \
+  --dns-search=example.com \
+  --dns=172.16.1.25 \
   --privileged=true  \
   --cap-add=SYS_NICE \
   --cap-add=SYS_RESOURCE \
   --cap-add=NET_ADMIN \
-  -e DNS_SERVERS=172.16.1.2 \
+  -e DNS_SERVERS=172.16.1.25 \
   -e NODE_VIP=172.16.1.160 \
   -e VIP_HOSTNAME=racnode1-vip  \
   -e PRIV_IP=192.168.17.150 \
@@ -1046,12 +1075,13 @@ podman create -t -i \
   -e SCAN_NAME=racnode-scan \
   -e SCAN_IP=172.16.1.170  \
   -e OP_TYPE=INSTALL \
-  -e DOMAIN=example.info \
+  -e DOMAIN=example.com \
   -e ASM_DEVICE_LIST=/dev/asm_disk1,/dev/asm_disk2 \
-  -e ASM_DISCOVERY_DIR=/dev \
+  -e ASM_DISCOVERY_DIR=/oradata \
   -e COMMON_OS_PWD_FILE=common_os_pwdfile.enc \
   -e PWD_KEY=pwd.key \
   --restart=always --tmpfs=/run -v /sys/fs/cgroup:/sys/fs/cgroup:ro \
+  --cpu-rt-runtime=95000 --ulimit rtprio=99  \
   --name racnode1 \
   oracle/database-rac:19.3.0
   ```
@@ -1066,9 +1096,9 @@ NODE 1:
 
 ```
 podman network disconnect podman racnode1
-podman network connect rac_eth0pub1_nw --ip 172.16.1.150 racnode1
-podman network connect rac_eth1priv1_nw --ip 192.168.17.150  racnode1
-podman network connect rac_eth2priv2_nw --ip 192.168.18.150  racnode1
+podman network connect rac_pub1_nw --ip 172.16.1.150 racnode1
+podman network connect rac_priv1_nw --ip 192.168.17.150  racnode1
+podman network connect rac_priv2_nw --ip 192.168.18.150  racnode1
 
 podman start racnode1
 podman logs -f racnode1
