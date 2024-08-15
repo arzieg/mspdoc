@@ -723,17 +723,31 @@ net.ipv4.ping_group_range = 0   0
 ## mgmtdb anlegen
 
 Nacharbeiten nach Word durchführen bis zum Punkt wo die mgmtdb angepasst wird, die muss ja erst einmal angelegt werden.
+Auf dem Host noch eine weitere asmdisk anlegen: 
+dd if=/dev/zero of=asm_disk06.img bs=1G count=10
 
+im Container:
 
 sqlplus / as sysasm
 
 CREATE DISKGROUP DG_MGMTDB external REDUNDANCY
   DISK '/oradata/asm_disk04.img';
 
+ALTER DISKGROUP DG_MGMTDB ADD DISK
+     '/oradata/asm_disk05.img';
+
+ALTER DISKGROUP DG_MGMTDB ADD DISK
+     '/oradata/asm_disk06.img';
+
 alter diskgroup DG_MGMTDB set attribute 'compatible.asm'='19.0.0.0.0';
 
 srvctl add mgmtlsnr 
 um Fehlermeldung *CRS-2510: Resource 'ora.MGMTLSNR' used in dependency 'hard' does not exist or is not registered.* zu vermeiden beim Anlegen der MGMT Datenbank.
+
+
+Dann weiter in Dokument, manuelle Installation der mgmtdb. Wenn die nicht erfolgreich durchläuft, kann man mit 
+dbca -silent -deleteDatabase -sourceDB -MGMTDB die wieder löschen, filesystem erweitern und noch einmal neu starten.
+
 
 
 
@@ -953,6 +967,11 @@ NFS Volume anlegen
   --opt   o=addr=192.168.17.80,rw,bg,hard,tcp,vers=3,timeo=600,rsize=32768,wsize=32768,actimeo=0 \
   --opt device=192.168.17.80:/oradata \
   racstorage
+
+Es sieht so aus, als ob auf dem Host nfs-util Service laufen muss, damit der podman nfs treiber das verwenden kann. 
+also
+`systemctl enable nfs-util`
+
 
  
 ## Host vorbereiten
