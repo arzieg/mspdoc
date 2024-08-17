@@ -8,7 +8,6 @@ https://deb.nodesource.com/
 wget --no-check-certificate https://deb.nodesource.com/setup_20.x
 sudo bash ./setup_20.x
 sudo apt install nodejs
-sudo apt install yarn
 node -v
 ```
 
