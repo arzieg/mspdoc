@@ -407,7 +407,8 @@ dd if=/dev/zero of=/oradata/asm_mlog1.img bs=1G count=8
 Data 
 dd if=/dev/zero of=/oradata/asm_data1.img bs=1G count=20
 dd if=/dev/zero of=/oradata/asm_data2.img bs=1G count=20
-dd if=/dev/zero of=/oradata/asm_date3.img bs=1G count=20
+dd if=/dev/zero of=/oradata/asm_data3.img bs=1G count=10
+
 
 Lokalen files 
 mkdir -p /oradata/node1
@@ -602,6 +603,8 @@ container-registry.oracle.com/os/oraclelinux  8           dfce5863ff0f  2 months
 ## Oracle RAC Basisimage starten
 
 ### Container erzeugen
+
+*Hier noch überlegen, wie mit dem DB SID Verzeichnis umgegangen werden soll. Ein Container kann man im Nachhinein nicht ändern, d.h. hier müsste dann auch schon das /oracle/sid Verzeichnis angelegt werden. Forschen, ob es noch eine andere Möglichkeit gibt.* (https://github.com/containers/podman/issues/1320)
 
 
 ```
@@ -798,3 +801,15 @@ systemctl status rc-local.service
 systemctl enable rc-local.service
 systemctl start rc-local.service
 ```
+
+
+# Installation der Oracle GRID
+
+nach interner Dokumentation mit ocr votingdisk und Management-B
+
+# Installation Oracle NonSAP 
+
+nach interner Dokumentation
+
+
+
