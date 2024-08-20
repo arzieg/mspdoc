@@ -274,6 +274,14 @@ podman run localhost/oshttp
 ```
 
 
+## Podman Images auf Basis eines Containers
+
+Images können auf Basis eines laufenden Containers erstellt werden über podman commit. 
+
+1. podman commit <container>
+2. podman image ls, die Image-ID suchen
+3. podman tag <ID> <neuer imagename>
+
 
 
 ## Podman pods

@@ -399,10 +399,13 @@ dd if=/dev/zero of=/oradata/asm_ocr1.img bs=1G count=1
 dd if=/dev/zero of=/oradata/asm_ocr2.img bs=1G count=1
 dd if=/dev/zero of=/oradata/asm_ocr3.img bs=1G count=1
 
-Arch / olog / mlog 
+Arch / olog / mlog / fra
 dd if=/dev/zero of=/oradata/asm_arch1.img bs=1G count=8
 dd if=/dev/zero of=/oradata/asm_olog1.img bs=1G count=8
 dd if=/dev/zero of=/oradata/asm_mlog1.img bs=1G count=8
+dd if=/dev/zero of=/oradata/asm_fra1.img bs=1G count=16
+
+
 
 Data 
 dd if=/dev/zero of=/oradata/asm_data1.img bs=1G count=20
@@ -606,6 +609,7 @@ container-registry.oracle.com/os/oraclelinux  8           dfce5863ff0f  2 months
 
 *Hier noch überlegen, wie mit dem DB SID Verzeichnis umgegangen werden soll. Ein Container kann man im Nachhinein nicht ändern, d.h. hier müsste dann auch schon das /oracle/sid Verzeichnis angelegt werden. Forschen, ob es noch eine andere Möglichkeit gibt.* (https://github.com/containers/podman/issues/1320)
 
+*für das Anlegen einer späteren Datenbank mzss /dev/shm gemountet werden* 
 
 ```
 # podman create -t -i \
@@ -613,7 +617,7 @@ container-registry.oracle.com/os/oraclelinux  8           dfce5863ff0f  2 months
   --dns-search=example.com \
   --privileged=false  \
   --security-opt apparmor=unconfined \
-  --tmpfs /dev/shm:rw,exec,size=4G \
+  --volume /dev/shm \
   --volume racstorage:/oradata \
   --volume /oradata/node1:/oracle \
   --volume /mnt/sapcd:/software/stage \
@@ -637,17 +641,20 @@ container-registry.oracle.com/os/oraclelinux  8           dfce5863ff0f  2 months
   --ulimit rtprio=99  \
   --systemd=true \
   --log-level=error \
-  --name racnode1 \
-oracle/database-rac:19.22-slim
+  --name racnode1g \
+racnode1grid
 
-  
+oracle/database-rac:19.22-slim
+  --sysctl "vm.hugetlb_shm_group=54322" \
+  --sysctl "vm.nr_hugepages=5632" \
+    --tmpfs /dev/shm:rw,exec,size=4G \
 
 # podman create -t -i \
   --hostname racnode2 \
   --dns-search=example.com \
   --privileged=false  \
   --security-opt apparmor=unconfined \
-  --tmpfs /dev/shm:rw,exec,size=4G \
+  --volume /dev/shm \
   --volume racstorage:/oradata \
   --volume /oradata/node2:/oracle \
   --volume /mnt/sapcd:/software/stage \
@@ -671,10 +678,10 @@ oracle/database-rac:19.22-slim
   --ulimit rtprio=99  \
   --systemd=true \
   --log-level=error \
-  --name racnode2 \
-oracle/database-rac:19.22-slim
+  --name racnode2g \
+racnode2grid
 ```
-
+oracle/database-rac:19.22-slim
 
 ### Public und Private Networks den Containern zuordnen
 
@@ -694,19 +701,19 @@ Den Containern wird eine IP sowie das Netwerk zugewiesen:
 ```
 NODE 1:
 
-podman network disconnect podman racnode1
-podman network connect rac_pub1_nw --ip 172.16.1.150 racnode1
-podman network connect rac_priv1_nw --ip 192.168.17.150  racnode1
-podman network connect rac_priv2_nw --ip 192.168.18.150  racnode1
+podman network disconnect podman racnode1g
+podman network connect rac_pub1_nw --ip 172.16.1.150 racnode1g
+podman network connect rac_priv1_nw --ip 192.168.17.150  racnode1g
+podman network connect rac_priv2_nw --ip 192.168.18.150  racnode1g
 ```
 
 NODE 2:
 
 ```
-podman network disconnect podman racnode2
-podman network connect rac_pub1_nw --ip 172.16.1.151 racnode2
-podman network connect rac_priv1_nw --ip 192.168.17.151  racnode2
-podman network connect rac_priv2_nw --ip 192.168.18.151  racnode2
+podman network disconnect podman racnode2g
+podman network connect rac_pub1_nw --ip 172.16.1.151 racnode2g
+podman network connect rac_priv1_nw --ip 192.168.17.151  racnode2g
+podman network connect rac_priv2_nw --ip 192.168.18.151  racnode2g
 
 ```
 
@@ -811,5 +818,10 @@ nach interner Dokumentation mit ocr votingdisk und Management-B
 
 nach interner Dokumentation
 
+Fehler: 
 
+/dev/shm wird benötigt, ansonsten kann kein shared memory benutzt werden. chmod 1777 auf /dev/shm setzen, damit oracle auch den Bereich nutzen kann. 
+
+
+Oracle Support Document 2850137.1 (ORA-00600: internal error code, arguments: [ksipc_ksmsq_init] while creating a database using DBCA) can be found at: https://support.oracle.com/epmos/faces/DocumentDisplay?id=2850137.1
 
