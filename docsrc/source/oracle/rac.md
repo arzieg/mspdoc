@@ -159,6 +159,65 @@ col percentage for 999.99
 SELECT name, free_mb, total_mb, free_mb/total_mb*100 as percentage FROM v$asm_diskgroup;
 ```
 
+### asmcmd
+
+lsdg                 - list diskgroup
+
+lsdg -g --discovery  - List diskgroups across all nodes of cluster
+
+lsdsk -k -G DATA     - list disks in diskgroup
+
+lsdsk -t -G DATA      - list disks with creation date
+
+lsdsk --candidate -k  - List candidiate disks only
+
+lsdsk --candidate -p  - List member disks only
+
+lsattr -lm            - List attributes of all Disks
+
+lsattr -lm -G DATA    - List attributes of Group Data
+
+lsattr -lm %compatible% - List attriubes with parameters %compatible%
+
+umount / mount          - umount / mount (-a für alle)
+
+rebal --power 8 DATA    - rebalance der Daten in DATA
+
+lsop					- Überwachnung der Rebalance 
+
+pwget --dbuniquename <DB>  - get password file location
+
+pwget --asm             - get passwordfile of asm
+
+lstmpl -l -G ARCH       - Get asm template info of a diskgroup
+
+showclustermode         - show flexmode
+
+showversion 
+
+spget                   - Ort des spfiles
+
+spbackup +MGMT/DBACLASS-cluster/ASMPARAMETERFILE/registry.253.899644763 /home/oracle/asmspfile.ora - copy spfile
+
+lsct DATA               - show clients connected to Group DATA
+
+lspwusr                 - list asm user with password
+
+dsget                   - Get asm diskstring
+
+lsof -G DATA            - List open files
+
+afd_state               - Check filter driver is enabled or not
+
+afd_lsdsk               - List filter driver disk
+
+afd_dsget               - Get afd diskstring
+
+
+
+
+
+
 ## SPFILE:
 
 liegt im ASM, wenn man mal was sucht oder ändern muss
