@@ -13,20 +13,81 @@
 
 `alter system reset open_cursors scope=spfile sid='*';`    reset eines Parametes
 
-## Lagereoganisation von Controlfiles via spfile:
+### pfile erzeugen
+
+`create pfile='initN221.ora' from spfile;`
+
+
+### Controlfiles
+
+#### ohne asm
+
+1. Infos
+```
+SELECT name FROM v$controlfile;
+show parameter control_files;
+```
+2. alle controlfiles angeben
 
 ```
-ALTER SYSTEM SET control_files =
-'full path of original file','full path of copy 1','full path of copy 2' scope=spfile;
-eg ...
-ALTER SYSTEM SET control_files =
-'$ORACLE_HOME/ORADATA/u01/control1.ctl','$ORACLE_HOME/ORADATA/u02/control2.ctl','$ORACLE_HOME/ORADATA/u03/control3.ctl'
-scope=spfile;
+ALTER SYSTEM SET CONTROL_FILES='/data/app/oracle/oradata/PRIM/control01.ctl','/data/app/oracle/oradata/PRIM/control02.ctl','/data/app/oracle/oradata/PRIM/control03.ctl' SCOPE=spfile;
 ```
 
-2. shutdown immediate
-3. Copy the controlfile to it's two new locations
-4. Startup
+3. shutdown immediate
+
+```
+sqlplus '/ as sysdba'
+SQL> shutdown immediate;
+SQL> startup nomount;
+```
+
+4. Copy the controlfile to it's two new locations
+
+```
+RMAN> connect target /
+connected to target database: N22 (not mounted)
+RMAN> restore controlfile from '+N22_DATA/N22/CONTROLFILE/current.261.1177579279';
+Starting restore at 21.08.2024 11:22:32
+using target database control file instead of recovery catalog
+allocated channel: ORA_DISK_1
+channel ORA_DISK_1: SID=9 instance=n221 device type=DISK
+channel ORA_DISK_1: copied control file copy                                                                                                                                                output file name=+N22_DATA/N22/CONTROLFILE/current.261.1177579279
+output file name=+N22_MLOG/N22/CONTROLFILE/current.256.1177586553
+output file name=+N22_OLOG/N22/CONTROLFILE/current.256.1177586555
+Finished restore at 21.08.2024 11:22:40
+```
+
+5.  Modify the spfile with the name of new control file
+`alter system set control_files='+N22_DATA/N22/CONTROLFILE/current.261.1177579279','+N22_MLOG/N22/CONTROLFILE/current.256.1177586553','+N22_OLOG/N22/CONTROLFILE/current.256.1177586555' scope=spfile sid='*';`
+
+6. Shutdown / Startup the database and check the new control file
+
+```
+shutdown immediate
+startup 
+SQL> select name from v$controlfile;
+
+NAME
+--------------------------------------------------------------------------------
++N22_DATA/N22/CONTROLFILE/current.261.1177579279
++N22_MLOG/N22/CONTROLFILE/current.256.1177586553
++N22_OLOG/N22/CONTROLFILE/current.256.1177586555
+```
+
+
+#### mit asm
+
+MOS Doc ID 2006213.1
+
+1. Infos
+SELECT name FROM v$controlfile;
+show parameter control_files;
+
+2. alle controlfiles angeben
+alter system set control_files='+N22_DATA/N22/CONTROLFILE/current.261.1177579279','+N22_MLOG','+N22_OLOG' scope=spfile sid='*';
+
+
+
 
 ## Temporäre Tablespaces:
 
