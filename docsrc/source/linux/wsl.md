@@ -1,5 +1,9 @@
 # WSL 
 
+Update WSL
+
+`wsl --update --web-download`
+
 https://canonical-ubuntu-wsl.readthedocs-hosted.com/en/latest/guides/install-ubuntu-wsl2/
 
 List avaiable Distros: `wsl --list --online`
@@ -18,10 +22,162 @@ wsl --list --verbose
 wsl --set-version <distribution name> 2
 ``` 
 
+## Some stuff
+
+```
+sudo apt install unzip
+sudo apt install git
+```
+
+## Azure CLI
+
+Install: 
+
+```
+curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+``` 
+
 
 ## Setup Oh my Posh
 
 https://calebschoepp.com/blog/2021/how-to-setup-oh-my-posh-on-ubuntu/
+
+### Install
+
+```
+## Install Oh my Posh
+sudo wget --no-check-certificate https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/posh-linux-amd64 -O /usr/local/bin/oh-my-posh
+sudo chmod +x /usr/local/bin/oh-my-posh
+
+## Download the themes
+mkdir ~/.poshthemes
+wget --no-check-certificate https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/themes.zip -O ~/.poshthemes/themes.zip
+unzip ~/.poshthemes/themes.zip -d ~/.poshthemes
+chmod u+rw ~/.poshthemes/*.json
+rm ~/.poshthemes/themes.zip
+```
+
+### Change prompt
+
+add to ~/.bashrc
+```
+eval "$(oh-my-posh --init --shell bash --config ~/.poshthemes/atomic.omp.json)"
+``` 
+
+### Setup font
+
+Download Font, f.i. Meslo from https://www.nerdfonts.com/font-downloads
+
+```
+cd ~
+mkdir .fonts
+unzip /home/c/Users/<user>/Downloads/Meslo.zip -d ~/.fonts/Meslo
+fc-cache -fv
+```
+
+Im Terminal -> Einstellungen -> Profil auswählen oder neu erstellen -> unter Darstellung dann z.B. "MesloLGM NF" auswählen.
+
+## setup tmux
+
+Install: `sudo apt install tmux`
+
+Config: vi ~/.tmux.conf
+
+```
+# remap prefix from 'C-b' to 'C-a'
+unbind C-b
+set-option -g prefix C-a
+bind-key C-a send-prefix
+
+# split panes using | and -
+bind | split-window -h
+bind - split-window -v
+unbind '"'
+unbind %
+
+# switch panes using Alt-arrow without prefix
+bind -n M-Left select-pane -L
+bind -n M-Right select-pane -R
+bind -n M-Up select-pane -U
+bind -n M-Down select-pane -D
+
+# Windows Nummerierung setzen
+set -g base-index 1
+setw -g pane-base-index 1
+set -g renumber-windows on
+set -g history-limit 10000
+
+# 256 Farben
+set -g default-terminal "screen-256color"
+set -g status-style "bg=yellow"
+set -ag status-style "fg=black"
+```
+
+## setup shell
+
+Copy .ssh/* to new place
+
+vi ~/.bashrc
+```
+### start ssh-agent
+if [ "${HOME}" != "/home/mobaxterm" ] ; then
+        [ -f ~/.ssh/agent ] && . ~/.ssh/agent 2>&1>/dev/null
+        pgrep -u $USER ssh-agent | grep -q "${SSH_AGENT_PID}"
+        if [ $? -ne 0 ]
+        then
+          echo "Achtung, es läuft kein SSH-AGENT. Wird gestartet... "
+          ssh-agent > ~/.ssh/agent
+          . ~/.ssh/agent
+          echo "Füge den Standard-Login-Schlüssel hinzu."
+          ssh-add ~/.ssh/id_rsa
+          ssh-add ~/.ssh/<mykey>.key
+        fi
+fi
+```
+
+## setup terraform
+
+### Installation
+
+```
+sudo apt install gnupg
+sudo apt install software-properties-common
+sudo apt install curl
+
+sudo apt-get update && sudo apt-get install -y gnupg software-properties-common
+
+wget -O- https://apt.releases.hashicorp.com/gpg | \
+gpg --dearmor | \
+sudo tee /usr/share/keyrings/hashicorp-archive-keyring.gpg > /dev/null
+
+gpg --no-default-keyring \
+--keyring /usr/share/keyrings/hashicorp-archive-keyring.gpg \
+--fingerprint
+
+Check fingerprint (https://www.hashicorp.com/trust/security  Linux Package Checksum verification)
+798A EC65 4E5C 1542 8C8E 42EE AA16 FCBC A621 E701
+
+
+echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] \
+https://apt.releases.hashicorp.com $(lsb_release -cs) main" | \
+sudo tee /etc/apt/sources.list.d/hashicorp.list
+
+sudo apt update
+sudo apt-get install terraform
+
+terraform -install-autocomplete
+```
+
+vi ~/.bashrc
+```
+# Terraform
+alias tf="terraform"
+function tfav () {
+        terraform apply -auto-approve -var-file="$1"
+}
+```
+
+
 
 
 
