@@ -181,4 +181,6 @@ Verify that Commands or Script has Run
 
 .. code-block:: bash
 
+    cloud-init status --wait
+
     sudo vi /var/log/cloud-init-output.log 
