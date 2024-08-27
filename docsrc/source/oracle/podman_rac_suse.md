@@ -134,7 +134,7 @@ zypper in skopeo
 ### /etc/containers/registries.conf
 
 ```
-unqualified-search-registries = ["container-registry.oracle.com", "registry-azure.susecloud.net", "registry.suse.com",]
+unqualified-search-registries = ["container-registry.oracle.com", "registry.opensuse.org", "registry.suse.com", "docker.io"]
 ```
 
 ### signed Images von Oracle
