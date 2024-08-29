@@ -189,10 +189,10 @@ Probleme mit dem Fileserver:
     git branch -a
     git pull
 	
-  vi /etc/salt/minion.d/environment.conf
+  vi /etc/venv-salt-minion/minion.d/environment.conf
     saltenv: master 
     
-  vi /etc/salt/minion
+  vi /etc/venv-salt-minion/minion
   file_client: local
 
   file_roots:
