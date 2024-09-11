@@ -300,5 +300,7 @@ podman run --pod oraclepod -it --rm oraclelinux:8
 podman ps -ap
 ```
 
+## Save image
+`podman save alpine > alpine-all.tar`
 
 

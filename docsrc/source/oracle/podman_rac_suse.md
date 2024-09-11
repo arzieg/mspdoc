@@ -333,11 +333,11 @@ podman create --hostname racdns \
   --cap-add=AUDIT_WRITE \
   -e DOMAIN_NAME="example.com" \
   -e WEBMIN_ENABLED=false \
-  -e RAC_NODE_NAME_PREFIXP="racnodep" \
+  -e RAC_NODE_NAME_PREFIXP="racnode" \
   -e SETUP_DNS_CONFIG_FILES="setup_true"  \
   --privileged=false \
   --name racdns \
- oracle/rac-dnsserver:latest
+ localhost/oracle-dns-server:latest
 ```
 
 ```
