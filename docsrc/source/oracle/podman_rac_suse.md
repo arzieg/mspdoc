@@ -511,9 +511,16 @@ cat /opt/scripts/startup/hostfile > /etc/hosts
 systemctl reset-failed
 ```
 
+4b. openssh key
+
+vi podmanrac.pub
+`<openssh-key>`
+
+
 
 5. Containerfile für Oracle RAC Podman Image erzeugen
-
+(https://www.fastruby.io/blog/docker/docker-ssh-keys.html)
+Auch eine Variante, beim Erzeugen eines Containers den public key per comand line übergeben. 
 
 
 ```
@@ -530,7 +537,8 @@ FROM oraclelinux:8
 ENV SCRIPT_DIR=/opt/scripts/startup \
     RESOLVCONFENV="resolv.conf" \
     HOSTFILEENV="hostfile" \
-    SETUPCONTAINERENV="setupContainerEnv.sh"
+    SETUPCONTAINERENV="setupContainerEnv.sh" \
+    OPENSSHPUB="podmanrac.pub"
 
 ### Copy Files
 # ----
@@ -539,7 +547,7 @@ COPY  $SETUPCONTAINERENV $SCRIPT_DIR/
 
 ### RUN Commands
 # -----
-COPY $HOSTFILEENV $RESOLVCONFENV $SCRIPT_DIR/
+COPY $HOSTFILEENV $RESOLVCONFENV $OPENSSHPUB $SCRIPT_DIR/
 RUN dnf install -y oracle-database-preinstall-19c systemd vim passwd openssh-server hostname xterm xhost vi policycoreutils-python-utils && \
  dnf clean all && \
  sync && \
@@ -557,11 +565,15 @@ RUN dnf install -y oracle-database-preinstall-19c systemd vim passwd openssh-ser
  chmod +x $SCRIPT_DIR/$SETUPCONTAINERENV && \
  chmod +x /etc/rc.d/rc.local && \
  setcap 'cap_net_admin,cap_net_raw+ep' /usr/bin/ping && \
+ mkdir /root/.ssh  && \
+ chmod 700 /root/.ssh && \
+ echo "$SCRIPT_DIR/$OPENSSHPUB" > /root/.ssh/authorized_keys && \
+ chmod 600 /root/.ssh/authorized_keys && \
+ rm "$SCRIPT_DIR/$OPENSSHPUB" && \
  sync
 
 USER root
 WORKDIR /root
-VOLUME ["/oradata"]
 VOLUME ["/oracle"]
 CMD ["/usr/sbin/init"]
 # End of the Containerfile
@@ -615,12 +627,12 @@ container-registry.oracle.com/os/oraclelinux  8           dfce5863ff0f  2 months
 # podman create -t -i \
   --hostname racnode1 \
   --dns-search=example.com \
-  --privileged=false  \
+  --privileged=true  \
   --security-opt apparmor=unconfined \
   --volume /dev/shm \
   --volume racstorage:/oradata \
-  --volume /oradata/node1:/oracle \
-  --volume /mnt/sapcd:/software/stage \
+  --volume /oralocl/node1:/oracle \
+  --volume /sapcd:/software/stage \
   --memory 16G \
   --memory-swap 32G \
   --sysctl kernel.shmall=2097152  \
@@ -641,8 +653,8 @@ container-registry.oracle.com/os/oraclelinux  8           dfce5863ff0f  2 months
   --ulimit rtprio=99  \
   --systemd=true \
   --log-level=error \
-  --name racnode1g \
-racnode1grid
+  --name racnode1 \
+oracle/database-rac:19.22-slim
 
 oracle/database-rac:19.22-slim
   --sysctl "vm.hugetlb_shm_group=54322" \
@@ -678,8 +690,8 @@ oracle/database-rac:19.22-slim
   --ulimit rtprio=99  \
   --systemd=true \
   --log-level=error \
-  --name racnode2g \
-racnode2grid
+  --name racnode2 \
+racnode2
 ```
 oracle/database-rac:19.22-slim
 
@@ -701,10 +713,10 @@ Den Containern wird eine IP sowie das Netwerk zugewiesen:
 ```
 NODE 1:
 
-podman network disconnect podman racnode1g
-podman network connect rac_pub1_nw --ip 172.16.1.150 racnode1g
-podman network connect rac_priv1_nw --ip 192.168.17.150  racnode1g
-podman network connect rac_priv2_nw --ip 192.168.18.150  racnode1g
+podman network disconnect podman racnode1
+podman network connect rac_pub1_nw --ip 172.16.1.150 racnode1
+podman network connect rac_priv1_nw --ip 192.168.17.150  racnode1
+podman network connect rac_priv2_nw --ip 192.168.18.150  racnode1
 ```
 
 NODE 2:

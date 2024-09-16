@@ -302,6 +302,9 @@ Troubleshooting: https://blogs.oracle.com/coretec/post/was-geht-ab-sqlnet-tracin
 				list expired archivelog ALL;   -> zeigt noch einmal die fehlenden Archive an
 				DELETE expired archivelog ALL;
 				(!! nur in Laborumgebung: delete archivelog all;)
+		
+					Wenn nichts hilft, vielleicht alte archive löschen, dann muss aber auch die DB gesichert werden:
+					DELETE ARCHIVELOG ALL COMPLETED BEFORE 'sysdate-1';
 				
 				
 			sqlplus / as sysdba
