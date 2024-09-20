@@ -178,10 +178,22 @@ function tfav () {
 ```
 
 
+## Export / Import a WSL
+
+https://4sysops.com/archives/export-and-import-windows-subsystem-for-linux-wsl/
+
+Export: `wsl --export Ubuntu-24.04 c:\users\<user>\Downloads\Ubuntu2404CLAB.tar`
+
+Import: `wsl --import Ubuntu2404CLAB c:\users\<user>\wslimages c:\users\<user>\Downloads\Ubuntu2404CLAB.tar`
+
+
+
 
 
 
 ## 101
+
+### Basics
 
 https://learn.microsoft.com/de-de/windows/wsl/basic-commands
 
@@ -193,4 +205,5 @@ WSL aktualisieren: `wsl --update --web-download`
 
 `ip route show | grep -i default | awk '{ print $3}'`: Gibt die IP-Adresse des Windows-Computers zurück, wie von WSL 2 (der WSL 2-VM) dargestellt
 
+WSL Distibution löschen: `wsl --unregister <distroName> `  https://learn.microsoft.com/de-de/windows/wsl/faq
 

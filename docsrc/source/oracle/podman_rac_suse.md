@@ -821,6 +821,16 @@ systemctl enable rc-local.service
 systemctl start rc-local.service
 ```
 
+### ssh autologin
+Damit nicht jedes mal der fingerprint bestätigt werden muss, kann man die Known-Hosts wie folgt befüllen
+
+https://www.putorius.net/automatically-accept-ssh-fingerprint.html
+
+```
+ssh-keyscan -H <targethost> >> ~/.ssh/known_hosts
+```
+das muss man mit dem User oracle und root dann durchführen je node. 
+
 
 # Installation der Oracle GRID
 
