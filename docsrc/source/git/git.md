@@ -80,3 +80,51 @@ git filter-branch -f --tree-filter "sed -i '' 's/YOUR_SECRET_KEY_HERE/REPLACEMEN
 ```
 git push origin main --force  # Assuming your branch is named "main"
 ```
+
+Variante:
+
+https://dev.to/kodebae/how-to-remove-a-leaked-env-file-from-github-permanently-3lei
+
+Bsp. env-File mit secret wurde gepusht
+
+1. Remove env file and commit 
+
+```
+bash
+Copy code
+git rm --cached .env
+echo ".env" >> .gitignore
+git add .gitignore
+git commit -m "Remove .env file and add to .gitignore"
+```
+
+2. Remove the .env File from History with filter-branch
+
+```
+bash
+Copy code
+git filter-branch --force --index-filter 'git rm --cached --ignore-unmatch .env' --prune-empty --tag-name-filter cat -- --all
+```
+
+3. Force Push the Changes
+
+```
+bash
+Copy code
+git push --force --all
+git push --force --tags
+```
+
+4. Clean Up Local Repository
+
+```
+bash
+Copy code
+rm -rf .git/refs/original/
+git reflog expire --expire=now --all
+git gc --prune=now --aggressive
+```
+
+5. Revoke Any Leaked Credentials
+
+**As with any method, if your .env file contained sensitive information, revoke and regenerate those credentials immediately.**
