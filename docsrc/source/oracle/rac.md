@@ -146,6 +146,15 @@ OLS Nodes: `$CRS_HOME/bin/olsnodes`
 enabled the tracing of CVU as: `$export SRVM_TRACE=true`, dann den gewünschten clufy Befehl. Ein Trace wird erzeugt unter `/oracle/base/crsdata/racnode1/cvu/oracle/cvutrace.log.0`
 
 
+## Hugepages
+https://support.oracle.com/epmos/faces/DocumentDisplay?id=2945540.1
+
+grep Hugepagesize /proc/meminfo
+
+(Sum of all  Shared Memory Segments to be allocated in Byte) / (Hugepagesize in KB x 1024) + 1 
+example: 60 GB SGA
+(60*1024*1024*1024) / (2048 * 1024) + 1 = 30721
+
 
 ## ASM
 
