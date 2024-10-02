@@ -37,6 +37,66 @@ git fetch
 git rebase origin/master
 ```
 
+## Revover last commit
+
+Branch gelöscht oder falschen commit resetet:
+
+```
+git reflog
+```
+
+## git bisect: Find the Commit That Broke Your Code
+
+git bisect performs a binary search through your commit history to find the exact commit where things went wrong
+
+```
+git bisect start
+git bisect good <last known good commit>
+git bisect bad <bad commit>
+```
+
+## git cherry-pick: Selectively Apply Commits Across Branches
+
+Sometimes you don’t want to merge an entire branch but still need to include specific commits. git cherry-pick allows you to take specific commits from one branch and apply them to another.
+
+```
+git cherry-pick <commit-hash>
+```
+
+## git reset — hard: Reset Your Code Completely
+
+git reset — — hard is a powerful but dangerous command. It resets your working directory to a specific commit, discarding any changes that have not been committed.
+
+```
+git reset --hard <commit-hash>
+```
+
+Say your project is in a broken state and you want to start fresh from a previous commit. git reset — — hard allows you to revert all changes back to a stable commit. Just be cautious, as it removes uncommitted changes.
+
+## git blame: Who Broke This Line of Code?
+
+git blame shows you a detailed history of who changed what, and when.
+
+```
+git blame <file>
+``` 
+
+## git clean: Clean Up Untracked Files
+
+Over time, your project can accumulate many untracked files, like build artifacts or logs. git clean helps you clean up by removing these files from your working directory.
+
+```
+git clean -f
+git clean -fd
+```
+
+## git shortlog: Summarize Contributions by Author
+
+```
+git shortlog -s -n
+```
+
+
 ## Secrets ausversehen gepusht
 
 

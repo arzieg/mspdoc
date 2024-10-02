@@ -82,7 +82,16 @@ crsctl start cluster -all		// Start der CRS auf allen Knoten
 10) Then check the status of the clusterware globally as follows:
  `crsctl check cluster -all`
 
- 
+### Voting Disks
+
+List Disks: `crsctl query css votedisk`
+
+external redundancy benötigt 1 x VDSK
+normal redundancy = 3 VDSK
+high redundancy = 5 VDSK
+
+replace VDSK: `crsctl replace votedisk +DATA1`
+
 
 
 ### Cluster Problems
@@ -699,7 +708,7 @@ Reste ggfs löschen auf host
 		root $ cd $GRID_HOME
 		root $ ./root.sh
 	Hat aber auch nicht so richtig geholfen. reboot des Systems und danach ein /oracle/grid/191700/root.sh - dann funktionierte es :-) 
-	Dann anch Kapitel 6 die Arbeiten für die GRID Installation durchgeführt (bzw. welche notwendig waren)
+	Dann nach Kapitel 6 die Arbeiten für die GRID Installation durchgeführt (bzw. welche notwendig waren)
 	Dann noch Services registrieren
 	srvctl add instance -db S77 -instance S772 -node host
 	srvctl remove service -db S77 -service S77HA
