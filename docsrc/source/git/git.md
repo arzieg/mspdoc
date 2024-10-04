@@ -188,3 +188,62 @@ git gc --prune=now --aggressive
 5. Revoke Any Leaked Credentials
 
 **As with any method, if your .env file contained sensitive information, revoke and regenerate those credentials immediately.**
+
+
+# GIT - VSC Integration Windows 10
+
+0. GIT installieren
+1. ssh-agent aktivieren in Windows 10 als Administrator
+   
+   ```
+   Get-Service ssh-agent | Set-Service -StartupType Automatic -PassThru | Start-Service
+
+   nur wenn man nicht neustarten möchte:
+
+   start-ssh-agent.cmd
+   ``` 
+
+2. Prüfen per Powershell (Userkontext)
+   
+   ```Powershell
+
+   PS C:\Users\arzieg> get-service ssh-agent
+
+    Status   Name               DisplayName
+    ------   ----               -----------
+    Running  ssh-agent          OpenSSH Authentication Agent
+    ```
+
+3. Anpassen .ssh/config
+
+   ```
+   Host github.com
+     Hostname github.com
+     User git
+     IdentityFile "C:\\Users\\arzieg/.ssh/arzieg_eddi_github"
+   ```
+
+4. ssh-key laden, Powershell Usercontext
+
+    ```Powershell
+    ssh-add <Pfad zum private Key>
+    ssh-add -l 
+    ```
+
+5. Test Connect 
+
+   ```
+   ssh -T git@github.com
+   ``` 
+
+5. Windows 10 hat auf ein eigenes openssh installiert. Dies funktioniert irgendwie nicht mit
+   dem ssh-agent, d.h. man wird trotz agent nach einem Passwort gefragt.
+   https://www.teapotcoder.com/post/how-to-fix-git-ssh-asking-for-password-on-windows-10/
+
+   Daher am besten Environmentvariable setzen
+
+   Windows Start -> Einstellungen -> Umgebungsvariablen für dieses Konto bearbeiten 
+
+    Hinzufügen -> GIT_SSH_COMMAND -> C:/WINDOWS/System32/OpenSSH/ssh.exe
+
+
