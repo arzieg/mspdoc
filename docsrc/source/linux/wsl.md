@@ -199,6 +199,8 @@ https://learn.microsoft.com/de-de/windows/wsl/basic-commands
 
 Standardversion festlegen: `wsl --set-default-version <Version>`
 
+Image auf eine Version ändern: `wsl --set-version Ubuntu2404CLAB 1`
+
 WSL aktualisieren: `wsl --update --web-download`
 
 `wsl hostname -I`: gibt die IP-Adresse Ihrer Linux-Distribution zurück, die über WSL 2 installiert wurde (die WSL 2-VM-Adresse)
