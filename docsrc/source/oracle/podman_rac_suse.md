@@ -567,7 +567,7 @@ RUN dnf install -y oracle-database-preinstall-19c systemd vim passwd openssh-ser
  setcap 'cap_net_admin,cap_net_raw+ep' /usr/bin/ping && \
  mkdir /root/.ssh  && \
  chmod 700 /root/.ssh && \
- echo "$SCRIPT_DIR/$OPENSSHPUB" > /root/.ssh/authorized_keys && \
+ cat "$SCRIPT_DIR/$OPENSSHPUB" > /root/.ssh/authorized_keys && \
  chmod 600 /root/.ssh/authorized_keys && \
  rm "$SCRIPT_DIR/$OPENSSHPUB" && \
  sync
