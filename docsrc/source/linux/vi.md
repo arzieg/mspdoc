@@ -2,6 +2,7 @@
 
 :zR									-> Uncollapse all
 :set list / :set nolist				-> Anzeigen von special characters
+:set binary                         -> Anziegen von ^M bzw. auch nicht (schauen ob Datei im Windows-Mode gesichert wurde)
 :set paste                          -> Insert resetten, kein Kommentarfeld am Anfang
 :set nopaste					    -> Reset von :set paste, also alles wie vorher
 
