@@ -13,6 +13,7 @@
   salt -L 'minion1,minion2' test.ping
 
   salt-key -L" will list all minions that whose public keys you've accepted on your master.
+  salt -E '.*\.my\.domain\.net' cmd.run 'netconfig update -f' -t 1
 ```
 
 ## Debug
