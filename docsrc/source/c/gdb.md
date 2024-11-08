@@ -39,6 +39,8 @@ apropos ebenfalls nutzbar
 
 -q       quite, d.h. keine Startinformation
 
+-tui     text ui
+
 --args   Argumente, gdb -q --args prg 1 2 3 4
 
 --pid    Attach to a running proccess
@@ -117,4 +119,15 @@ Befehlsautomatisierung:
 | frame *number*   |  Select and print a stack frame.  |
 | up   |  Select and print a stack frame (function) that called this one.  |
 | down  |  Select and print a stack frame called by this one.  |
+
+
+## Fehler
+
+### no debugging symbols found
+
+gdb meldet: no debugging symbols found. 
+
+Sowohl Compilierung als auch linken muss mit -g erfolgen, also CFLAGS als auch LDFLAGS mit -g erweitern, damit debug Informationen erzeugt werden. 
+
+
 
