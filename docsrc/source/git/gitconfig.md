@@ -70,6 +70,13 @@ git config --global core.eol lf  (ensure that files are checked out with Unix li
 You can create a .gitattributes file in your repository to enforce consistent line endings. Add the following line to the file:
 `* text eol=lf`
 
+## Filenamen 
+
+In Windows wird nicht zwischen groß/Kleinschreibung unterschieden. Insofern erscheint in git keine Änderung. Wenn man das möchte, muss man das explizit per
+git command erzwingen: 
+
+`git mv -f name.java Name.java`
+
 
 
 
