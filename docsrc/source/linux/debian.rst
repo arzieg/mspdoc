@@ -28,6 +28,8 @@ apt-cache
     * pkgnames
     * search show
 
+aptitude search <package>
+
 
 dpkg
     * --list or -l 
