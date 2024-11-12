@@ -85,3 +85,42 @@ useradd -m -d /sapmnt/S77/s77adm -s /usr/bin/csh -c "SAP System Administrator" -
 
 ## ipmi
 `ipmitool power status -I lanplus -H timo-ipmi -U hacluster -P "xxx" -L Operator`
+
+
+## Journal
+
+Show Disk Usage: 
+  journalctl --disk-usage
+  du -sh /var/log/journal
+
+Rotate Journal
+   journalctl --rotate
+
+Clear journal log older then x days
+  journalctl --vacuum-time=2d
+
+Restrict logs to a certain size
+  journalctl --vacuum-size=100M
+
+Restrict number of logs
+  journalctl --vacuum-files=5
+
+Config journal:
+  vi /etc/systemd/journald.conf
+
+    SystemMaxUse	Max disk space logs can take
+    SystemMaxFileSize	Max size of an INDIVIDUAL log file
+    SystemMaxFiles	Max number of log files
+
+  systemctl restart systemd-journald
+
+
+## Logrotate
+
+Config: 
+  /etc/logrotate.conf
+  /etc/logrotate.d/*
+
+Run in verbose mode
+  logrotate -vf /etc/logrotate.conf
+
