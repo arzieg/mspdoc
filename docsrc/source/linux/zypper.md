@@ -1,13 +1,11 @@
-.. _zypper_allg:
-
-################
-Zypper 
-################
+# Zypper 
 
 zypper se --type pattern            - List avaiable pattern
 zypper info --requires <pattern>    - welche Software ist in dem pattern
 zypper in -t pattern <pattern>      - installiere ein pattern
 
+
+## rpm Helfer
 
 https://www.tecmint.com/20-practical-examples-of-rpm-commands-in-linux/
 
@@ -30,11 +28,27 @@ rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-8              Import an RPM GP
 rpm -qa gpg-pubkey*                                             List all Imported RPM GPG Keys
 
 
-Rebuild Corrupted RPM Database
+## Rebuild Corrupted RPM Database
 
-.. code-block:: bash
+```
+cd /var/lib
+rm __db*
+rpm --rebuilddb
+rpmdb_verify Packages
+```
 
-    cd /var/lib
-    rm __db*
-    rpm --rebuilddb
-    rpmdb_verify Packages
+## Remove old kernels
+
+Wird definiert in /etc/zypp/zypp.conf
+
+```
+...
+## Default: Do not delete any kernels if multiversion = provides:multiversion(kernel) is set
+multiversion.kernels = latest,running
+...
+```
+
+Nach einem zypper up wird eine Datei /boot/do_purge_kernels angelegt. Nach einem reboot erfolgt One-Shot: purge-kernels.service
+Den kann man auch manuell anstossen: `systemctl restart purge-kernels.service`
+
+In Azure ist der nicht installiert. Da könnte man manuell ein `sudo zypper purge-kernels` absetzen oder das Paket `zypper in purge-kernels-service` installieren.
