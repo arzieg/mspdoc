@@ -60,15 +60,32 @@ git remote add upstream perso-github.com:octocat/Spoon-Knife.git
 
 Wenn man das Repository unter einen Windows-Pfad hat aber über die WSL darauf zugreift, werden gerne die UNIX CR Endungen in Windows Endungen modifiziert. Das ist bei Shell-Scripten problematisch. 
 
-daher: 
+daher kann man das Dateispezifisch festlegen in einer .gitattributes Datei. Das hat den Vorteil, dass beim auschecken, alle das selbe nutzen. 
+
+```
+# Set the default behavior, in case people don't have core.autocrlf set.
+* text=auto
+
+# Explicitly declare text files you want to always be normalized and converted
+# to native line endings on checkout.
+*.c text
+*.h text
+
+# Declare files that will always have LF line endings on checkout.
+*.sh text eol=lf
+*.bash text eol=lf
+*.py text eol=lf
+
+# Denote all files that are truly binary and should not be modified.
+*.png binary
+*.jpg binary
+```
 
 ```
 git config --global core.autocrlf false    (This setting ensures that Git does not automatically convert line endings.)
 git config --global core.eol lf  (ensure that files are checked out with Unix line ending)
 ```
 
-You can create a .gitattributes file in your repository to enforce consistent line endings. Add the following line to the file:
-`* text eol=lf`
 
 ## Filenamen 
 
