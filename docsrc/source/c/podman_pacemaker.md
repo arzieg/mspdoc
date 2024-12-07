@@ -12,7 +12,14 @@ podman network create -d bridge --subnet=10.0.63.0/24 ring2_nw
 ```
 
 Fehler mit dem Netzwerk CLI . 
-Lösung könnte sein: https://www.michaelmcculley.com/updating-cni-plugins-for-podman-a-step-by-step-guide/
+```
+WARN[0000] Error validating CNI config file /home/arne/.config/cni/net.d/pub1_nw.conflist: [plugin firewall does not support config version "1.0.0"] 
+WARN[0000] Error validating CNI config file /home/arne/.config/cni/net.d/ring1_nw.conflist: [plugin firewall does not support config version "1.0.0"] 
+WARN[0000] Error validating CNI config file /home/arne/.config/cni/net.d/ring2_nw.conflist: [plugin firewall does not support config version "1.0.0"] 
+```
+
+Lösung sein: https://www.michaelmcculley.com/updating-cni-plugins-for-podman-a-step-by-step-guide/
+
 
 
 
