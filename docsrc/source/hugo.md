@@ -9,13 +9,13 @@ https://gohugo.io/
 Download latest hugo from https://github.com/gohugoio/hugo/releases\
 apt install /pfad-zu-file/hugo_extended_0.139.2_linux-amd64.deb hugo amd64
 
-## Theme
+## Neue Seite erstellen mit Template
 
 Je nach Installationsanleitung, bsp. Beautiful Hugo
 
 ```
-hugo new site quickstart
-cd quickstart
+hugo new site tecdoc
+cd tecdoc
 git init
 git submodule add https://github.com/halogenica/beautifulhugo.git themes/beautifulhugo
 hugo mod init github.com/USERNAME/SITENAME
@@ -26,7 +26,7 @@ edit hugo.toml
 [[module.imports]]
   path = "github.com/halogenica/beautifulhugo"
 
-hugo serve
+hugo server
 ```
 
 ## Build your site
@@ -40,6 +40,11 @@ Hugo does not clear the public directory before building your site. Existing fil
 
 Depending on your needs, you may wish to manually clear the contents of the public directory before every build.
 ```
+
+
+
+
+
 
 
 
