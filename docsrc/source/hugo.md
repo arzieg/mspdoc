@@ -42,8 +42,31 @@ Depending on your needs, you may wish to manually clear the contents of the publ
 ```
 
 
+## Mermaid 
 
+In beautifulhugo ist folgendes durchzuführen: 
 
+1. mkdir layouts/_default/_markup
+
+2. erstelle Datei render-codeblock-mermaid.html
+
+    ```html
+    <pre class="mermaid">
+        {{- .Inner | htmlEscape | safeHTML }}
+      </pre>
+      {{ .Page.Store.Set "hasMermaid" true }}
+    ```
+
+3. unter layouts/partials/head_custom.html wurde dann der Code eingefügt
+
+    ```js
+    {{ if .Store.Get "hasMermaid" }}
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.esm.min.mjs';
+      mermaid.initialize({ startOnLoad: true });
+    </script>
+    {{ end }}
+    ```
 
 
 
