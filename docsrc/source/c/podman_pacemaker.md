@@ -1,11 +1,18 @@
 # Podman Pacemaker
 
+Bsp. mit SUSE Container: 
+
+/etc/containers/registry.conf erweitern um registry.suse.com.
+
+`unqualified-search-registries = [... "registry.suse.com"]`
+
+
 p pull registry.fedoraproject.org/fedora-iot
 
 container laufen auf dem selben Host
 
 ```
-podman network create --subnet 192.5.0.0/16 newnet
+podman network create --subnet 192.5.0.0/16 pnet
 podman network create -d bridge --subnet=10.0.62.0/24 --gateway=10.0.62.1 pub1_nw
 podman network create -d bridge --subnet=10.0.61.0/24 ring1_nw
 podman network create -d bridge --subnet=10.0.63.0/24 ring2_nw
@@ -18,7 +25,18 @@ WARN[0000] Error validating CNI config file /home/arne/.config/cni/net.d/ring1_n
 WARN[0000] Error validating CNI config file /home/arne/.config/cni/net.d/ring2_nw.conflist: [plugin firewall does not support config version "1.0.0"] 
 ```
 
-Lösung sein: https://www.michaelmcculley.com/updating-cni-plugins-for-podman-a-step-by-step-guide/
+Lösung: https://www.michaelmcculley.com/updating-cni-plugins-for-podman-a-step-by-step-guide/
+
+Dann am besten die Netzwerke löschen und neu anlegen, dann haben die bereits die Version 1.0. 
+
+```
+$ p network ls
+NETWORK ID    NAME        VERSION     PLUGINS
+fcfcbba4e322  pnet        1.0.0       bridge,portmap,firewall,tuning
+0adb872b23fd  pub1_nw     1.0.0       bridge,portmap,firewall,tuning
+eb502fa10d0f  ring1_nw    1.0.0       bridge,portmap,firewall,tuning
+4dcfd3cae2a9  ring2_nw    1.0.0       bridge,portmap,firewall,tuning
+```
 
 
 

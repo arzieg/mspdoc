@@ -6,13 +6,116 @@ bootc container images
 
 
 
-## Install
+## Install MINT
 ```
 MINT:
 sudo apt-get install podman
 podman version
 vi /etc/containers/registries.conf
 ```
+
+### Build von Source auf Linux Mint 21.3
+
+https://podman.io/docs/installation
+
+```
+sudo apt-get install \
+  btrfs-progs \
+  crun \
+  git \
+  golang-go \
+  go-md2man \
+  iptables \
+  libassuan-dev \
+  libbtrfs-dev \
+  libc6-dev \
+  libdevmapper-dev \
+  libglib2.0-dev \
+  libgpgme-dev \
+  libgpg-error-dev \
+  libprotobuf-dev \
+  libprotobuf-c-dev \
+  libseccomp-dev \
+  libselinux1-dev \
+  libsystemd-dev \
+  make \
+  netavark \
+  pkg-config \
+  uidmap \
+  libapparmor-dev \
+  libgpgme-dev \
+  libseccomp-dev \
+  libbtrfs-dev 
+
+The netavark package may not be available on older Debian / Ubuntu versions. Install the containernetworking-plugins package instead.
+ERROR: https://github.com/containers/podman/discussions/24111
+Dokumentation ist nicht aktuell. netavark und aardvark-dns für networking wird benötigt.
+
+```
+
+enable user namespace is enabled: 
+
+`sudo sysctl kernel.unprivileged_userns_clone=1`
+
+enable user namespace permanently
+
+`echo 'kernel.unprivileged_userns_clone=1' > /etc/sysctl.d/userns.conf`
+
+Install latest golang:
+```
+cd ~/podman
+wget https://dl.google.com/go/go1.23.4.linux-amd64.tar.gz
+tar -C /usr/local -xzf go1.23.4.linux-amd64.tar.gz
+echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.profile
+source ~/.profile
+go version
+```
+
+
+
+Install conmon:
+The latest version of conmon is expected to be installed on the system. Conmon is used to monitor OCI Runtimes. To build from source, use the following:
+
+```
+apt install libglib2.0-dev
+pkg-config --modversion glib-2.0
+git clone https://github.com/containers/conmon
+cd conmon
+export GOCACHE="$(mktemp -d)"
+make
+sudo make podman
+```
+
+Install crun or runc (container runtime)
+`apt install crun runc`
+`runc --version -> must be >= 1.0.1`
+
+Add configuration
+```
+sudo mkdir -p /etc/containers
+sudo curl -L -o /etc/containers/registries.conf https://raw.githubusercontent.com/containers/image/main/registries.conf
+sudo curl -L -o /etc/containers/policy.json https://raw.githubusercontent.com/containers/image/main/default-policy.json
+```
+
+Download Source and Build podman:
+
+Mit BUILDTAGS kann man Feature enablen/disablen. Siehe hierzu die Tabelle in der Original-URL.
+
+```
+git clone https://github.com/containers/podman/
+cd podman
+make BUILDTAGS="selinux seccomp" PREFIX=/usr
+make install PREFIX=/usr
+```
+
+
+Test netavark
+
+git clone https://github.com/containers/netavark.git
+
+
+
+## Install SUSE
 
 ```
 SUSE:
