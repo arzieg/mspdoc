@@ -45,7 +45,8 @@ sudo apt-get install \
   libapparmor-dev \
   libgpgme-dev \
   libseccomp-dev \
-  libbtrfs-dev 
+  libbtrfs-dev \
+  runc
 
 The netavark package may not be available on older Debian / Ubuntu versions. Install the containernetworking-plugins package instead.
 ERROR: https://github.com/containers/podman/discussions/24111
@@ -86,9 +87,11 @@ make
 sudo make podman
 ```
 
-Install crun or runc (container runtime)
-`apt install crun runc`
+Install runc (container runtime)
+`apt install runc`
 `runc --version -> must be >= 1.0.1`
+
+Mit crun gab es Probleme, weshalb ich das wieder deinstalliert habe.
 
 Add configuration
 ```
@@ -109,10 +112,64 @@ make install PREFIX=/usr
 ```
 
 
-Test netavark
+Install netavark
 
-git clone https://github.com/containers/netavark.git
+```
+  Install Rust:
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
+  Install protoc:
+    apt-get install protobuf-compiler
+
+  Install go-md2man:
+    apt install go-md2man
+
+  Build:
+    git clone https://github.com/containers/netavark.git
+    make
+    make docs
+    make install
+```
+
+Install aardvark-dns (Support for container DNS resolution)
+
+```
+cd ~/podman
+git clone https://github.com/containers/aardvark-dns.git
+make 
+make install
+```
+
+Install pasta (https://passt.top/)
+
+```
+git clone https://passt.top/passt
+make
+make install
+```
+
+Test Podman
+
+```
+podman version
+Client:       Podman Engine
+Version:      5.4.0-dev
+API Version:  5.4.0-dev
+Go Version:   go1.23.4
+Git Commit:   07dddebd1209ec1cabc35613d970fc821618fd2c
+Built:        Mon Dec  9 21:26:52 2024
+OS/Arch:      linux/amd64
+```
+
+Test NGINX Container:
+```
+podman pull nginx:latest
+podman run -d --name my_nginx -p 8080:80 nginx:latest
+podman ps
+curl localhost:8080
+podman stop my_nginx
+podman rm my_nginx
+```
 
 
 ## Install SUSE
