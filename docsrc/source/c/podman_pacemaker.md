@@ -13,7 +13,7 @@ container laufen auf dem selben Host
 
 ```
 podman network create --subnet 192.5.0.0/16 pnet
-podman network create -d bridge --subnet=10.0.62.0/24 --gateway=10.0.62.1 pub1_nw
+podman network create --subnet=10.0.62.0/24 --gateway=10.0.62.1 pub1_nw
 podman network create -d bridge --subnet=10.0.61.0/24 ring1_nw
 podman network create -d bridge --subnet=10.0.63.0/24 ring2_nw
 ```
@@ -45,13 +45,12 @@ eb502fa10d0f  ring1_nw    1.0.0       bridge,portmap,firewall,tuning
 ```
 # podman create -t -i \
   --hostname pcm1 \
-  --shm-size 2G \
+  --shm-size 1G \
   --volume /dev/shm \
   --dns-search=example.com \
   --privileged=false  \
-  --cpuset-cpus 0-3 \
-  --memory 2G \
-  --memory-swap 2G \
+  --memory 1G \
+  --memory-swap 1G \
   --cap-add=SYS_NICE \
   --cap-add=SYS_RESOURCE \
   --cap-add=NET_ADMIN \
@@ -62,4 +61,10 @@ eb502fa10d0f  ring1_nw    1.0.0       bridge,portmap,firewall,tuning
   --systemd=true \
   --name pcm1 \
 registry.fedoraproject.org/fedora-iot:latest
+```
+
+```
+podman network connect pub1_nw --ip 10.0.62.4 pcm1
+podman network connect ring1_nw --ip 10.0.61.4  pcm1
+podman network connect ring2_nw --ip 10.0.63.4 pcm1
 ```

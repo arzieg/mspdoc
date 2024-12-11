@@ -466,3 +466,71 @@ podman ps -ap
 `podman save alpine > alpine-all.tar`
 
 
+## create podman services
+
+sudo vi /etc/systemd/system/podman.service
+
+```
+[Unit]
+Description=Podman API Service
+Documentation=man:podman(1)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Environment=CONMON_PID_FILE=/var/run/podman-conmon-pid
+Type=simple
+ExecStart=/usr/bin/podman system service --time=0
+ExecStop=/bin/kill -TERM $MAINPID
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```
+sudo systemctl daemon-reload
+sudo systemctl enable podman.service
+sudo systemctl start podman.service
+sudo systemctl status podman.service
+```
+
+## create podman user service
+
+user (podman service run as given user aka "rootless")
+
+
+```
+mkdir -p ~/.config/systemd/user
+copy the podman.service and podman.socket files into ~/.config/systemd/user
+systemctl --user enable podman.socket
+systemctl --user start podman.socket
+systemctl --user status podman.socket podman.service
+```
+Assuming the status messages show no errors, the libpod service is ready to respond to the APIv2 on the unix domain socket /run/user/$(id -u)/podman/podman.sock
+
+
+
+
+
+
+# Podman errors
+
+
+
+```
+ERROR: 
+
+overlayfs: fs on '/home/arne/.local/share/containers/storage/overlay/l/YGPOJVJZF4QJGYAAR4UG63LV6X' does not support file handles, 
+falling back to xino=off
+
+Solution:
+
+vi /etc/containers/containers.conf
+[storage.options.overlay]
+mountopt = "xino=off"
+
+
+```
+
