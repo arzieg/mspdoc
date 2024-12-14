@@ -12,8 +12,8 @@ p pull registry.fedoraproject.org/fedora-iot
 container laufen auf dem selben Host
 
 ```
-podman network create --subnet 192.5.0.0/16 pnet
-podman network create --subnet=10.0.62.0/24 --gateway=10.0.62.1 pub1_nw
+podman network create -d bridge --subnet 10.0.65.0/24 pnet
+podman network create -d bridge --subnet=10.0.62.0/24 --gateway=10.0.62.1 pub1_nw
 podman network create -d bridge --subnet=10.0.61.0/24 ring1_nw
 podman network create -d bridge --subnet=10.0.63.0/24 ring2_nw
 ```
@@ -62,6 +62,10 @@ eb502fa10d0f  ring1_nw    1.0.0       bridge,portmap,firewall,tuning
   --name pcm1 \
 registry.fedoraproject.org/fedora-iot:latest
 ```
+
+  --network pasta:--ipv4-only,-a,10.0.65.4,-n,24,-g,10.0.65.1,--dns-forward,10.0.65.3,-m,1500,--no-ndp,--no-dhcpv6,--no-dhcp \
+
+
 
 ```
 podman network connect pub1_nw --ip 10.0.62.4 pcm1
