@@ -88,6 +88,19 @@ useradd -m -d /sapmnt/S77/s77adm -s /usr/bin/csh -c "SAP System Administrator" -
 
 
 ## Journal
+https://last9.io/blog/systemctl-logs/
+
+| command | description | 
+| -------- | -------- | 
+|journalctl	                      |View all system logs in reverse chronological order.
+|journalctl -u <service-name>	    |View logs for a specific service (e.g., journalctl -u nginx).
+|journalctl -f	                  |View logs in real-time (similar to tail -f, journalctl -u nginx -f).
+|journalctl --since "YYYY-MM-DD"	|View logs from a specific date (e.g., journalctl --since "2024-12-01", journalctl --since "2024-12-01" --until "2024-12-09").
+|journalctl -b	                  |View logs from the current boot session. (previous boot: journalctl -b -1)
+|journalctl -p <priority>    	    |Filter logs by priority (e.g., journalctl -p err for errors).
+|journalctl -n <number>	          |Show the last specified number of logs (e.g., journalctl -n 100 for the last 100 logs).
+|journalctl --vacuum-time=2weeks	|Clean up logs older than the specified time (e.g., two weeks).
+|journalctl --vacuum-size=500M	  |Clean up logs to keep the system journal size under the specified limit.
 
 Show Disk Usage: 
   journalctl --disk-usage
