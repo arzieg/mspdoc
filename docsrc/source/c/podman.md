@@ -6,13 +6,173 @@ bootc container images
 
 
 
-## Install
+## Install MINT
 ```
 MINT:
 sudo apt-get install podman
 podman version
 vi /etc/containers/registries.conf
 ```
+
+### Build von Source auf Linux Mint 21.3
+
+https://podman.io/docs/installation
+
+```
+sudo apt-get install \
+  btrfs-progs \
+  crun \
+  git \
+  golang-go \
+  go-md2man \
+  iptables \
+  libassuan-dev \
+  libbtrfs-dev \
+  libc6-dev \
+  libdevmapper-dev \
+  libglib2.0-dev \
+  libgpgme-dev \
+  libgpg-error-dev \
+  libprotobuf-dev \
+  libprotobuf-c-dev \
+  libseccomp-dev \
+  libselinux1-dev \
+  libsystemd-dev \
+  make \
+  netavark \
+  pkg-config \
+  uidmap \
+  libapparmor-dev \
+  libgpgme-dev \
+  libseccomp-dev \
+  libbtrfs-dev \
+  runc
+
+The netavark package may not be available on older Debian / Ubuntu versions. Install the containernetworking-plugins package instead.
+ERROR: https://github.com/containers/podman/discussions/24111
+Dokumentation ist nicht aktuell. netavark und aardvark-dns für networking wird benötigt.
+
+```
+
+enable user namespace is enabled: 
+
+`sudo sysctl kernel.unprivileged_userns_clone=1`
+
+enable user namespace permanently
+
+`echo 'kernel.unprivileged_userns_clone=1' > /etc/sysctl.d/userns.conf`
+
+Install latest golang:
+```
+cd ~/podman
+wget https://dl.google.com/go/go1.23.4.linux-amd64.tar.gz
+tar -C /usr/local -xzf go1.23.4.linux-amd64.tar.gz
+echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.profile
+source ~/.profile
+go version
+```
+
+
+
+Install conmon:
+The latest version of conmon is expected to be installed on the system. Conmon is used to monitor OCI Runtimes. To build from source, use the following:
+
+```
+apt install libglib2.0-dev
+pkg-config --modversion glib-2.0
+git clone https://github.com/containers/conmon
+cd conmon
+export GOCACHE="$(mktemp -d)"
+make
+sudo make podman
+```
+
+Install runc (container runtime)
+`apt install runc`
+`runc --version -> must be >= 1.0.1`
+
+Mit crun gab es Probleme, weshalb ich das wieder deinstalliert habe.
+
+Add configuration
+```
+sudo mkdir -p /etc/containers
+sudo curl -L -o /etc/containers/registries.conf https://raw.githubusercontent.com/containers/image/main/registries.conf
+sudo curl -L -o /etc/containers/policy.json https://raw.githubusercontent.com/containers/image/main/default-policy.json
+```
+
+Download Source and Build podman:
+
+Mit BUILDTAGS kann man Feature enablen/disablen. Siehe hierzu die Tabelle in der Original-URL.
+
+```
+git clone https://github.com/containers/podman/
+cd podman
+make BUILDTAGS="selinux seccomp" PREFIX=/usr
+make install PREFIX=/usr
+```
+
+
+Install netavark
+
+```
+  Install Rust:
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+  Install protoc:
+    apt-get install protobuf-compiler
+
+  Install go-md2man:
+    apt install go-md2man
+
+  Build:
+    git clone https://github.com/containers/netavark.git
+    make
+    make docs
+    make install
+```
+
+Install aardvark-dns (Support for container DNS resolution)
+
+```
+cd ~/podman
+git clone https://github.com/containers/aardvark-dns.git
+make 
+make install
+```
+
+Install pasta (https://passt.top/)
+
+```
+git clone https://passt.top/passt
+make
+make install
+```
+
+Test Podman
+
+```
+podman version
+Client:       Podman Engine
+Version:      5.4.0-dev
+API Version:  5.4.0-dev
+Go Version:   go1.23.4
+Git Commit:   07dddebd1209ec1cabc35613d970fc821618fd2c
+Built:        Mon Dec  9 21:26:52 2024
+OS/Arch:      linux/amd64
+```
+
+Test NGINX Container:
+```
+podman pull nginx:latest
+podman run -d --name my_nginx -p 8080:80 nginx:latest
+podman ps
+curl localhost:8080
+podman stop my_nginx
+podman rm my_nginx
+```
+
+
+## Install SUSE
 
 ```
 SUSE:
@@ -305,4 +465,72 @@ podman ps -ap
 ## Save image
 `podman save alpine > alpine-all.tar`
 
+
+## create podman services
+
+sudo vi /etc/systemd/system/podman.service
+
+```
+[Unit]
+Description=Podman API Service
+Documentation=man:podman(1)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Environment=CONMON_PID_FILE=/var/run/podman-conmon-pid
+Type=simple
+ExecStart=/usr/bin/podman system service --time=0
+ExecStop=/bin/kill -TERM $MAINPID
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```
+sudo systemctl daemon-reload
+sudo systemctl enable podman.service
+sudo systemctl start podman.service
+sudo systemctl status podman.service
+```
+
+## create podman user service
+
+user (podman service run as given user aka "rootless")
+
+
+```
+mkdir -p ~/.config/systemd/user
+copy the podman.service and podman.socket files into ~/.config/systemd/user
+systemctl --user enable podman.socket
+systemctl --user start podman.socket
+systemctl --user status podman.socket podman.service
+```
+Assuming the status messages show no errors, the libpod service is ready to respond to the APIv2 on the unix domain socket /run/user/$(id -u)/podman/podman.sock
+
+
+
+
+
+
+# Podman errors
+
+
+
+```
+ERROR: 
+
+overlayfs: fs on '/home/arne/.local/share/containers/storage/overlay/l/YGPOJVJZF4QJGYAAR4UG63LV6X' does not support file handles, 
+falling back to xino=off
+
+Solution:
+
+vi /etc/containers/containers.conf
+[storage.options.overlay]
+mountopt = "xino=off"
+
+
+```
 
