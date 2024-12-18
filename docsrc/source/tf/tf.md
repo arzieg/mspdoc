@@ -31,8 +31,8 @@ Providerversionen in der .terrafrom.lock.hcl
 6. terraform state list (status der angelegten Objekte)
 7. terraform destroy
 
-### Remove single Resource
------------------------
+### Remove single Resource ohne sie in azure zu löschen
+---------------------------------------------------------
 terraform state list
 terraform state rm RESOURCE.ADDRESS
 
