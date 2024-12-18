@@ -137,3 +137,26 @@ Config:
 Run in verbose mode
   logrotate -vf /etc/logrotate.conf
 
+## postfix
+
+https://antnix07.blogspot.com/2018/08/how-to-flush-or-delete-emails-from.html
+
+ To flush the queue (force delivery) :  `postfix flush`
+
+ To delete mails from queue :
+
+  Check the mail queue, using the mailq command and delete a specific email like so :
+       
+     `postsuper -d mailID`
+
+ To remove all mail from all the queues ( hold, incoming, active and deferred ) , run :
+   
+     `postsuper -d ALL`
+ 
+The email is stored in maildrop queue, you can run postsuper -d ALL maildrop to nuke all of them
+ 
+     `postsuper -d ALL maildrop`
+
+ To remove all mails in the deferred queue only, run :
+   
+  `postsuper -d ALL deferred`
