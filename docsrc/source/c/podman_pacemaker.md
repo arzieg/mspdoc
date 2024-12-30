@@ -8,6 +8,8 @@ Bsp. mit SUSE Container:
 
 
 p pull registry.fedoraproject.org/fedora-iot
+oder
+p pull quay.io/fedora/fedora-bootc:latest
 
 container laufen auf dem selben Host
 
@@ -59,11 +61,17 @@ eb502fa10d0f  ring1_nw    1.0.0       bridge,portmap,firewall,tuning
   --cap-add=AUDIT_CONTROL \
   --restart=always \
   --systemd=true \
+  --oom-kill-disable \
   --name pcm1 \
-registry.fedoraproject.org/fedora-iot:latest
+quay.io/fedora/fedora-bootc:latest
 ```
 
+
   --network pasta:--ipv4-only,-a,10.0.65.4,-n,24,-g,10.0.65.1,--dns-forward,10.0.65.3,-m,1500,--no-ndp,--no-dhcpv6,--no-dhcp \
+registry.fedoraproject.org/fedora-iot:latest
+
+pasta --container pcm1 --interface eth0 --ipv4-only -a 10.0.63.4 -n 24 -g 10.0.63.1 --dns-forward 10.0.63.3 -m 1500 --no-ndp --no-dhcpv6 --no-dhcp
+pasta --container mycontainer --interface eth1 --your-other-parameters
 
 
 
@@ -72,3 +80,5 @@ podman network connect pub1_nw --ip 10.0.62.4 pcm1
 podman network connect ring1_nw --ip 10.0.61.4  pcm1
 podman network connect ring2_nw --ip 10.0.63.4 pcm1
 ```
+
+pasta --network pub1_nw --ipv4-only --gateway 10.0.62.1 --dns 10.0.62.3 --ipv4-only -a 10.0.62.4
