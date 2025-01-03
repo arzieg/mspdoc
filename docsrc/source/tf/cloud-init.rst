@@ -155,7 +155,7 @@ In such cases, you can use cloud-init’s write_files option to create the scrip
     - path: /run/scripts/register.sh
         content: |
         #!/bin/bash
-        export HOSTNAMEFQDN="$HOSTNAME.clab.azr.ez.edeka.net"
+        export HOSTNAMEFQDN="$HOSTNAME.<fqdn>"
         hostnamectl set-hostname $HOSTNAMEFQDN
         rm /etc/zypp/repos.d/*
         sleep 5
