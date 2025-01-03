@@ -206,3 +206,20 @@ kubectl get nodes -o='custom-columns=NodeName:.metadata.name,TaintKey:.spec.tain
 
 ### If a taint with that key and effect already exists, its value is replaced as specified.
 kubectl taint nodes foo dedicated=special-user:NoSchedule
+
+
+
+## kubectl von WSL
+
+### Context erzeugen
+
+Mit diesem Befehl wird der ~/.kube/config-Datei ein Eintrag hinzugefügt, der alle Informationen für den Zugriff auf Ihre Cluster enthält. Mit kubectl können Sie mehrere Cluster über eine einzelne Befehlszeilenschnittstelle verwalten.
+```
+kubectl config delete-context aks-contoso-video
+```
+
+### Context - Löschen: 
+
+```
+kubectl config delete-context aks-contoso-video
+```
