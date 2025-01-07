@@ -110,6 +110,8 @@ podman create -t -i \
 quay.io/fedora/fedora-bootc:latest
 ```
 
+
+
 dnf -y install iscsi-initiator-utils
 iscsiadm -m discovery -t sendtargets -p \<ip\>
 
