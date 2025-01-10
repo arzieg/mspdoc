@@ -14,10 +14,10 @@ p pull quay.io/fedora/fedora-bootc:latest
 container laufen auf dem selben Host
 
 ```
-podman network create -d bridge --subnet 10.0.65.0/24 pub_nw
-podman network create -d bridge --subnet=10.0.62.0/24 --gateway=10.0.62.1 pcm_nw
-podman network create -d bridge --subnet=10.0.61.0/24 ring1_nw
-podman network create -d bridge --subnet=10.0.63.0/24 ring2_nw
+podman network create -d bridge --subnet 10.0.65.0/24 client
+podman network create -d bridge --subnet=10.0.63.0/24 --gateway=10.0.63.1 pcm_nw
+podman network create -d bridge --subnet=10.0.60.0/24 ring1_nw
+podman network create -d bridge --subnet=10.0.61.0/24 ring2_nw
 ```
 
 Fehler mit dem Netzwerk CLI . 
@@ -78,7 +78,7 @@ https://fedoraproject.org/wiki/Scsi-target-utils_Quickstart_Guide
   truncate -s 100M /var/tmp/iscsi-disk1
   systemctl enable --now tgtd
 
-  tgtadm --lld iscsi --mode target --op new --tid=1 --targetname iqn.2025-01.com.example:for.all
+  tgtadm --lld iscsi --mode target --op new --tid=1 --targetname iqn.2025-01.com.example:storage.target00
   tgtadm --lld iscsi --mode logicalunit --op new --tid 1 --lun 1 -b /var/tmp/iscsi-disk1
   tgtadm --lld iscsi --mode target --op bind --tid 1 -I ALL
   tgtadm --lld iscsi --mode target --op show
@@ -88,6 +88,9 @@ https://fedoraproject.org/wiki/Scsi-target-utils_Quickstart_Guide
 
 https://www.server-world.info/en/note?os=Fedora_40&p=iscsi&f=3
 
+SUSE POD -HOST: zypper in open-iscsi
+modprobe iscsi_tcp
+
 ```
 podman create -t -i \
   --hostname pcm2 \
@@ -95,8 +98,11 @@ podman create -t -i \
   --volume /dev/shm \
   --dns-search=example.com \
   --privileged=false  \
+  --volume /lib/modules:/lib/modules \
+  --volume /sys/kernel/config:/sys/kernel/config \
   --memory 1G \
   --memory-swap 1G \
+  --cap-add=SYS_MODULE \
   --cap-add=SYS_NICE \
   --cap-add=SYS_RESOURCE \
   --cap-add=NET_ADMIN \
@@ -110,10 +116,9 @@ podman create -t -i \
 quay.io/fedora/fedora-bootc:latest
 ```
 
-
-
 dnf -y install iscsi-initiator-utils
-iscsiadm -m discovery -t sendtargets -p \<ip\>
+dnf -y install netcat
+iscsiadm -m discovery -t sendtargets -p 10.88.0.15
 
 Problem bei mounten von sendtarget. 
 
@@ -150,3 +155,8 @@ podman network connect ring1_nw --ip 10.0.61.5  pcm2
 podman network connect ring2_nw --ip 10.0.63.5 pcm2
 
 pasta --network pub1_nw --ipv4-only --gateway 10.0.62.1 --dns 10.0.62.3 --ipv4-only -a 10.0.62.4
+
+
+
+
+
