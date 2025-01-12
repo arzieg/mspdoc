@@ -1,5 +1,12 @@
 # Git
 
+## Durcharbeiten
+
+https://dev.to/juniourrau/6-types-of-git-branching-strategy-g54
+https://dev.to/softheartengineer/why-use-git-switch-instead-of-git-checkout-3ojb
+https://newsletter.techworld-with-milan.com/p/git-branching-strategies
+
+
 ## Speichern des Arbeitsstandes
 
 git stash speichert den Arbeitsstand
