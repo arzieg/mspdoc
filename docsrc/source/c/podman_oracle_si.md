@@ -1,15 +1,15 @@
 
 git clone https://github.com/oracle/docker-images.git
 
-cd /home/arne/dev/docker-images/OracleDatabase/SingleInstance/dockerfiles/23.6.0
+cd docker-images/OracleDatabase/SingleInstance/dockerfiles/
 
 
 [oracle@localhost dockerfiles]$ ./buildContainerImage.sh -h
 
 ./buildContainerImage.sh -v 23.6.0 -t ora236 -f
 
-mkdir /var/tmp/oradata
-chmod 777 /var/tmp/oradata
+mkdir /scratch/oradata
+chmod 777 /scratch/oradata
 
 
 
@@ -19,7 +19,7 @@ podman run --name ora23 \
 -e ORACLE_CHARACTERSET=AL32UTF8 \
 -e ENABLE_ARCHIVELOG=false \
 -e ENABLE_FORCE_LOGGING=false \
--v /var/tmp/oradata:/opt/oracle/oradata \
+-v /scratch/oradata:/opt/oracle/oradata \
 localhost/ora236
 
 Parameters:
