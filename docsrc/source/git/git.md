@@ -1,9 +1,8 @@
 # Git
 
-## Durcharbeiten
+## Branching-Strategies
 
 https://dev.to/juniourrau/6-types-of-git-branching-strategy-g54
-https://dev.to/softheartengineer/why-use-git-switch-instead-of-git-checkout-3ojb
 https://newsletter.techworld-with-milan.com/p/git-branching-strategies
 
 
@@ -252,5 +251,37 @@ git gc --prune=now --aggressive
    Windows Start -> Einstellungen -> Umgebungsvariablen für dieses Konto bearbeiten 
 
     Hinzufügen -> GIT_SSH_COMMAND -> C:/WINDOWS/System32/OpenSSH/ssh.exe
+
+
+## git switch
+https://dev.to/softheartengineer/why-use-git-switch-instead-of-git-checkout-3ojb
+
+Neuere Form von `git checkout <branch>`
+
+```
+git switch [options] <branch>
+
+-c <branch>: Create and switch to a new branch.
+--detach: Switch to a commit without checking out a branch.
+--force or -f: Force the switch, discarding uncommitted changes.
+--discard-changes: Automatically discard local changes during the switch.
+```
+
+### switch bsp 1: Schnell mal im bugfix-branch ein bugfix erstellen, dann Weiterarbeit in feature branch.
+
+git stash  - speichern des aktuellen Standes im feature branch
+git switch bugfix-branch 
+fix the bug und commit
+git switch release-branch
+git stash pop
+
+### Vergleich switch vs. checkout
+
+|Feature            |git switch	           |git checkout|
+|-------------------|-----------------------|------------|
+|Switch branches	  |Simplified	           | Supported  |
+|Create new branches|Supported with -c      | Supported  |
+|File operations	  |Not supported          | Supported  |
+|Detached HEAD state|Supported with --detach| Supported  |
 
 
