@@ -178,6 +178,25 @@ function tfav () {
 ```
 
 
+## setup python mit venv -> noch ausarbeiten für ubuntu!
+
+fedora: install pip
+`sudo dnf install python3-pip`
+
+## install
+```
+python3 -m venv project_venv
+source project_venv/bin/activate
+python -m pip install requests
+deactivate
+```
+
+## delete
+`rm -rv project_venv`
+
+## update
+`python -m pip install --update requests`
+
 ## Export / Import a WSL
 
 https://4sysops.com/archives/export-and-import-windows-subsystem-for-linux-wsl/
