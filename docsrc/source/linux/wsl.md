@@ -206,7 +206,7 @@ Export: `wsl --export Ubuntu-24.04 c:\users\<user>\Downloads\Ubuntu2404CLAB.tar`
 Import: `wsl --import Ubuntu2404CLAB c:\users\<user>\wslimages c:\users\<user>\Downloads\Ubuntu2404CLAB.tar`
 
 
-
+## kubectl auch installieren -> todo
 
 
 
