@@ -107,6 +107,7 @@ podman create -t -i \
   --cap-add=SYS_RESOURCE \
   --cap-add=NET_ADMIN \
   --cap-add=NET_RAW \
+  --cap-add=NET_ADMIN \
   --cap-add=AUDIT_WRITE \
   --cap-add=AUDIT_CONTROL \
   --restart=always \
@@ -118,7 +119,7 @@ quay.io/fedora/fedora-bootc:latest
 
 dnf -y install iscsi-initiator-utils
 dnf -y install netcat
-iscsiadm -m discovery -t sendtargets -p 10.88.0.15
+iscsiadm -m discovery -t sendtargets -p 10.88.0.2
 
 Problem bei mounten von sendtarget. 
 
