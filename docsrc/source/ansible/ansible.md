@@ -20,3 +20,13 @@
 
 ## Show facts
 `ansible <hostname> -m ansible.builtin.setup`
+
+
+## Debug
+
+export ANSIBLE_KEEP_REMOTE_FILES=1 -> damit wird sichergestellt, dass auf dem target-host die tmp-files nicht gelöscht werden. Hilfreich beim debuggen. Die Tempfiles sind zu finden unter ~/.ansible/tmp/
+
+ansible-playbook:   --force-handlers  -> Option verhindert den Abbruch bei Fehlern? 
+
+
+
