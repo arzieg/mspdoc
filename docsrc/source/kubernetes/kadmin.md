@@ -160,6 +160,34 @@ Das Passwort ist base64 verschlüsselt, dass muss man dann wieder umwandeln
 
 k delete secret 'podname' -n argocd 
 
+### Excurs: Hashicorp Vault - unseal
+
+1. Ermittlung der Endpoints
+   
+   ```
+   kubectl get endpoints vault -n vault -o wide
+
+   NAME    ENDPOINTS                                                        AGE
+   vault   10.244.0.28:8201,10.244.4.61:8201,10.244.5.43:8201 + 3 more...   116d
+   ```
+
+2. Unseal absetzen je Endpunkt und drei Unseal-Passwörter: 
+
+    ```
+    curl --request POST --data '{"key": "<seal1>"}' http://<endpoint1>:8200/v1/sys/unseal
+    curl --request POST --data '{"key": "<seal2>"}' http://<endpoint1>:8200/v1/sys/unseal
+    curl --request POST --data '{"key": "<seal3>"}' http://<endpoint1>:8200/v1/sys/unseal
+
+    curl --request POST --data '{"key": "<seal1>"}' http://<endpoint2>:8200/v1/sys/unseal
+    curl --request POST --data '{"key": "<seal2>"}' http://<endpoint2>:8200/v1/sys/unseal
+    curl --request POST --data '{"key": "<seal3>"}' http://<endpoint2>:8200/v1/sys/unseal
+
+    curl --request POST --data '{"key": "<seal1>"}' http://<endpoint3>:8200/v1/sys/unseal
+    curl --request POST --data '{"key": "<seal2>"}' http://<endpoint3>:8200/v1/sys/unseal
+    curl --request POST --data '{"key": "<seal3>"}' http://<endpoint3>:8200/v1/sys/unseal
+    ```
+
+
 
 
 
