@@ -19,6 +19,8 @@ apt-get
     * update
     * clean and autoclean
 
+apt-get install --only-upgrade git  - einzelnes Paket aktualisieren
+
 apt-cache
     * pkgnames
     * search show
