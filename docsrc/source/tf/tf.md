@@ -113,6 +113,11 @@ ver=20.04 # or 22.04
 apt-add-repository https://packages.microsoft.com/ubuntu/${ver}/prod
 apt-get install aztfexport
 
+unter 24.04
+
+go install github.com/Azure/aztfexport@latest
+binary liegt im $HOME/go/bin/aztfexport
+
 
 ### Befehle
 -------
@@ -129,6 +134,16 @@ aztfexport resource --non-interactive --hcl-only \<RessourceID, also /subscripti
     aztfexport map --append `./tempdir/aztfexportResourceMapping.json` (füge das exportierte in den Gesamtexport ein)
     terraform init --upgrade
     terraform plan  (sollte dann keine Abweichungen anzeigen)
+
+#### Suchen nach einer speziellen Ressource
+az account list --output table
+az account set --subscription="\<ID\>"
+az keyvault show --name <ressource> --query id --output tsv
+  -> ressourcen-id kommt raus
+aztfexport resource <ressourcen-id>
+
+
+
 
 
 az account show --output table\
