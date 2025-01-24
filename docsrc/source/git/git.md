@@ -285,3 +285,36 @@ git stash pop
 |Detached HEAD state|Supported with --detach| Supported  |
 
 
+## git worktree
+
+Gleichzeitige Auschecken von mehreren Branches. Am besten folgende Struktur.
+
+Verzeichnis myrepo anlegen (ist leer und hält dann die branches als Directories)
+
+/myrepo/_         = main
+       /feature1  = branch feature1
+
+```
+cd myrepo/_
+git worktree add ../feature1
+```
+
+usage: git worktree add [<options>] <path> [<commit-ish>]
+   or: git worktree list [<options>]
+   or: git worktree lock [<options>] <path>
+   or: git worktree move <worktree> <new-path>
+   or: git worktree prune [<options>]  - removes information about (non-locked) worktrees which no longer exist. For example,
+   or: git worktree remove [<options>] <worktree>
+   or: git worktree unlock <path>
+
+
+git worktree lock / unlock:
+   If the working tree for a linked worktree is stored on a portable device or network share which is not always mounted, you can prevent its administrative files from being pruned by issuing the git worktree lock command, optionally specifying --reason to explain why the worktree is locked.
+
+## git maintenance
+
+Aufräumen des git repos
+
+`git maintenance start`  - automatischer "cron" like job
+`git maintenance run`    - manueller start eines maintenance lauf
+
