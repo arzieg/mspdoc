@@ -86,6 +86,8 @@ Ressourcen haben im SAPHana den Präfix rsc_<name>.
     # Resource in Maintenance setzen
     crm resource maintenance msl_SAPHana_SR_<SID>_HDB10 on
     crm resource maintenance msl_SAPHana_SR_<SID>_HDB10 off
+    # Wait for idle
+    cs_wait_for_idle -n \<sec\>
 
 Simulation
 ============
