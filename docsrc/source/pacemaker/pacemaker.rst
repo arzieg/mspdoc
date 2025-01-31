@@ -256,6 +256,10 @@ SBD Starverhalten anpassen (nur für test)
      der Startmode clean sein soll, muss man nun den Slot für Knoten 2 auf den SBD-Devices zurücksetzen durch
      sbd -d <sbd-device> message node02 clear. Dies muss für alle SBD Devices durchgeführt werden. Danach kann erst auf dem Knoten 2 der Cluster gestartet werden. 
    
+Test Redfish
+^^^^^^^^^^^^^^
+fence_redfish --ip=<ip> --username=redfish_stonith --password=<password> --action-status --ssl-insecure
+STATUS ON sollte rauskommen
 
 Corosync
 =========

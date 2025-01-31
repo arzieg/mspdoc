@@ -251,3 +251,37 @@ kubectl config delete-context aks-contoso-video
 ```
 kubectl config delete-context aks-contoso-video
 ```
+
+
+
+## Troubleshoot
+
+### POD ScaleSet von 3 kann nicht eingehalten werden, weil ein Node auf SchedulingDisabled steht
+
+```
+k get pods -n \<namespace\> 
+...
+argocd-repo-server-bbd5d58bc-6f656                  0/4     Pending   0               28m  
+...
+```
+
+```
+k describe pod argocd-repo-server-bbd5d58bc-5xcpn -n argocd
+...
+Events:                                                                                                                              Type     Reason            Age   From               Message                                                                        ----     ------            ----  ----               -------                                                                        Warning  FailedScheduling  77s   default-scheduler  0/3 nodes are available: 1 node(s) were unschedulable, 2 node(s) didn't match pod anti-affinity rules. preemption: 0/3 nodes are available: 1 Preemption is not helpful for scheduling, 2 No preemption victims found for incoming pod.                                                                                                       
+```
+
+```
+k get nodes
+NAME                               STATUS                     ROLES    AGE     VERSION
+aks-nodepool-34565604-vmss000002   Ready,SchedulingDisabled   <none>   133d    v1.29.8
+aks-nodepool-34565604-vmss000005   Ready                      <none>   6d10h   v1.29.8
+aks-nodepool-34565604-vmss000006   Ready                      <none>   5h8m    v1.29.8
+
+k uncordon aks-nodepool-34565604-vmss000002
+k get nodes
+NAME                               STATUS   ROLES    AGE     VERSION
+aks-nodepool-34565604-vmss000002   Ready    <none>   133d    v1.29.8
+aks-nodepool-34565604-vmss000005   Ready    <none>   6d10h   v1.29.8
+aks-nodepool-34565604-vmss000006   Ready    <none>   5h9m    v1.29.8
+``` 
