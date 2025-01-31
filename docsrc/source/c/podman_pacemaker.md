@@ -70,11 +70,12 @@ modprobe iscsi_tcp
 quay.io/fedora/fedora-bootc:latest
 ```
 
+
 ## Create Devices for iscsi
 
 https://fedoraproject.org/wiki/Scsi-target-utils_Quickstart_Guide
 
-  dnf install scsi-target-utils
+  dnf install scsi-target-utils  (apt install tgt)
   truncate -s 100M /var/tmp/iscsi-disk1
   systemctl enable --now tgtd
 
@@ -82,6 +83,11 @@ https://fedoraproject.org/wiki/Scsi-target-utils_Quickstart_Guide
   tgtadm --lld iscsi --mode logicalunit --op new --tid 1 --lun 1 -b /var/tmp/iscsi-disk1
   tgtadm --lld iscsi --mode target --op bind --tid 1 -I ALL
   tgtadm --lld iscsi --mode target --op show
+
+create a file: 
+<target iqn.yourdomain.com:target1>
+    backing-store /var/tmp/iscsi-disk1
+</target>
 
 
 # Client
@@ -97,7 +103,7 @@ podman create -t -i \
   --shm-size 1G \
   --volume /dev/shm \
   --dns-search=example.com \
-  --privileged=false  \
+  --privileged=false \
   --volume /lib/modules:/lib/modules \
   --volume /sys/kernel/config:/sys/kernel/config \
   --memory 1G \
@@ -116,6 +122,7 @@ podman create -t -i \
   --name pcm2 \
 quay.io/fedora/fedora-bootc:latest
 ```
+
 
 dnf -y install iscsi-initiator-utils
 dnf -y install netcat
