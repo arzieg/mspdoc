@@ -3,15 +3,16 @@
 ## Add Worker Node
 https://learning.sap.com/learning-journeys/setting-up-high-availability-and-disaster-recovery-for-sap-hana/adding-a-host-to-a-scale-out-system_a0558ee3-68ca-45a1-964a-4054b24a592c
 
-Von einem laufenden HANA Node
 
-hdb10y04-1002:/hana/shared/Y04/hdblcm # ./hdblcm
+1. Backup muss funktionieren, ansonsten im Lab Probleme. 
+
+2. Von einem laufenden HANA Node
+
+hdb10abc-1002:/hana/shared/ABC/hdblcm # ./hdblcm
 
 
 SAP HANA Lifecycle Management - SAP HANA Database 2.00.079.01.1728370356
 ************************************************************************
-
-
 
   1     | add_host_roles             | Add Host Roles
   2     | add_hosts                  | Add Hosts to the SAP HANA Database System  <---
@@ -33,26 +34,26 @@ SAP HANA Lifecycle Management - SAP HANA Database 2.00.079.01.1728370356
   18    | update_host                | Update the SAP HANA Database Instance Host integration
   19    | exit                       | Exit (do nothing)
 
-Enter selected action index [19]: 2
 
-                                                                                                                                                                                                                 System Properties:
-Y04 /hana/shared/Y04 HDB_ALONE
+System Properties:
+ABC /hana/shared/ABC HDB_ALONE
         HDB10
         version: 2.00.079.01.1728370356
-        hosts: lavdb10y04101 (Database Worker (worker)), lavdb10y04102 (Database Worker (worker))
+        hosts: labc10host101 (Database Worker (worker)), labc10host102 (Database Worker (worker))
         edition: SAP HANA Database
         plugins: afl,rtl
 
-Enter comma-separated host names to add: lavdb10y04103
+Enter comma-separated host names to add: labc10host103
 Enter Root User Name For Remote Hosts [root]:
-Collecting information from host 'lavdb10y04103'...
-Information collected from host 'lavdb10y04103'.
+Collecting information from host 'labc10host103'...
+Information collected from host 'labc10host103'.
 
-Select roles for host 'lavdb10y04103':
-Index | Host Role                | Description
+Select roles for host 'labc10host103':
+
+  Index | Host Role                | Description
   -------------------------------------------------------------------
-  1     | worker                   | Database Worker   <--
-  2     | standby                  | Database Standby  
+  1     | worker                   | Database Worker  <---
+  2     | standby                  | Database Standby
   3     | extended_storage_worker  | Dynamic Tiering Worker
   4     | extended_storage_standby | Dynamic Tiering Standby
   5     | ets_worker               | Accelerator for SAP ASE Worker
@@ -61,12 +62,11 @@ Index | Host Role                | Description
   8     | xs_worker                | XS Advanced Runtime Worker
   9     | xs_standby               | XS Advanced Runtime Standby
 
-Enter comma-separated list of selected indices [1]:                                        
-Enter comma-separated list of selected indices [1]: 2
-Enter Host Failover Group for host 'lavdb10y04103' [default]:
-Enter Worker Group for host 'lavdb10y04103' [default]:
-Enter System Administrator (y04adm) Password:
-
+Enter comma-separated list of selected indices [1]: 1
+Enter Host Failover Group for host 'labc10host103' [default]:
+Enter Storage Partition Number for host 'labc10host103' [<<assign automatically>>]:
+Enter Worker Group for host 'labc10host103' [default]:
+Enter System Administrator (abcadm) Password:
 
 Summary before execution:
 =========================
@@ -80,59 +80,46 @@ Add Hosts to SAP HANA Database System
       Install SSH Key: Yes
       Root User Name For Remote Hosts: root
       Do not start added hosts and do not start SAP HANA Database System: No
-      Certificate Host Names: lavdb10y04103 -> hdb10y04-1003.lunarlab.edeka.net
+      Certificate Host Names: labc10host103 -> hdb10abc-1003.lunarlab.edeka.net
       Do not Modify '/etc/sudoers' File: No
       Ignore: <not defined>
    Additional Hosts
-      lavdb10y04103
-         Role: Database Standby (standby)
+      labc10host103
+         Role: Database Worker (worker)
          High-Availability Group: default
          Worker Group: default
-         Storage Partition: N/A
+         Storage Partition: <<assign automatically>>
    Log File Locations
-      Log directory: /var/tmp/hdb_Y04_hdblcm_add_hosts_2025-02-07_14.40.53
-      Trace location: /var/tmp/hdblcm_2025-02-07_14.40.53_2433282.trc
+      Log directory: /var/tmp/hdb_ABC_hdblcm_add_hosts_2025-02-07_20.17.57
+      Trace location: /var/tmp/hdblcm_2025-02-07_20.17.57_3617599.trc
 
-Do you want to continue? (y/n):                                                
+Do you want to continue? (y/n): y
 
 Adding Remote Hosts to the SAP HANA Database System
   Adding additional host...
-  Adding host 'lavdb10y04103'...
-    lavdb10y04103:  Adding host 'lavdb10y04103' to instance '10'...
-    lavdb10y04103:  Starting SAP HANA Database...
-    lavdb10y04103:    Starting 4 processes on host 'lavdb10y04103' (standby):
-    lavdb10y04103:      Starting on 'lavdb10y04103' (standby): hdbdaemon, hdbcompileserver, hdbnameserver, hdbpreprocessor
-    lavdb10y04103:      Starting on 'lavdb10y04103' (standby): hdbdaemon, hdbwebdispatcher
-    lavdb10y04103:    All server processes started on host 'lavdb10y04103' (standby).
+  Adding host 'labc10host103'...
+    labc10host103:  Adding host 'labc10host103' to instance '10'...
+    labc10host103:  Starting SAP HANA Database...
+    labc10host103:    Starting 1 process on host 'labc10host103' (worker):
+    labc10host103:      Starting on 'labc10host103' (worker): hdbdaemon
+    labc10host103:    Starting 4 processes on host 'labc10host103' (worker):
+    labc10host103:      Starting on 'labc10host103' (worker): hdbdaemon, hdbcompileserver, hdbnameserver, hdbpreprocessor
+    labc10host103:      Starting on 'labc10host103' (worker): hdbdaemon, hdbwebdispatcher, hdbindexserver (ABC)
+    labc10host103:      Starting on 'labc10host103' (worker): hdbdaemon, hdbwebdispatcher
+    labc10host103:    All server processes started on host 'labc10host103' (worker).
 Updating SAP HANA Database Instance Integration on Remote Hosts...
-  Updating SAP HANA Database instance integration on host 'lavdb10y04103'...
+  Updating SAP HANA Database instance integration on host 'labc10host103'...
 Updating Component List...
 Additional hosts added to the SAP HANA Database System
-Log file written to '/var/tmp/hdb_Y04_hdblcm_add_hosts_2025-02-07_15.00.28/hdblcm.log' on host 'hdb10y04-1002'.
+Log file written to '/var/tmp/hdb_ABC_hdblcm_add_hosts_2025-02-07_20.17.57/hdblcm.log' on host 'hdb10abc-1001'.
 
 
-
-
-
-
-SELECT * FROM M_TABLE_PERSISTENCE_LOCATIONS;
-SELECT * FROM M_CS_PARTITIONS;
-
-SELECT HOST, HOST_NAME FROM M_HOST_INFORMATION;
-
-SELECT T.SCHEMA_NAME, T.TABLE_NAME, L.HOST, L.PORT
-FROM M_TABLES T
-JOIN M_TABLE_PERSISTENCE_LOCATIONS L ON T.TABLE_OID = L.TABLE_OID
-WHERE L.HOST = '<specific_hostname>';
-
-### hdbuserstore ist anzupassen mit neuen Nodes
+1. hdbuserstore ist anzupassen mit neuen Nodes
 
 ## Remove Node
 https://learning.sap.com/learning-journeys/setting-up-high-availability-and-disaster-recovery-for-sap-hana/removing-a-host-from-a-scale-out-system_f5a78887-dd28-44f3-98b5-b95d968a8a75
 
-
-
-Anmelden am TENANT!
+1. Anmelden am TENANT!
 
 ```
 call SYS.UPDATE_LANDSCAPE_CONFIGURATION( 'SET REMOVE','<host>' );
@@ -140,13 +127,10 @@ call REORG_GENERATE(2,'');
 select * from SYS.REORG_STEPS;
 call REORG_EXECUTE(?);
 
-hdb10y04-1003:y04adm> python ./landscapeHostConfiguration.py
-| Host          | Host     | Host    | Failover | Remove             | Storage   | Storage   | Failover | Failover | NameServer | NameServer | IndexServer | IndexServer | Host   | Host   | Worker  | Worker  | |               | Active   | Status  | Status   | Status             | Config    | Actual    | Config   | Actual   | Config     | Actual     | Config      | Actual      | Config | Actual | Config  | Actual  | |               |          |         |          |                    | Partition | Partition | Group    | Group    | Role       | Role       | Role        | Role        | Roles  | Roles  | Groups  | Groups  | | ------------- | -------- | ------- | -------- | ------------------ | --------- | --------- | -------- | -------- | ---------- | ---------- | ----------- | ----------- | ------ | ------ | ------- | ------- | | lavdb10y04101 | yes      | ok      |          |                    |         1 |         1 | default  | default  | master 1   | master     | worker      | master      | worker | worker | default | default | | lavdb10y04102 | yes      | ok      |          |                    |         2 |         2 | default  | default  | master 2   | slave      | worker      | slave       | worker | worker | default | default | | lavdb10y04103 | starting | warning |          | reorg not required |         3 |         3 | default  | default  | master 3   | slave      | worker      | slave       | worker | worker | default | default |                                                                                                                                                      ``` 
-
-
-
-hdbuserstore ist anzupassen mit neuen Nodes
-
+hdb10abc-1003:abcadm> python ./landscapeHostConfiguration.py
+| Host          | Host     | Host    | Failover | Remove             | Storage   | Storage   | Failover | Failover | NameServer | NameServer | IndexServer | IndexServer | Host   | Host   | Worker  | Worker  | |               | Active   | Status  | Status   | Status             | Config    | Actual    | Config   | Actual   | Config     | Actual     | Config      | Actual      | Config | Actual | Config  | Actual  | |               |          |         |          |                    | Partition | Partition | Group    | Group    | Role       | Role       | Role        | Role        | Roles  | Roles  | Groups  | Groups  | | ------------- | -------- | ------- | -------- | ------------------ | --------- | --------- | -------- | -------- | ---------- | ---------- | ----------- | ----------- | ------ | ------ | ------- | ------- | | labc10host101 | yes      | ok      |          |                    |         1 |         1 | default  | default  | master 1   | master     | worker      | master      | worker | worker | default | default | | labc10host102 | yes      | ok      |          |                    |         2 |         2 | default  | default  | master 2   | slave      | worker      | slave       | worker | worker | default | default | | labc10host103 | starting | warning |          | reorg not required |         3 |         3 | default  | default  | master 3   | slave      | worker      | slave       | worker | worker | default | default |                                                                                                                                                      ``` 
+2. hdlcm remove Node
+3. hdbuserstore ist anzupassen mit neuen Nodes
 
 
 ### Remove StandBy
@@ -154,7 +138,7 @@ hdbuserstore ist anzupassen mit neuen Nodes
 Als User root:
 
 ``` 
-cd /hana/shared/Y04/hdblcm
+cd /hana/shared/ABC/hdblcm
 hdblcm
 
 Choose an action
@@ -216,7 +200,7 @@ Kopie von einem laufenden Knoten
 
 ```
 rsync -az -e ssh --progress --perms --exclude .snapshot <running logicalhost>:/usr/sap/ABC/ /usr/sap/ABC/
-mv /usr/sap/ABC/home/.hdb/<running host> /usr/sap/Y04/home/.hdb/<host>
+mv /usr/sap/ABC/home/.hdb/<running host> /usr/sap/ABC/home/.hdb/<host>
 
 mkdir /var/lib/hdb
 chmod 775 /var/lib/hdb
