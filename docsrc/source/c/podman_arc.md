@@ -1,5 +1,36 @@
 # Podman Architecture
 
+## Terms
+
+*Container orchestrators—Software* projects and products that orchestrate containers onto multiple different machines or nodes. These orchestrators communicate with container engines to run containers. The primary container orchestrator is Kubernetes.Kubernetes primarily uses CRI-O or containerd as its container engine.
+
+*Container engines* —Primarily used for configuring containerized applications to
+run on a single local node. CRI-O and containerd are container engines used by Kubernetes to manage containers locally. They really are not intended to be used directly by users. Docker and Podman are the primary container engines used by users to develop, manage, and run containerized applications on a single machine. Buildah is another container engine although it is only used for building container images.
+
+
+*Open Container Initiative (OCI)* container runtimes—Configure different parts of the Linux kernel and then, finally, launch the containerized application. The two most commonly used container runtimes are *runc* and *crun*. Kata and gVisor are other examples of container runtimes.
+
+*pod*, a concept popularized by the Kubernetes project, is one or more containers sharing the same namespaces and cgroups (resource constraints)
+
+*Containers* are groups of processes running on a Linux system that are isolated from each other. Containers make sure one group of processes does not interfere with other processes on the system. Containers are isolated via the following:
+* Resource constraints (cgroups)
+* Security constraints
+* Virtualization technologies (namespaces)
+
+
+## Container image format
+
+A container image consists of three components:
+* A directory tree (rootfs) containing all the software required to run your application
+* A JSON file that describes the contents of the rootfs
+* Another JSON file called a manifest list that links multiple images together to support different architectures
+
+
+container (=rootfs + json manifest), then run in container runtime
+
+
+
+
 ## 5 Best Practices for Docker
 
 https://devdojo.com/bobbyiliev/5-docker-best-practices-i-wish-i-knew-when-i-started
