@@ -17,6 +17,8 @@ run on a single local node. CRI-O and containerd are container engines used by K
 * Security constraints
 * Virtualization technologies (namespaces)
 
+*Dangling images* are images that no longer have a tag associated with them or a container using them. Delete them with podman image prune -a
+
 
 ## Container image format
 
@@ -27,6 +29,40 @@ A container image consists of three components:
 
 
 container (=rootfs + json manifest), then run in container runtime
+
+## Podman some commands
+
+### image
+
+in non-root context
+```
+podman unshare
+podman image mount <image>
+mnt=$(p image mount localhost/ora236)
+cd $mnt
+podman image umount <image>
+```
+
+build -   Builds an image using instructions from Containerfiles\
+diff -    Inspects changes in image’s filesystem\
+exists -  Checks whether an image exists\
+history - Shows a history of a specified image
+
+
+### login
+
+To store authentication information for the user, the podman login command creates an auth.json file. By default, this is stored in the /run/user/$UID/containers/
+auth.json file. The auth.json file contains your registry password in a Base64-encoded string; there is no cryptography involved.
+
+
+### system
+
+podman system df  - Show storage
+
+### run
+
+podman run -d -p 8080:8080 --name myapp registry.access.redhat.com/ubi8/httpd-24 - run, expose 8080, delete after stop
+
 
 
 
