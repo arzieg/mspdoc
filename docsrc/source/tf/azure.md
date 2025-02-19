@@ -19,6 +19,14 @@
 `az login --use-device-code`
 
 
+## Rollen 
+
+az role assignment list --assignee \<email\> --include-groups --output table
+
+### Rolle auf eine spezielle Ressource
+
+az role assignment list --scope /subscriptions/\<id\>/resourceGroups/.../providers/Microsoft.Storage/storageAccounts/\<storageaccount\> --assignee \<mail\> --include-groups --output table
+
 # AZcopy installieren
 
 https://learn.microsoft.com/de-de/azure/storage/common/storage-use-azcopy-v10?toc=%2Fazure%2Fstorage%2Fblobs%2Ftoc.json&bc=%2Fazure%2Fstorage%2Fblobs%2Fbreadcrumb%2Ftoc.json&tabs=dnf
