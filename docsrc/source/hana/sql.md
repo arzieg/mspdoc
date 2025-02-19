@@ -1,0 +1,7 @@
+# SQL
+
+## Show Ports
+
+```
+SELECT * FROM SYS_DATABASES.M_SERVICES;
+```
