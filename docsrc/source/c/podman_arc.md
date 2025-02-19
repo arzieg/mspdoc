@@ -1,5 +1,72 @@
 # Podman Architecture
 
+## Terms
+
+*Container orchestrators—Software* projects and products that orchestrate containers onto multiple different machines or nodes. These orchestrators communicate with container engines to run containers. The primary container orchestrator is Kubernetes.Kubernetes primarily uses CRI-O or containerd as its container engine.
+
+*Container engines* —Primarily used for configuring containerized applications to
+run on a single local node. CRI-O and containerd are container engines used by Kubernetes to manage containers locally. They really are not intended to be used directly by users. Docker and Podman are the primary container engines used by users to develop, manage, and run containerized applications on a single machine. Buildah is another container engine although it is only used for building container images.
+
+
+*Open Container Initiative (OCI)* container runtimes—Configure different parts of the Linux kernel and then, finally, launch the containerized application. The two most commonly used container runtimes are *runc* and *crun*. Kata and gVisor are other examples of container runtimes.
+
+*pod*, a concept popularized by the Kubernetes project, is one or more containers sharing the same namespaces and cgroups (resource constraints)
+
+*Containers* are groups of processes running on a Linux system that are isolated from each other. Containers make sure one group of processes does not interfere with other processes on the system. Containers are isolated via the following:
+* Resource constraints (cgroups)
+* Security constraints
+* Virtualization technologies (namespaces)
+
+*Dangling images* are images that no longer have a tag associated with them or a container using them. Delete them with podman image prune -a
+
+
+## Container image format
+
+A container image consists of three components:
+* A directory tree (rootfs) containing all the software required to run your application
+* A JSON file that describes the contents of the rootfs
+* Another JSON file called a manifest list that links multiple images together to support different architectures
+
+
+container (=rootfs + json manifest), then run in container runtime
+
+## Podman some commands
+
+### image
+
+in non-root context
+```
+podman unshare
+podman image mount <image>
+mnt=$(p image mount localhost/ora236)
+cd $mnt
+podman image umount <image>
+```
+
+build -   Builds an image using instructions from Containerfiles\
+diff -    Inspects changes in image’s filesystem\
+exists -  Checks whether an image exists\
+history - Shows a history of a specified image
+
+
+### login
+
+To store authentication information for the user, the podman login command creates an auth.json file. By default, this is stored in the /run/user/$UID/containers/
+auth.json file. The auth.json file contains your registry password in a Base64-encoded string; there is no cryptography involved.
+
+
+### system
+
+podman system df  - Show storage
+
+### run
+
+podman run -d -p 8080:8080 --name myapp registry.access.redhat.com/ubi8/httpd-24 - run, expose 8080, delete after stop
+
+
+
+
+
 ## 5 Best Practices for Docker
 
 https://devdojo.com/bobbyiliev/5-docker-best-practices-i-wish-i-knew-when-i-started
