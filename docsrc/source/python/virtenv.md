@@ -50,3 +50,27 @@ deactivate
 
 ## update
 `python -m pip install --update requests`
+
+
+
+# Pip
+
+## SSL Zertifikatswarnung 
+https://jhooq.com/pip-install-connection-error/
+
+```
+WARNING: Retrying (Retry(total=4, connect=None, read=None, redirect=None, status=None)) after connection broken by 'SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:1000)'))': /packages/68/1b/e0a87d256e40e8c888847551b20a017a6b98139178505dc7ffb96f04e954/dnspython-2.7.0-py3-none-any.whl.metadata
+```
+
+`pip install --trusted-host pypi.org --trusted-host files.pythonhosted.org <packet>`
+
+alternativ
+
+$HOME/.config/pip/pip.conf
+```
+[global]
+trusted-host = pypi.python.org
+               pypi.org
+               files.pythonhosted.org
+```
+
