@@ -68,6 +68,12 @@ tar cpf - /some/important/data | ssh user@destination-machine "tar xpf - -C /som
 find /mnt/dump -type f -exec md5sum {} \;> /tmp/checksums.md 
 md5sum -c /tmp/checksums.md
 
+## ssh
+
+ssh-keygen -R 192.168.33.10  // remove old hostkey
+ssh-keyscan 192.168.33.10 >> ~/.ssh/known_hosts   // add hostkeys
+
+
 ### Check MTU 9000
 ping -s 8192 -M do -c 1 filer1d
 
