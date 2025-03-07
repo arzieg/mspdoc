@@ -102,7 +102,14 @@ https://last9.io/blog/systemctl-logs/
 | -------- | -------- | 
 |journalctl	                      |View all system logs in reverse chronological order.
 |journalctl -u <service-name>	    |View logs for a specific service (e.g., journalctl -u nginx).
+|journalctl -u nginx.service --since today | Trouble of Service nginx today
+|journalctl _COMM=sshd --since="24 hours ago" | who logged in
+|journalctl --since="1 hour ago" -o json-pretty | in colors
+|journalctl --since="1 hour ago" --output=short-precise | exact timestamp
+|journalctl --since="1 hour ago" -o verbose | magic
 |journalctl -f	                  |View logs in real-time (similar to tail -f, journalctl -u nginx -f).
+|journalctl --since="1 hour ago"  |Last hour
+|journalctl --since="10 minutes ago" | | Last 10 Minutes
 |journalctl --since "YYYY-MM-DD"	|View logs from a specific date (e.g., journalctl --since "2024-12-01", journalctl --since "2024-12-01" --until "2024-12-09").
 |journalctl -b	                  |View logs from the current boot session. (previous boot: journalctl -b -1)
 |journalctl -p <priority>    	    |Filter logs by priority (e.g., journalctl -p err for errors).
