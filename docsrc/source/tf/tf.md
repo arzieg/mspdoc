@@ -43,6 +43,39 @@ tf import azurerm_network_security_group.<SG-NAME> <ID>
 tf plan -refresh-only   (sollte dann idealerweise identisch sein)
 
 
+### terraform workspace:
+
+https://spacelift.io/blog/terraform-workspaces
+
+```
+terraform workspace --help
+Usage: terraform [global options] workspace
+
+  new, list, show, select, and delete Terraform workspaces.
+
+Subcommands:
+    delete    Delete a workspace
+    list      List Workspaces
+    new       Create a new workspace
+    select    Select a workspace
+    show      Show the name of the current workspace
+```
+
+Create: 
+
+```
+terraform workspace new test_workspace
+Created and switched to workspace "test_workspace"!
+
+You're now on a new, empty workspace. Workspaces isolate their state,
+so if you run "terraform plan" Terraform will not see any existing state
+for this configuration.
+``` 
+When we create a new workspace, Terraform creates a corresponding new state file in the same remote backend that is configured initially. It is important to note that the backend being used should also be able to support the workspaces.
+
+
+
+
 ## Debug
 
 
