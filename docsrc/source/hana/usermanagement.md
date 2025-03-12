@@ -9,8 +9,7 @@ hdbuserstore set            - Key definieren, Bsp: hdbuserstore set BACKUP lavdb
 
 ## Password reset
 
-
-### Password neu setzen
+### Password neu setzen SYSTEMDB
 
 Hier noch das Problem, dass SYSTEM sich nach dem Start nicht selber ändern darf.
 
@@ -18,9 +17,27 @@ Hier noch das Problem, dass SYSTEM sich nach dem Start nicht selber ändern darf
 /usr/sap/<SID>/HDB<instance>/exe/sapcontrol -nr <instance> -function StopSystem HDB
 /usr/sap/<SID>/HDB<instance>/hdbenv.sh
 /usr/sap/<SID>/HDB<instance>/exe/hdbnameserver -resetUserSystem
+-> Passwortabfrage erfolgt
 ```
 
 HANA starten und danach Passwort wieder neu setzen
+hdbuserstore - Key anpassen
+
+### Password neu setzen Tenant
+
+Log in to SYSTEMDB and open the SQL console.
+
+Stop the tenant database:
+
+`ALTER SYSTEM STOP DATABASE <tenant_db_name>;`
+
+Reset the SYSTEM user password:
+
+`ALTER DATABASE <tenant_db_name> SYSTEM USER PASSWORD <new_password>;`
+
+Start the tenant database:
+
+`ALTER SYSTEM START DATABASE <tenant_db_name>;`
 
 
 ### Sofern es einen User mit "USER ADMIN" Rechten gibt: 
