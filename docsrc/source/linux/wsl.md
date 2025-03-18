@@ -77,6 +77,13 @@ fc-cache -fv
 
 Im Terminal -> Einstellungen -> Profil auswählen oder neu erstellen -> unter Darstellung dann z.B. "MesloLGM NF" auswählen.
 
+Putty: hier muss es ein fixed size font sein: 
+
+MartianMono Nerd Font
+-> hier z.B. MartianMonoNerdFontMono-Regular lokal auf dem Windows System installieren
+-> in putty angeben als Font 
+
+
 ## setup tmux
 
 Install: `sudo apt install tmux`
