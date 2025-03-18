@@ -73,6 +73,8 @@ md5sum -c /tmp/checksums.md
 ssh-keygen -R 192.168.33.10  // remove old hostkey
 ssh-keyscan 192.168.33.10 >> ~/.ssh/known_hosts   // add hostkeys
 
+ssh -o IdentityAgent=none username@password  // start ohne ssh-agent abzufragen
+
 
 ### Check MTU 9000
 ping -s 8192 -M do -c 1 filer1d
