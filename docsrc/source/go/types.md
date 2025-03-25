@@ -52,6 +52,9 @@ uintptr = Low Level Pointer, wird z.B. in der Verbindung mit C-Programmen einges
 * float32
 * float64
 
+math.IsNaN tests whether its argument is a not-a-number value
+math.NaN returns such a value
+
 ## Operators
 
 in absteigendem Vorrang
@@ -72,6 +75,63 @@ in absteigendem Vorrang
 <<  left shift
 >>  right shift
 ```
+
+## complex
+
+Go provides two sizes of complex numbers, complex64 and complex128, whose components are float32 and float64 respectively.
+
+real(x) - reelle Zahl 
+imag - imaginiäre Teil einer komplexen Zahl
+
+## Bool
+
+true
+false
+
+## Strings
+
+A string is an immutable sequence of bytes.
+
+rune =  UTF-8-encoded sequences of Unicode code points (runes)
+
+len = returns the number of bytes (not runes) in a string
+index = operation s[i] retrieves the i-th byte of string s, where 0 ≤ i < len(s).
+utf8.RuneCountInString(s) = Länge der rune
+
+
+The i-th byte of a string **is not** necessarily the i-th character of a string, because the UTF-8 encoding of a non-ASCII code point requires two or more bytes.
+
+s[i:j] = Substring von i bis <j
+
+s[i:]  = Starte ab Index i
+
+s[:j]  = bis Index <j
+
+s[:]   = kompletter String
+
++      = String concatination
+
+Ein *raw string literal* steht zwischen zwei backquotes \` \`
+
+### Standard Packages for manipulating Strings
+
+* bytes   - bytes manchmal performanter wenn man strings zusammenbaut
+* strings
+* strconv - konvertiert string in /zu bool, integer, float
+* unicode - Vergleichsfunktionen wie IsDigit, IsLetter, IsUpper, IsLower für runes
+
+
+strings und bytes teilen sich mehrere ähnliche Funktionen
+
+| string    | byte     |
+| ---    | ---     |
+|func Contains(s, substr string) bool |   func Contains(b, subslice []byte) bool|
+|func Count(s, sep string) int  | func Count(s, sep []byte) int|
+|func Fields(s string) []string  |func Fields(s []byte) [][]byte|
+|func HasPrefix(s, prefix string) bool  | func HasPrefix(s, prefix []byte) bool|
+|func Index(s, sep string) int  | func Index(s, sep []byte) int|
+|func Join(a []string, sep string) string |   func Join(s [][]byte, sep []byte) []byte|s
+
 
 
 ## Typgleichheit
