@@ -122,13 +122,19 @@ https://learning.sap.com/learning-journeys/setting-up-high-availability-and-disa
 1. Anmelden am TENANT!
 
 ```
+SELECT * FROM SYS.REORG_STEPS;
+SELECT * FROM SYS.M_LANDSCAPE_HOST_CONFIGURATION;
+
 call SYS.UPDATE_LANDSCAPE_CONFIGURATION( 'SET REMOVE','<host>' );
 call REORG_GENERATE(2,'');
 select * from SYS.REORG_STEPS;
 call REORG_EXECUTE(?);
 
+
 hdb10abc-1003:abcadm> python ./landscapeHostConfiguration.py
-| Host          | Host     | Host    | Failover | Remove             | Storage   | Storage   | Failover | Failover | NameServer | NameServer | IndexServer | IndexServer | Host   | Host   | Worker  | Worker  | |               | Active   | Status  | Status   | Status             | Config    | Actual    | Config   | Actual   | Config     | Actual     | Config      | Actual      | Config | Actual | Config  | Actual  | |               |          |         |          |                    | Partition | Partition | Group    | Group    | Role       | Role       | Role        | Role        | Roles  | Roles  | Groups  | Groups  | | ------------- | -------- | ------- | -------- | ------------------ | --------- | --------- | -------- | -------- | ---------- | ---------- | ----------- | ----------- | ------ | ------ | ------- | ------- | | labc10host101 | yes      | ok      |          |                    |         1 |         1 | default  | default  | master 1   | master     | worker      | master      | worker | worker | default | default | | labc10host102 | yes      | ok      |          |                    |         2 |         2 | default  | default  | master 2   | slave      | worker      | slave       | worker | worker | default | default | | labc10host103 | starting | warning |          | reorg not required |         3 |         3 | default  | default  | master 3   | slave      | worker      | slave       | worker | worker | default | default |                                                                                                                                                      ``` 
+| Host          | Host     | Host    | Failover | Remove             | Storage   | Storage   | Failover | Failover | NameServer | NameServer | IndexServer | IndexServer | Host   | Host   | Worker  | Worker  | |               | Active   | Status  | Status   | Status             | Config    | Actual    | Config   | Actual   | Config     | Actual     | Config      | Actual      | Config | Actual | Config  | Actual  | |               |          |         |          |                    | Partition | Partition | Group    | Group    | Role       | Role       | Role        | Role        | Roles  | Roles  | Groups  | Groups  | | ------------- | -------- | ------- | -------- | ------------------ | --------- | --------- | -------- | -------- | ---------- | ---------- | ----------- | ----------- | ------ | ------ | ------- | ------- | | labc10host101 | yes      | ok      |          |                    |         1 |         1 | default  | default  | master 1   | master     | worker      | master      | worker | worker | default | default | | labc10host102 | yes      | ok      |          |                    |         2 |         2 | default  | default  | master 2   | slave      | worker      | slave       | worker | worker | default | default | | labc10host103 | starting | warning |          | reorg not required |         3 |         3 | default  | default  | master 3   | slave      | worker      | slave       | worker | worker | default | default | 
+``` 
+
 2. hdlcm remove Node
 3. hdbuserstore ist anzupassen mit neuen Nodes
 
@@ -237,3 +243,41 @@ vi ABC_HDB10_<logicalhostname> und logischen Hostnamen anpassen
 mkdir /usr/sap/ABC/HDB10/<logicalhostname>
 ```
 
+## Test
+
+```
+mount -t nfs lasc58dc1.clab.azr.ez.edeka.net:/hana/shared /hana/shared
+mount -t nfs lasc58dc1.clab.azr.ez.edeka.net:/hana/data /hana/data
+mount -t nfs lasc58dc1.clab.azr.ez.edeka.net:/hana/log /hana/log
+/etc/hosts pflegen
+
+groupadd -g 1000 sapsys
+groupadd -g 6030 y10shm
+useradd -m -d /usr/sap/Y10/home -s /bin/sh -c "SAP HANA Database System Administrator" -u 5000 -g 1000 -G y10shm y10adm
+
+mkdir /hana/data/Y10
+mkdir /hana/log/Y10
+chown -R y10adm:sapsys /hana/data
+chown -R y10adm:sapsys /hana/log
+
+
+
+HOSTAGENTFILE="/hana/shared/Y10/software/repo/03_repositories/HANA_Database/HANA2_rev59_14/extracted/SAP_HANA_DATABASE/server/HOSTAGENT.TGZ"
+HOSTAGENTDIR="/root/tmp_hostagent_install"
+HOSTAGENTSETUPDIR="$HOSTAGENTDIR/global/hdb/saphostagent_setup"
+mkdir ${HOSTAGENTDIR} 
+tar -zxvf ${HOSTAGENTFILE} -C${HOSTAGENTDIR} 
+cd $HOSTAGENTSETUPDIR
+$HOSTAGENTSETUPDIR/saphostexec -install
+cd
+rm -rf ${HOSTAGENTDIR}
+
+/etc/ssh/sshd_config
+PasswordAuthentication yes
+systemctl restart sshd
+
+Auf dem Zielsystem temporär 
+cd ~/.ssh # mv authorized_keys authorized_keys.bak
+
+
+```

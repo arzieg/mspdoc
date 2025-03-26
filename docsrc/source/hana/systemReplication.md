@@ -1,11 +1,28 @@
-.. _hana_sr:
+# HANA SystemReplication
 
-##########################
-HANA SystemReplication
-##########################
+## Disable HANA SystemReplication
 
-3203165 - Startup fails at error 'nameserver: Couldn't find own nameserver in topology'
-========================================================================================
+On the secondary System:
+
+```
+sapcontrol -nr <instance_number> -function StopSystem HDB
+hdbnsutil -sr_unregister
+sapcontrol -nr <instance_number> -function StartSystem HDB
+```
+
+*In cases where system replication is out of sync and you just need to re-register the initial secondary system, unregister is not required - simply use the command hdbnsutil -sr_register. For details of the two cases where hdbnsutil -sr_unregister is required see SAP Note 1945676 - Correct usage of hdbnsutil -sr_unregister.*
+
+
+On the primary System:
+
+```
+hdbnsutil -sr_disable
+```
+
+
+
+## 3203165 - Startup fails at error 'nameserver: Couldn't find own nameserver in topology'
+
 
 Fehlermeldung: Couldn't find own nameserver in topology (lavdb10y04101:31001), insb. nach einem harten Reset der SystemReplication
 
