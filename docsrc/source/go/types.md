@@ -133,6 +133,50 @@ strings und bytes teilen sich mehrere ähnliche Funktionen
 |func Join(a []string, sep string) string |   func Join(s [][]byte, sep []byte) []byte|s
 
 
+## const
+
+When a sequence of constants is declared as a group, the right-hand side expression may be omitted for all but the first of the group, implying that the previous expression and its type should be used again.
+
+```go
+const (
+    a = 1
+    b
+    c = 2
+    d
+) => abcd = "1 1 2 2"
+```
+
+const Generator iota (aka enumeration, enum)
+
+```
+const (
+    Sunday Weekday = iota
+    Monday
+    Tuesday
+    Wednesday
+    Thursday
+    Friday
+    Saturday
+)  => Sunday = 0
+```
+
+Ein komplexeres Beispiel: 
+```go
+const (
+_ = 1 << (10 * iota)
+KiB // 1024
+MiB // 1048576
+GiB // 1073741824
+TiB // 1099511627776
+PiB // 1125899906842624
+EiB // 1152921504606846976
+ZiB // 1180591620717411303424
+YiB // 1208925819614629174706176
+)
+```
+
+
+
 
 ## Typgleichheit
 
