@@ -175,6 +175,52 @@ YiB // 1208925819614629174706176
 )
 ```
 
+## Array
+
+* fixed size
+* If an array’s element type is comparable then the array type is comparable too. Arrays unterschiedlicher Größe können nicht verglichen werden
+
+```go
+var q [3]int = [3]int{1,2,3}
+q := [...]int{1,2,3}   // automatische definition
+r := [...]int{99: -1}  // 100 Elemente, alle 0 initialisiert bis auf das letzt -1
+```
+
+## Slices
+
+* Slices represent variable-length sequences whose elements all have the same type.
+* A slice has three components: a pointer, a length, and a capacity.
+* Multiple slices can share the same underlying array and may refer to overlapping parts of that array!
+
+* The slice operator s[i:j], where 0 ≤ i ≤ j ≤ cap(s), creates a new slice that refers to elements i through j-1 of the sequence s, which may be an array variable, a pointer to an array, or another slice. The resulting slice has j-i elements.
+
+* die Kapzität eines Slices [i:j] welches von einem Array abgeleitet wird ist cap(array)-i, die Länge ist i-j
+
+* Unlike arrays, slices are not comparable, we cannot use ==. 
+* Standard library provides bytes.Equal function. For all other types of slice we have to write our own function
+* The only legal slice comparison is against nil. The nil slice has length and capacity zero
+* if you need to test whether a slice is empty, use len(s) == 0, not s == nil.
+```go
+var s []int    // len(s) == 0, s == nil
+s = nil        // len(s) == 0, s == nil
+s = []int(nil) // len(s) == 0, s == nil
+s = []int{}    // len(s) == 0, s != nil
+```
+
+* The built-in function make creates a slice of a specified element type, length, and capacity. The capacity argument may be omitted, in which case the capacity equals the length.
+
+```go
+make([]T, len)
+make([]T, len, cap) // same as make([]T, cap)[:len]
+```
+
+* Under the hood, make creates an unnamed array variable and returns a slice of it; the array is accessible only through the returned slice. In the first form, the slice is a view of the entire array. In the second, the slice is a view of only the array’s first len elements, but its capacity includes the entire array. The additional elements are set aside for future growth.
+
+
+
+
+
+
 
 
 
