@@ -126,9 +126,12 @@ SELECT * FROM SYS.REORG_STEPS;
 SELECT * FROM SYS.M_LANDSCAPE_HOST_CONFIGURATION;
 
 call SYS.UPDATE_LANDSCAPE_CONFIGURATION( 'SET REMOVE','<host>' );
-call REORG_GENERATE(2,'');
+call REORG_GENERATE(2,'');   <-- ab hier schon landscapeHostConfiguration aufrufen, das reicht eigentlich schon, um das System wieder rauszunehmen, sofern keine Tabellen verteilt wurden. 
 select * from SYS.REORG_STEPS;
+
 call REORG_EXECUTE(?);
+
+SELECT * FROM SYS.REORG_GENERATE_OVERVIEW;
 
 
 hdb10abc-1003:abcadm> python ./landscapeHostConfiguration.py
