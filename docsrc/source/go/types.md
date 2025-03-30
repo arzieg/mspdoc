@@ -207,6 +207,29 @@ s = []int(nil) // len(s) == 0, s == nil
 s = []int{}    // len(s) == 0, s != nil
 ```
 
+```go
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+)
+
+func main() {
+
+	var a []int
+	j1, _ := json.Marshal(a)
+	fmt.Println(string(j1)) // nil
+
+	b := []int{}
+
+	j2, _ := json.Marshal(b)
+	fmt.Println(string(j2)) // []
+
+}
+```
+
+
 * The built-in function make creates a slice of a specified element type, length, and capacity. The capacity argument may be omitted, in which case the capacity equals the length.
 
 ```go
@@ -217,6 +240,64 @@ make([]T, len, cap) // same as make([]T, cap)[:len]
 * Under the hood, make creates an unnamed array variable and returns a slice of it; the array is accessible only through the returned slice. In the first form, the slice is a view of the entire array. In the second, the slice is a view of only the array’s first len elements, but its capacity includes the entire array. The additional elements are set aside for future growth.
 
 
+* immer auf len und cap achten
+
+```go
+package main
+
+import (
+	"fmt"
+)
+
+func main() {
+	a := [3]int{1, 2, 3}
+	b := a[:1]
+
+	fmt.Println("a=", a)
+	fmt.Println("b=", b)
+	c := b[0:2]
+	fmt.Println("c=", c) // kein Problem, hätte man vlt. erwartet, weil b:=a[:1], aber die cap(b) == cap(a)
+
+	fmt.Println(len(b))
+	fmt.Println(cap(b))
+
+	fmt.Println(len(c))
+	fmt.Println(cap(c))
+
+    d := a[0:1:1]  // [i:j:k] len=j-i, cap=k-i  <- hier wird explizit Kapazität mit definiert
+}
+```
+
+Fun:
+```go
+func main() {
+	a := [3]int{1, 2, 3}
+	b := a[0:1]
+	c := b[0:2]
+
+	fmt.Printf("a[%p] = %v\n", &a, a)
+	fmt.Printf("b[%p] = %[1]v\n", b)
+	fmt.Printf("c[%p] = %[1]v\n", c)
+
+	c = append(c, 5)
+	fmt.Printf("a[%p] = %v\n", &a, a)  
+	fmt.Printf("c[%p] = %[1]v\n", c)
+
+} 
+a[0xc000018018] = [1 2 3]
+b[0xc000018018] = [1]
+c[0xc000018018] = [1 2]
+a[0xc000018018] = [1 2 5]  <- a  hat die cap von 3, c len=2,cap3. Ich ändere c, d.h. c[3] wird angehängt und ändere damit a :-)
+c[0xc000018018] = [1 2 5]
+```
+
+besser, wenn man dieses Verhalten nicht haben möchte
+
+```go
+c:=a[0:2:2]   // len 2, cap 2
+
+c= append(c,5)  <- nun zwinge ich c dazu dass eine reallocation stattfindet, so das c [1,2,5] enthält, a aber bei [1,2,3] bleibt
+```
 
 
 
