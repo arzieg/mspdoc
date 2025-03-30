@@ -299,6 +299,86 @@ c:=a[0:2:2]   // len 2, cap 2
 c= append(c,5)  <- nun zwinge ich c dazu dass eine reallocation stattfindet, so das c [1,2,5] enthält, a aber bei [1,2,3] bleibt
 ```
 
+* Funktionsübergabe bei einem Slice. Wenn man am Slice etwas ändert muss auch immer ein Slice zurückgegeben werden, da es ggfs. durch 
+Kapazitätserweiterung zu Verschiebungen des Speicherortes kommen kann. 
+
+```go
+func appendInt(x []int, y ...int) []int {   // x slice, y eine beliebige Anzahl weiterer int's, Rückgabe ein Slice
+	...
+}
+```
+
+A slice can be used to implement a stack. 
+
+Given an initially empty slice stack, we can push a new value onto the end of the slice with append: `stack = append(stack, v) // push v`
+
+The top of the stack is the last element: `top := stack[len(stack)-1] // top of stack`
+
+and shrinking the stack by popping that element is `stack = stack[:len(stack)-1] // pop`
+
+
+## maps
+
+* It is an unordered collection of key/value pairs in which all the keys are distinct, and the value associated with a given key can be retrieved, updated, or removed using a constant number of key comparisons on the average, no matter how large the hash table.
+
+* a map is a reference to a hash table
+
+* map type is written map[K]V
+
+* The key type K must be comparable using ==
+
+* Definition:
+```go
+ages := make(map[string]int) // mapping from strings to ints
+
+ages := map[string]int{}
+
+ages := map[string]int{
+	"alice": 31,
+	"charlie": 34,
+}
+```
+
+* Access
+```go
+ages["alice"] = 32
+delete(ages, "alice") // remove element ages["alice"]
+```
+
+* wenn ein Key noch nicht vorhanden ist, wird es angelegt. Ist eine "safe operation", da value initial auf 0 gesetzt wird.
+
+* Ein Map - Element kann aber nicht per Adresse angesprochen werden, da bei Erweiterung einer Map aka Hash-Table diese sich ändert, also &ages["bob"] geht nicht!
+
+* Iteration over keys using range
+```go
+for name, age := range ages {
+	fmt.Printf("%s\t%d\n", name, age)
+}
+```
+
+* Check if key exist
+```go
+if age, ok := ages["bob"]; !ok { /* ... */ }  /* "bob" is not a key in this map; age == 0. */
+```
+
+* As with slices, maps cannot be compared to each other; the only legal comparison is with nil.
+```go
+func equal(x, y map[string]int) bool {
+	if len(x) != len(y) {
+		return false
+	}
+	for k, xv := range x {
+		if yv, ok := y[k]; !ok || yv != xv {
+			return false
+		}
+	}
+	return true
+}
+```
+
+
+
+
 
 
 
