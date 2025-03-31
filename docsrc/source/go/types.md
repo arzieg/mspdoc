@@ -378,9 +378,95 @@ func equal(x, y map[string]int) bool {
 
 
 
+## structs
 
+* A struct is an aggregate data type that groups together zero or more named values of arbitrary types as a single entity. 
+* Each value is called a field.
+* Field order is significant to type identity.
+* The name of a struct field is exported if it begins with a capital letter
+* A struct type may contain a mixture of exported and unexported fields.
+* A named struct type S can’t declare a field of the same type S: an aggregate value cannot contain itself.
+* But S may declare a field of the pointer type *S, which lets us create recursive data structures like linked lists and trees.
+* The struct type with no fields is called the empty struct, written struct{}
+* Some Go programmers use it instead of bool as the value type of a map that represents a set, to emphasize that only the keys are significant
 
+### struct literals
 
+Two forms:
+
+* The first form: a value be specified for every field, in the right order.
+
+```go
+type Point struct{ X, Y int}
+p := Point{1,2}
+```
+* The second form: a struct value is initialized by listing some or all of the field names and their corresponding values. Because names
+are provided, the order of fields doesn’t matter.
+ 
+```go
+anim := gif.GIF{LoopCount: nframes}
+```
+
+* The two forms cannot be mixed in the same literal.
+
+* Struct values can be passed as arguments to functions and returned from them (passed by value, only a copy of the data)
+
+```go
+func Scale (p Point, factor int) Point {
+	return Point{p.X * factor, p.Y * factor}
+}
+
+fmt.Println(Scale(Point{1,2},5))
+```
+
+of by large structs are usually passed indirect by using a pointer (passed by reference, direct change of the original data)
+
+```go
+func Bonus (e *Employee, percent int) int {
+	return e.Salary * percent / 100
+}
+```
+
+* Shorthand to initialize a struct: `pp := &Point{1,2}`
+
+* If all the fields of a struct are comparable, the struct itself is comparable
+
+#### Struct Embedding and Anonymous Fields
+
+```go
+type Point struct { X, Y int}
+type Circle struct { Center Point, Radius int}
+type Wheel struct { Circle Circle, Spokes int}
+
+var w Wheel
+w.Circle.Center.X = 8  // or shorthand: w.X 
+w.Circle.Center.Y = 8  // or shorthand: w.Y
+w.Circle.Radius = 5    // or shorthand: w.Radius = 5
+w.Spokes = 20
+```
+
+* Go lets us declare a field with a type but no name; such fields are called anonymous fields. -> shorthand possible
+* The type of the field must be a named type or a pointer to a named type. 
+* Circle and Wheel have one anonymous field each. 
+* We say that a Point is embedded within Circle, and a Circle is embedded within Wheel.
+* Unfortunately, there’s no corresponding shorthand for the struct literal syntax,
+```go
+w = Wheel{Circle{Point{8,8},5},20}
+w = Wheel{
+	Circle: Circle{
+		Point: Point{X: 8, Y: 8},
+		Radius: 5,
+		},
+	Spokes: 20, // NOTE: trailing comma necessary here (and at Radius)
+	}
+
+w = Wheel{8, 8, 5, 20} // compile error
+w = Wheel{X: 8, Y: 8, Radius: 5, Spokes: 20} // compile error
+```
+
+* Because "anonymous" fields do have implicit names, you can’t have two anonymous fields of the same type since their names would conflict.
+* In the examples above, the Point and Circle anonymous fields are exported. Had they been unexported (point and circle), we could still use the shorthand form w.X = 8 // equivalent to w.circle.point.X = 8 but the explicit long form shown in the comment would be forbidden outside the declaring package because circle and point would be inaccessible.
+* anonymous fields need not be struct types; any named type or pointer to a named type will do. Will also used in methods
 
 
 
