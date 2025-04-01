@@ -23,7 +23,7 @@ server {
 
 3. Server-Konfigurationsdatei
 
-Erstellen einer Datei laszv012.lunarlab.edeka.net.conf - Datei für die Proxykonfiguration 
+Erstellen einer Datei <hostname-fqdn>.conf - Datei für die Proxykonfiguration 
 
 ``` 
 server {
