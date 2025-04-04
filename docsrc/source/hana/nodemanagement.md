@@ -131,6 +131,24 @@ select * from SYS.REORG_STEPS;
 
 call REORG_EXECUTE(?);
 
+-> reorg_id eine Nummer
+
+select * from reorg_overview where reorg_id = '195';  <- wann ist der reorg gestartet
+select count(*) from reorg_steps where reorg_id='195';  <- Anzahl der reorg steps (HANA geht alle Tabellen durch und prüft, ob etwas zu tun ist, auch wenn worker nur kurz reingenommen wurde, das kann sehr lange dauern. In M. wurde ein Tabellenreorg durchgeführt)
+
+REORG_ID,STATUS,START_DATE,END_DATE,USER,ALGORITHM_ID,PARAMETERS
+195,"FINISHED","2025-04-04 12:18:11.278000000","2025-04-04 15:27:39.698000000","SYSTEM",2,""
+
+
+select count(*) from reorg_steps where reorg_id='195' and status='FINISHED'; <- Anzahl der beendeten Reorg-Steps
+
+
+
+# Anzeige wie viele Jobs noch laufen müssen
+select IFNULL("STATUS", 'PENDING'), count(*) from REORG_STEPS where reorg_id=(SELECT MAX(REORG_ID) from REORG_OVERVIEW) group by "STATUS";
+
+
+
 SELECT * FROM SYS.REORG_GENERATE_OVERVIEW;
 
 
