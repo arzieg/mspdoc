@@ -119,13 +119,34 @@ Log file written to '/var/tmp/hdb_ABC_hdblcm_add_hosts_2025-02-07_20.17.57/hdblc
 ## Remove Node
 https://learning.sap.com/learning-journeys/setting-up-high-availability-and-disaster-recovery-for-sap-hana/removing-a-host-from-a-scale-out-system_f5a78887-dd28-44f3-98b5-b95d968a8a75
 
+
+2. Node Removal vorbereiten
+call SYS.UPDATE_LANDSCAPE_CONFIGURATION('SET REMOVE','<hostname:port>');
+3. Reorg Plan berechnen:
+call REORG_GENERATE(2,'NO_SPLIT')
+ 
+4. Reorg Plan ausführen
+call REORG_EXECUTE(?)
+ 
+5. Indexserver entfernen
+ 
+
+
 1. Anmelden am TENANT!
 
 ```
 SELECT * FROM SYS.REORG_STEPS;
 SELECT * FROM SYS.M_LANDSCAPE_HOST_CONFIGURATION;
 
+# wenn keine Tabellen reorganisiert werden sollen (also Knoten wurde rein und wieder direkt rausgenommen)
 call SYS.UPDATE_LANDSCAPE_CONFIGURATION( 'SET REMOVE','<host>' );
+call UPDATE_LANDSCAPE_CONFIGURATION('EXECUTE REMOVE','<hostname:port>')
+
+-------------------------------------------------------------------
+
+# Ansonsten mit Table Reorganisation
+call SYS.UPDATE_LANDSCAPE_CONFIGURATION( 'SET REMOVE','<host>' );
+
 call REORG_GENERATE(2,'');   <-- ab hier schon landscapeHostConfiguration aufrufen, das reicht eigentlich schon, um das System wieder rauszunehmen, sofern keine Tabellen verteilt wurden. 
 select * from SYS.REORG_STEPS;
 
@@ -139,17 +160,15 @@ select count(*) from reorg_steps where reorg_id='195';  <- Anzahl der reorg step
 REORG_ID,STATUS,START_DATE,END_DATE,USER,ALGORITHM_ID,PARAMETERS
 195,"FINISHED","2025-04-04 12:18:11.278000000","2025-04-04 15:27:39.698000000","SYSTEM",2,""
 
-
 select count(*) from reorg_steps where reorg_id='195' and status='FINISHED'; <- Anzahl der beendeten Reorg-Steps
-
-
 
 # Anzeige wie viele Jobs noch laufen müssen
 select IFNULL("STATUS", 'PENDING'), count(*) from REORG_STEPS where reorg_id=(SELECT MAX(REORG_ID) from REORG_OVERVIEW) group by "STATUS";
 
-
-
 SELECT * FROM SYS.REORG_GENERATE_OVERVIEW;
+
+call UPDATE_LANDSCAPE_CONFIGURATION('EXECUTE REMOVE','<hostname:port>')
+
 
 
 hdb10abc-1003:abcadm> python ./landscapeHostConfiguration.py
