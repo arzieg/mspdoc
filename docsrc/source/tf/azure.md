@@ -39,6 +39,14 @@ sudo apt-get update
 sudo apt-get install azcopy
 ```
 
+# VM Typen
+
+```
+az vm list-sizes --location "Germany West Central" --query "[?supportsGen2==true]" -o table
+
+Standard_B2s
+```
+
 
 # VM Namenskonventionen 
 
