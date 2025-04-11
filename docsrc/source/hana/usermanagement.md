@@ -9,7 +9,11 @@ hdbuserstore set            - Key definieren, Bsp: hdbuserstore set BACKUP lavdb
 
 ## Password reset
 
-### Password neu setzen SYSTEMDB
+ALTER USER SYSTEM PASSWORD '<new_password>' NO FORCE_FIRST_PASSWORD_CHANGE;
+
+### Password neu setzen SYSTEMDB (Hinweis 2736167 - How to unlock/reactivate the SYSTEM user on SAP HANA? )
+
+https://help.sap.com/docs/SAP_HANA_PLATFORM/6b94445c94ae495c83a19646e7c3fd56/6b13cdd1982f4aa6b90b443663d17d7e.html
 
 Hier noch das Problem, dass SYSTEM sich nach dem Start nicht selber ändern darf.
 
@@ -33,11 +37,13 @@ Stop the tenant database:
 
 Reset the SYSTEM user password:
 
-`ALTER DATABASE <tenant_db_name> SYSTEM USER PASSWORD <new_password>;`
+`ALTER DATABASE <tenant_db_name> SYSTEM USER PASSWORD <new_password> ;`
 
 Start the tenant database:
 
 `ALTER SYSTEM START DATABASE <tenant_db_name>;`
+
+`SELECT DATABASE_NAME, ACTIVE_STATUS FROM M_DATABASES;`
 
 
 ### Sofern es einen User mit "USER ADMIN" Rechten gibt: 
@@ -54,9 +60,25 @@ ALTER USER SYSTEM DISABLE PASSWORD LIFETIME;
 ALTER USER SYSTEM ACTIVATE USER NOW;
 ALTER USER SYSTEM RESET CONNECT ATTEMPTS;
 ALTER USER SYSTEM ENABLE CLIENT CONNECT;
---ALTER USER SYSTEM PASSWORD "password" NO FORCE_FIRST_PASSWORD_CHANGE;
+--ALTER USER SYSTEM PASSWORD "password" NO_FORCE_FIRST_PASSWORD_CHANGE;
 CONNECT SYSTEM PASSWORD "password";
 ```
+
+### In testsystem
+
+Configparameter: 
+    ALTER SYSTEM ALTER CONFIGURATION ('nameserver.ini', 'SYSTEM') SET ('password policy', 'password_lock_for_system_user') = 'false' WITH RECONFIGURE;
+
+    Option 2: To modify in OS, log in as <sid>adm, run command cdcoc. This leads you to ini file folder. Find [password policy] section in nameserver.ini. If there doesn't exist, add[password policy] at the end of the file.
+
+        Then add following content under [password policy]
+        ##note 2736167
+        password_lock_for_system_user=false
+
+        Then run hdbnsutil -reconfig command to make sure the ini file modification is applied.
+
+Besser aber noch einen zweiten User mit SYSTEM Berechtigungen anlegen 
+
 
 
 
