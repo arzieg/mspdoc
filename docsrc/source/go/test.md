@@ -167,4 +167,14 @@ works means it produced the desired behavior or fails safely
 bis 4/5 meistens im Fokus
 
 
+# Code Coverage
+
+85-95% ok
+
+```go
+go test ./...                                          
+go test ./... -cover                                   // coverage
+go test ./... -coverprofile=c.out -covermode=count     // Ausgabe in Datei
+    	go tool cover -html=c.out                      // Darstellung im Browser
+``` 
 
