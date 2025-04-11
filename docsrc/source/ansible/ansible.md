@@ -28,6 +28,10 @@ export ANSIBLE_KEEP_REMOTE_FILES=1 -> damit wird sichergestellt, dass auf dem ta
 
 ansible-playbook:   --force-handlers  -> Option verhindert den Abbruch bei Fehlern? 
 
+### Check inventory file
+
+`ansible-inventory --list -i host`
+
 ### debug module
 ```
 - debug: var=myvariable
@@ -92,4 +96,4 @@ ansible-playbook --diff --check playbook.yml   - diff what will be changed / che
 ansible-playbook --tags=xinx,database playbook.yml    - run only these tags
 ansible-playbook --skip-tags=database playbook.yml    - skip these tags
 ansible-playbook -vv --limit db playbook.yml   - limit (-l <hostname>)
-      
+``` 
