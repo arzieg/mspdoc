@@ -119,7 +119,6 @@ Log file written to '/var/tmp/hdb_ABC_hdblcm_add_hosts_2025-02-07_20.17.57/hdblc
 ## Remove Node
 https://learning.sap.com/learning-journeys/setting-up-high-availability-and-disaster-recovery-for-sap-hana/removing-a-host-from-a-scale-out-system_f5a78887-dd28-44f3-98b5-b95d968a8a75
 
-
 2. Node Removal vorbereiten
 call SYS.UPDATE_LANDSCAPE_CONFIGURATION('SET REMOVE','<hostname:port>');
 3. Reorg Plan berechnen:
@@ -128,8 +127,22 @@ call REORG_GENERATE(2,'NO_SPLIT')
 4. Reorg Plan ausführen
 call REORG_EXECUTE(?)
  
-5. Indexserver entfernen
- 
+5. Vergewissern Sie sich, dass die Reorganisation erfolgreich war, bevor Sie die nächsten Schritte ausführen (SEHR WICHTIG). Nachstehend sind Views aufgeführt, die bei der Ermittlung nützlich sind, ob eine Reorganisation erfolgreich war.
+
+select * from SYS.REORG_OVERVIEW order by REORG_ID DESC; 
+
+Warten Sie, bis der Status "FINISHED" lautet.
+
+6. Darüber hinaus können Sie mit folgendem Befehl prüfen, ob die Persistenz jetzt leer ist:
+
+SELECT PERSISTENCE_HOST, PERSISTENCE_PORT, COUNT(*) from M_TABLE_PERSISTENCE_LOCATIONS GROUP BY PERSISTENCE_HOST, PERSISTENCE_PORT
+und
+SELECT HOST, PORT, COUNT(*) from "SYS"."M_TABLE_LOB_FILES" GROUP BY HOST, PORT 
+
+7. Wenn die Reorganisation nicht erfolgreich war und Sie die Entfernungsoption vom zusätzlichen Indexserver zurücksetzen möchten, führen Sie das Verfahren UPDATE_LANDSCAPE_CONFIGURATION mit der folgenden Option aus:
+call UPDATE_LANDSCAPE_CONFIGURATION('RESET REMOVE','<hostname:port>');
+
+
 
 
 1. Anmelden am TENANT!
@@ -139,15 +152,18 @@ SELECT * FROM SYS.REORG_STEPS;
 SELECT * FROM SYS.M_LANDSCAPE_HOST_CONFIGURATION;
 
 # wenn keine Tabellen reorganisiert werden sollen (also Knoten wurde rein und wieder direkt rausgenommen)
-call SYS.UPDATE_LANDSCAPE_CONFIGURATION( 'SET REMOVE','<host>' );
-call UPDATE_LANDSCAPE_CONFIGURATION('EXECUTE REMOVE','<hostname:port>')
+
+select * from SYS.M_SERVICES;
+
+call SYS.UPDATE_LANDSCAPE_CONFIGURATION( 'SET REMOVE','<host>:<port>' );
+-> geht so nicht: call UPDATE_LANDSCAPE_CONFIGURATION('EXECUTE REMOVE','<hostname:port>')
 
 -------------------------------------------------------------------
 
 # Ansonsten mit Table Reorganisation
 call SYS.UPDATE_LANDSCAPE_CONFIGURATION( 'SET REMOVE','<host>' );
 
-call REORG_GENERATE(2,'');   <-- ab hier schon landscapeHostConfiguration aufrufen, das reicht eigentlich schon, um das System wieder rauszunehmen, sofern keine Tabellen verteilt wurden. 
+call REORG_GENERATE(2,'NO_SPLIT');   <-- ab hier schon landscapeHostConfiguration aufrufen, das reicht eigentlich schon, um das System wieder rauszunehmen, sofern keine Tabellen verteilt wurden. 
 select * from SYS.REORG_STEPS;
 
 call REORG_EXECUTE(?);
@@ -167,7 +183,8 @@ select IFNULL("STATUS", 'PENDING'), count(*) from REORG_STEPS where reorg_id=(SE
 
 SELECT * FROM SYS.REORG_GENERATE_OVERVIEW;
 
-call UPDATE_LANDSCAPE_CONFIGURATION('EXECUTE REMOVE','<hostname:port>')
+-> NO: call UPDATE_LANDSCAPE_CONFIGURATION('EXECUTE REMOVE','<hostname:port>')
+
 
 
 
@@ -177,6 +194,41 @@ hdb10abc-1003:abcadm> python ./landscapeHostConfiguration.py
 
 2. hdlcm remove Node
 3. hdbuserstore ist anzupassen mit neuen Nodes
+
+
+## Spezialfall Remove Indexserver wenn auf einem Server mehrere Indexserver definiert sind:
+
+https://me.sap.com/notes/1986612
+
+2. Node Removal vorbereiten
+call SYS.UPDATE_LANDSCAPE_CONFIGURATION('SET REMOVE','<hostname:port>');
+3. Reorg Plan berechnen:
+call REORG_GENERATE(2,'NO_SPLIT')
+ 
+4. Reorg Plan ausführen
+call REORG_EXECUTE(?)
+ 
+5. Vergewissern Sie sich, dass die Reorganisation erfolgreich war, bevor Sie die nächsten Schritte ausführen (SEHR WICHTIG). Nachstehend sind Views aufgeführt, die bei der Ermittlung nützlich sind, ob eine Reorganisation erfolgreich war.
+
+select * from SYS.REORG_OVERVIEW order by REORG_ID DESC; 
+
+Warten Sie, bis der Status "FINISHED" lautet.
+
+6. Darüber hinaus können Sie mit folgendem Befehl prüfen, ob die Persistenz jetzt leer ist:
+
+SELECT PERSISTENCE_HOST, PERSISTENCE_PORT, COUNT(*) from M_TABLE_PERSISTENCE_LOCATIONS GROUP BY PERSISTENCE_HOST, PERSISTENCE_PORT
+und
+SELECT HOST, PORT, COUNT(*) from "SYS"."M_TABLE_LOB_FILES" GROUP BY HOST, PORT 
+
+7. Wenn die Reorganisation nicht erfolgreich war und Sie die Entfernungsoption vom zusätzlichen Indexserver zurücksetzen möchten, führen Sie das Verfahren UPDATE_LANDSCAPE_CONFIGURATION mit der folgenden Option aus:
+call UPDATE_LANDSCAPE_CONFIGURATION('RESET REMOVE','<hostname:port>');
+
+8. Bei erfolgreicher Reorganisation können die zusätzlichen Indexserver dann aus der Systemlandschaft entfernt werden. Die Option 'EXECUTE REMOVE' der Prozedur UPDATE_LANDSCAPE_CONFIGURATION ist ab Revision 72 implementiert. Bei niedrigeren Revisionen als Revision 72 führen Sie das Python-Skript 'servicecontrol.py' aus. Sie finden es unter python_support:
+call UPDATE_LANDSCAPE_CONFIGURATION('EXECUTE REMOVE','<hostname:port>');
+oder
+python servicecontrol.py removeFromDaemonAndClean <hostname:port>.
+
+
 
 
 ### Remove StandBy
