@@ -123,6 +123,10 @@ func doIt() (a int){
 }
 ```
 
+## anonyme funktionen
+
+a function literal to denote a function value within any expression.
+
 
 
 
