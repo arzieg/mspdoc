@@ -59,3 +59,10 @@ Test zwischen zwei Servern:
     a:~# nc -luk 10.12.0.12 667
     I love stackexchange // receive the message.
 
+
+    netcat -l 40002  // server
+    netcat -zv <server> 40002 // client
+
+
+
+
