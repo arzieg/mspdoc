@@ -1,5 +1,7 @@
 # functions
 
+Quelle: The GO programming language, Alan A.A. Donovan, Brian W. Kernighan
+
 ## first class functions
 
 In go a function is a first class function, that means
@@ -127,7 +129,75 @@ func doIt() (a int){
 
 a function literal to denote a function value within any expression.
 
+TODO: ausarbeiten
 
 
+## variadic functions
+
+A variadic function is one that can be called with varying numbers of arguments. The most familiar examples are fmt.Printf and its variants.
+
+Declaration: ...int
+
+
+## defer
+
+Syntactically, a defer statement is an ordinary function or method call prefixed by the keyword defer. The function and argument expressions are evaluated when the statement is executed, but the actual call is deferred until the function that contains the defer statement has finished, whether normally, by executing a return statement or falling off the end, or abnormally, by panicking.
+
+Any number of calls may be deferred; they are executed in the reverse of the order in which they were deferred.
+
+The defer statement can also be used to pair "on entry" and "on exit" actions when debugging a complex function.
+
+```go
+func bigSlowOperation() {
+	defer trace("bigSlowOperation")() // dont forget the extra parentheses
+	time.Sleep(10 * time.Second)      // simulate slow operation
+}
+
+func trace(msg string) func() {
+	start := time.Now()
+	log.Printf("enter %s", msg)
+	return func() { log.Printf("exit %s (%s)", msg, time.Since(start)) } // return anonymous function
+}
+
+func main() {
+	bigSlowOperation()
+}
+```
+
+Deferred functions run after return statements have updated the function’s result variables. Because an anonymous function can access its enclosing function’s variables, including named results, a deferred anonymous function can observe the function’s results.
+
+Because deferred functions aren’t executed until the very end of a function’s execution, a defer statement in a loop deserves extra scrutiny.
+
+Wrong: 
+
+```go
+for _, filename := range filenames {
+  f, err := os.Open(filename)
+  if err != nil {
+    return err
+  }
+  defer f.Close() // NOTE: risky; could run out of file descriptors
+// ...process f...
+}
+```
+
+Better:
+
+```go
+for _, filename := range filenames {
+  if err := doFile(filename); err != nil {
+  return err
+  }
+}
+
+func doFile(filename string) error {
+  f, err := os.Open(filename)
+  if err != nil {
+  return err
+  }
+  defer f.Close()
+// ...process f...
+}
+```
 
 
