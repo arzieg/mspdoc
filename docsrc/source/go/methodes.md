@@ -1,5 +1,8 @@
 # Methodes
 
+
+
+
 ## Definition
 An **interface** specifies abstract behavior in terms of **methods**
 
@@ -67,8 +70,56 @@ The same method name may be bound to different types
 
 ## Receivers
 
+```go
+package geometry
+import "math"
+
+type Point struct{ X, Y float64 }
+    // traditional function
+    func Distance(p, q Point) float64 {
+    return math.Hypot(q.X-p.X, q.Y-p.Y)
+    }
+
+    // same thing, but as a method of the Point type
+    func (p Point) Distance(q Point) float64 {
+    return math.Hypot(q.X-p.X, q.Y-p.Y)
+    }
+
+p := Point{1, 2}
+q := Point{4, 6}
+fmt.Println(Distance(p, q)) // "5", function call
+fmt.Println(p.Distance(q)) // "5", method call, p.Distance aka selector
+```
+
+## Signature
+
+All methods of a given type must have unique names, but different types can use the same name for a method, like the Distance methods for Point and Path;
+
+```go
+// A Path is a journey connecting the points with straight lines.
+type Path []Point
+// Distance returns the distance traveled along the path.
+func (path Path) Distance() float64 {
+    sum := 0.0
+    for i := range path {
+        if i > 0 {
+        sum += path[i-1].Distance(path[i])
+        }
+    }
+    return sum
+}
+```
+
+-> Methode: path.Distance und (s.o) p.Distance (point.Distance). Die eine Methode erwartet ein Slice, die andere zwei Punkte. 
+
+## Value & Pointer Receiver
+
+We distinguish between:
+
 1. value Receiver (no change or original, took a copy)
 2. pointer Receiver (change on the original)
+
+typically we us first letter of the type name for the receiver (p):
 
 ```go
 type Point struct {
@@ -83,6 +134,9 @@ func (p *Point) Move(x,y float64) {
     p.x += x
     p.y += y
 }
+```
+
+
 
 ## Interfaces and substitution
 
@@ -101,6 +155,7 @@ rwc = w  // Error, no close method
 the *receiver* must be of the right type (pointer or value):
 
 ```go
+
 type IntSet struct { ... }
 func (*IntSet) String() string
 var _ = IntSet{}.String()   // Error, String needs *IntSet (l-value)
@@ -110,6 +165,7 @@ var _ = s.String  // OK, s is avariable &s used automatically
 
 var _ fmt.Stringer = &s // ok, Pointer to something
 var _ fmt.Stringer = s // Error, no String method because it will a pointer receiver
+
 ```
 
 ## Composition
@@ -130,6 +186,8 @@ type ReadWriter interface {
 ```
 
 Basic idea in go: keep the interface small and flexible
+
+
 
 ## Interface declaration
 
