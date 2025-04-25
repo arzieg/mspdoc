@@ -1,9 +1,27 @@
 # Methodes
 
 
+## Encapsulation
+A variable or method of an object is said to be encapsulated if it is inaccessible to clients of the object. capitalized identifiers are
+exported from the package in which they are defined, and uncapitalized names are not. As a consequence, to encapsulate an object, we must make it a
+struct.
+
+Encapsulation provides three benefits.
+* First, because clients cannot directly modify the object’s variables, one need inspect fewer statements to understand the possible values of those variables
+* hiding implementation details prevents clients from depending on things that might change, which gives the designer greater freedom to evolve the implementation without breaking API compatibility.
+* it prevents clients from setting an object’s variables arbitrarily.
+
+Functions that merely access or modify internal values of a type, are called **getters** and **setters**. However, when naming a getter method, we usually omit the Get prefix. Bei SET wird es gesetzt, bspw.: SetPrefix, SetFlags aber bei Get: Flags, Prefix
+
+
+
+
+
+
 
 
 ## Definition
+
 An **interface** specifies abstract behavior in terms of **methods**
 
 ```go
