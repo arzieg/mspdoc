@@ -211,5 +211,14 @@ Basic idea in go: keep the interface small and flexible
 
 All methodes for a given type must be declared in the same package where the type is declared
 This allows a package importing the type to know all the methods at compile time.
+
 But we can alway extend the type in a new package through embedding.
+
+```go
+type Bigger struct{
+    my.Big  // get all Big methods via promotion
+}
+func (b Bigger) DoIt() { }  // and add one more method here
+```
+
 
