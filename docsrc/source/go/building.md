@@ -5,13 +5,16 @@
 * build "pure" go (with some cautions) to put it into a container:
 
 ```go
-CGO_ENABLED=0 go build -a -tags netgo,osusergo -ldflags "-extldglags '-static' -s -w o listener .
+CGO_ENABLED=0 go build -a -tags netgo,osusergo -ldflags "-extldglags '-static' -s -w" -o listener .
 
 ldd listener -> not a dynamic executable
 ```
 netgo,osusergo = use go libaries and not shared
 
--static  = build static
+-static  = build static (hatte nicht funktioniert)
+CGO_ENABLED = 0  -> make sure, no external C dependencies are linked
+-s = strips the symbol table 
+-w = remove debug information
 
 ## Cross Build
 
