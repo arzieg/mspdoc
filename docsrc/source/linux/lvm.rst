@@ -78,3 +78,33 @@ Keine Device Nodes
 ## Wipe
 
 wipefs -a /dev/<device>   - löschen aller Partitonen auf der Disk
+
+
+## Metadaten korrupt bzw. veraltet, da Disk weg
+
+$ vgs
+  WARNING: Couldn't find device with uuid oYzQzK-2Zht-eM6g-QrLv-TRnZ-R2jp-xvqdX2.
+  WARNING: VG vg_hana_log is missing PV oYzQzK-2Zht-eM6g-QrLv-TRnZ-R2jp-xvqdX2.
+  WARNING: Couldn't find device with uuid ioSFYp-je2h-HTqO-Q1f8-hCZE-uVAU-xkKOUV.
+  WARNING: VG vg_hana_data is missing PV ioSFYp-je2h-HTqO-Q1f8-hCZE-uVAU-xkKOUV.
+  WARNING: Couldn't find device with uuid MNNql3-i10f-jZUK-gSPO-qBFr-qmSl-jskq9Z.
+  WARNING: VG vg_hana_shared is missing PV MNNql3-i10f-jZUK-gSPO-qBFr-qmSl-jskq9Z.
+  VG             #PV #LV #SN Attr   VSize  VFree
+  vg_hana_data     2   0   0 wz-pn- 64.09g 64.09g
+  vg_hana_log      2   1   0 wz-pn- 64.09g 64.00g
+  vg_hana_shared   2   1   0 wz-pn- 64.09g 64.00g
+$ vgreduce --removemissing vg_hana_data
+  WARNING: Couldn't find device with uuid ioSFYp-je2h-HTqO-Q1f8-hCZE-uVAU-xkKOUV.
+  WARNING: VG vg_hana_data is missing PV ioSFYp-je2h-HTqO-Q1f8-hCZE-uVAU-xkKOUV.
+  WARNING: Couldn't find device with uuid ioSFYp-je2h-HTqO-Q1f8-hCZE-uVAU-xkKOUV.
+  Wrote out consistent volume group vg_hana_data.
+$ vgreduce --removemissing vg_hana_log
+  WARNING: Couldn't find device with uuid oYzQzK-2Zht-eM6g-QrLv-TRnZ-R2jp-xvqdX2.
+  WARNING: VG vg_hana_log is missing PV oYzQzK-2Zht-eM6g-QrLv-TRnZ-R2jp-xvqdX2.
+  WARNING: Couldn't find device with uuid oYzQzK-2Zht-eM6g-QrLv-TRnZ-R2jp-xvqdX2.
+  Wrote out consistent volume group vg_hana_log.
+$ vgreduce --removemissing vg_hana_shared
+  WARNING: Couldn't find device with uuid MNNql3-i10f-jZUK-gSPO-qBFr-qmSl-jskq9Z.
+  WARNING: VG vg_hana_shared is missing PV MNNql3-i10f-jZUK-gSPO-qBFr-qmSl-jskq9Z.
+  WARNING: Couldn't find device with uuid MNNql3-i10f-jZUK-gSPO-qBFr-qmSl-jskq9Z.
+  Wrote out consistent volume group vg_hana_shared.
