@@ -70,5 +70,15 @@ Local cache: $GOPATH/pkg
 
 `go clean -modcache` remove it all
 
+## Local Packages
 
+Macht nur bei der Entwicklung Sinn. 
 
+```
+vi go.mod
+replace eval => ../eval
+
+go get eval
+```
+
+Das Paket wird dann im anderen Package mit eval angesprochen. 
