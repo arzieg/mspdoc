@@ -21,3 +21,27 @@ How to solve:
 * allow only one write to the shared things
 * make the read-modify-write operations atomic (we are adding more (sequentual) order to our operations)
 
+## Channels /Pipes
+
+* things go in one end, come out the other
+* in the same order they went in
+* unti the channel is closed
+* multiple readers & writers can share it safely
+
+Each sequential process can run independently and can use channels
+
+CSP (Communicating sequential processes) provides a model of thinking about it that makes it less hat 
+
+A Channel is a vehicle for transfering ownership of data, so that only on goroutine at a time is writing the data (avoid race conditions)
+
+"Don't communicate by sharing memory; instead, share memory by communicating" - Rob Pike
+
+## Goroutine
+goroutine is a unit of independent execution (coroutine), put go for function call
+How to stop:
+* you have a well defined loop terminating condition
+* you signal completion through a channel or context
+* you let it run until the program stops
+-> but you need to make sure it doesn't get blocked by mistake
+
+
