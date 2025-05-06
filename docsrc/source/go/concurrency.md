@@ -1,3 +1,10 @@
+# Go routines and channels
+
+Go enables two styles of concurrent programming. 
+* goroutines and channels, which support communicating sequential processes or CSP, a model of concurrency in which values are passed between independent activities (goroutines) but variables are for the most part confined to a single activity. 
+
+* a more traditional model of shared memory multithreading, which will be familiar if you’ve used threads in other mainstream languages. 
+
 # Concurrency
 
 Concurrency := Parts of the program may execure independently in some non-deterministic (partial) order 
