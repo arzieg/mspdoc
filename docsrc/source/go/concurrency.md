@@ -43,6 +43,28 @@ A Channel is a vehicle for transfering ownership of data, so that only on gorout
 
 "Don't communicate by sharing memory; instead, share memory by communicating" - Rob Pike
 
+* A channel (as map) is a reference to the data structure created by make.
+* Copy a channel or pass as an argument to a function, we are copying a reference, so caller and callee refer to the same data structure.
+* Zero Value of a channel is NIL
+* Two Channels of the same type may be compared using ==
+* A channel may also be compared to nil.
+* close a channel: close(ch)
+
+ch <- x   // a send statement
+x = <-ch  // a receive expression in an assignment statement
+<-ch      // a receive statement; result is discarded
+
+ch = make(chan int)   // unbuffered channel
+ch = make(chan int,0) // unbuffered channel
+ch = make(chan int,3) // buffered channel with capacity 3
+
+### unbuffered channels
+* a send operation on an unbuffered channel blocks the sending goroutine
+* Communication over an unbuffered channel causes the sending and receiving goroutines to synchronize.
+* When a value is sent on an unbuffered channel, the receipt of the value happens before the reawakening of the sending goroutine.
+
+
+
 ## Goroutine
 goroutine is a unit of independent execution (coroutine), put go for function call
 How to stop:
@@ -52,3 +74,10 @@ How to stop:
 -> but you need to make sure it doesn't get blocked by mistake
 
 
+## Pipelines
+
+Channels can be used to connect goroutines together so that the output of one is the input to another. This is called a pipeline.
+
+There is no way to test directly whether a channel has been closed, but there is a variant of the receive operation that produces two results: the received channel element, plus a boolean value, conventionally called ok, which is true for a successful receive and false for a receive on a closed and drained channel.
+
+You needn’t close every channel when you’ve finished with it. It’s only necessary to close a channel when it is important to tell the receiving goroutines that all data have been sent
