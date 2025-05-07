@@ -142,3 +142,24 @@ curl -s -k \
   -H "X-Vault-Token: $ARNE_TOKEN" \
   $VAULT_ADDR/v1/dev-secrets/data/creds | jq ".data"
 ```
+
+
+
+........................
+Create Policy -> TODO
+
+vault write auth/approle/role/hoth \
+    token_ttl=3600 \
+    token_max_ttl=14400 \
+    policies="hoth_read_policy"
+
+
+
+vault list auth/approle/role
+
+vault read auth/approle/role/<role-name>   - incl. settings
+
+vault read auth/approle/role/<role-name>/role-id  - only the id
+
+vault write -f auth/approle/role/<role-name>/secret-id  - write a new secret
+
