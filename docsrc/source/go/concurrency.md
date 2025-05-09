@@ -81,3 +81,27 @@ Channels can be used to connect goroutines together so that the output of one is
 There is no way to test directly whether a channel has been closed, but there is a variant of the receive operation that produces two results: the received channel element, plus a boolean value, conventionally called ok, which is true for a successful receive and false for a receive on a closed and drained channel.
 
 You needn’t close every channel when you’ve finished with it. It’s only necessary to close a channel when it is important to tell the receiving goroutines that all data have been sent
+
+## select
+
+select allows any ready alternative to proceed among
+* a channel we can read from
+* a channel we can write to
+* a default action that's always ready
+
+Mosten often *select* runs in a loop se we keep trying
+
+We can put a timeout or "done" channel into the *select*
+
+* we can compose channels as sysnchronization primitives
+* traditional primitives (mutex, condition variable) can't be composed
+
+```go
+for i:= 0; i<12; i++ {
+    select {
+        case m0:= <-chans[0]:
+          log.Println("received", m0)
+        case m1:= <-chans[1]:
+          log.Println("received", m1)
+    }
+}
