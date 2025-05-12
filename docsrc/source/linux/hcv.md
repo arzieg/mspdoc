@@ -146,20 +146,53 @@ curl -s -k \
 
 
 ........................
-Create Policy -> TODO
 
+# AppRole
+
+0. List AppRole
+
+```
+vault list auth/approle/role
+```
+
+1. Create Policy
+
+```
+create file superadmin.hcl:
+
+path "*" {
+  capabilities = ["create", "read", "update", "delete", "list", "sudo"]
+}
+
+vault policy write super_admin super_admin.hcl
+```
+
+2. AppRole 
+
+```
+vault write auth/approle/role/super_admin policies="super_admin"
+
+#anderes Beispiel
 vault write auth/approle/role/hoth \
     token_ttl=3600 \
     token_max_ttl=14400 \
     policies="hoth_read_policy"
 
+vault read auth/approle/role/super_admin
+```
 
+3. Secret
 
-vault list auth/approle/role
+```
+vault write -force auth/approle/role/super_admin/secret-id
+```
+
+4. Get RoleID
+
+```
+vault read auth/approle/role/super_admin/role-id
 
 vault read auth/approle/role/<role-name>   - incl. settings
+```
 
-vault read auth/approle/role/<role-name>/role-id  - only the id
-
-vault write -f auth/approle/role/<role-name>/secret-id  - write a new secret
 
