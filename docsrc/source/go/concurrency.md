@@ -82,6 +82,51 @@ There is no way to test directly whether a channel has been closed, but there is
 
 You needn’t close every channel when you’ve finished with it. It’s only necessary to close a channel when it is important to tell the receiving goroutines that all data have been sent
 
+inefficient prime number calculator
+```go
+package main
+
+import "fmt"
+
+func generator(limit int, ch chan<- int) {
+	for i := 2; i < limit; i++ {
+		ch <- i
+	}
+	close(ch)
+}
+
+func filter(src <-chan int, dst chan<- int, prime int) {
+	for i := range src {
+		if i%prime != 0 {
+			dst <- i // prime number
+		}
+	}
+	close(dst)
+}
+
+func sieve(limit int) {
+	ch := make(chan int)
+
+	go generator(limit, ch)
+
+	for {
+		prime, ok := <-ch
+		if !ok {
+			break
+		}
+		ch1 := make(chan int)
+		go filter(ch, ch1, prime)
+		ch = ch1
+		fmt.Print(prime, " ")
+	}
+}
+
+func main() {
+	sieve(100)
+}
+```
+
+
 ## select
 
 select allows any ready alternative to proceed among
@@ -97,11 +142,61 @@ We can put a timeout or "done" channel into the *select*
 * traditional primitives (mutex, condition variable) can't be composed
 
 ```go
-for i:= 0; i<12; i++ {
-    select {
-        case m0:= <-chans[0]:
-          log.Println("received", m0)
-        case m1:= <-chans[1]:
-          log.Println("received", m1)
-    }
+package main
+
+import (
+	"log"
+	"time"
+)
+
+func main() {
+	chans := []chan int{
+		make(chan int),
+		make(chan int),
+	}
+
+	for i := range chans {
+		go func(i int, ch chan<- int) {
+			for {
+				time.Sleep(time.Duration(i) * time.Second)
+				ch <- i
+			}
+
+		}(i+1, chans[i])
+	}
+
+	for i := 0; i < 12; i++ {
+		select {
+		case m0 := <-chans[0]:
+			log.Println("received", m0)
+		case m1 := <-chans[1]:
+			log.Println("received", m1)
+		}
+	}
 }
+```
+
+Example: Timeout, you could use 
+```go
+stopper := time.After(3 * time.Second)  // time.After is a chan and send a signal
+
+...
+for range list {
+  select {
+    case r:= <- result:
+      ...
+    case <-stopper:
+      log.Fatal("timeout") // kill program
+  }
+...
+}
+```
+
+**default**
+
+In a select block, the default case is always ready and will be chosen if no other case is.
+
+**Do not use default inside a loop - the select will busy wait and waste CPU**
+
+Book recomendation: Concurrency in go, Katherine Cox-Buday
+
