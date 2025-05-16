@@ -13,6 +13,37 @@ vault path-help /auth/approle
 vault kv list kv-clab-endor/
 vault secrets enable -path=dev-secrets -version=2 kv   // enable new kv secret in path /dev-secrets
 
+### Einloggen mit RoleID und SecretID einer AppRole
+
+export VAULT_ADDR='https://your-vault-server:8200'
+vault write auth/approle/login role_id="your-role-id" secret_id="your-secret-id"
+export VAULT_TOKEN="your-client-token"
+vault token lookup
+
+### Einloggen mit Usenrmae Passwort
+
+vault login -method=userpass username=admin
+
+
+### neuen root token erstellen
+https://developer.hashicorp.com/vault/docs/troubleshoot/generate-root-token
+
+vault operator generate-root -init
+ -nonce_value und
+ -nonce_opt werden ausgegeben
+
+echo ${UNSEAL_OR_RECOVERY_KEY} | vault operator generate-root -nonce=${NONCE_VALUE} -  // 3 x mit jeweils einem anderen unseal
+ -> encoded_token wird ausgegeben
+
+vault operator generate-root -decode=${ENCODED_TOKEN}  -otp=${NONCE_OTP}
+
+hvs.XXXXXXXXXXXXXXXXXXXXXXXX   // der neue Token
+
+
+
+
+
+
 
 Process: 
 
