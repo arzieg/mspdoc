@@ -122,3 +122,11 @@ We model this with a buffered channel:
 * attempt to send(write) before starting work
 * the send will block if the buffer is full (occupancy is at max)
 * receive (read) when the work is done to free up a space in the buffer (this allows the next worker to start)
+
+## Amdahls law of parallelism
+
+Amdahls law: speedup is limited by the part (not) parallelized
+
+S = 1 / (1 -p + (p/s))
+
+S = Speedup, s = #Processors, p = %the program use parallism
