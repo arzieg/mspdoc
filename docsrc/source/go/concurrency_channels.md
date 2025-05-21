@@ -130,3 +130,123 @@ Amdahls law: speedup is limited by the part (not) parallelized
 S = 1 / (1 -p + (p/s))
 
 S = Speedup, s = #Processors, p = %the program use parallism
+
+
+# Conventional Synchronization
+
+Package sync: 
+* mutex
+* once
+* pool
+* RWMutex
+* WaitGroup
+
+Package sync/atomic for atomic scalar reads and writes
+
+## why
+
+What if multiple goroutines must read and write some data? 
+
+We must make sure only **one** of them can do so at any instant (in the so-called "critical section")
+
+We accomplish this with some type of lock:
+* acquire the lock before accessing the data
+* any other goroutine will **block** waiting to get the lock
+* realease the lock when done
+
+
+Mutex in action:
+```go
+type SafeMap struct {
+    sync.Mutex  // not safe to copy
+    m map[string]int
+}
+
+// pointer needed
+func (s *SafeMap) Incr(key string){
+    s.Lock()
+    defer s.Unlock()
+
+    // only one goroutine can execure this code at the same time
+    s.m[key]++
+}
+```
+
+RWMutexes in Action: Sometimes we need to prefer readers to infrequent writers
+```go
+type InfoClient struct {
+    mu      sync.RWMutex
+    token   string
+    tokenTime time.Time
+    TTL     time.Duration
+}
+
+// only read mutex needed
+func (i *InfoClient) CheckToken() (string, time.Duration) {
+    i.mu.RLock()
+    defer i.mu.RUnlock()
+
+    return i.token, i.TTL - time.Since(i.tokenTime)
+}
+
+// sometimes rw mutex needed
+func (i *InfoClient) ReplaceToken(ctx context.Context)(string, error) {
+    token, ttl, err := i.getAccessToken(ctx)
+    if err != nil {
+        return "", err
+    }
+    i.mu.Lock()
+    defer i.mu.Unlock()
+
+    i.token = token
+    i.tokenTime = time.Now()
+    i.TTL = time.Duration(ttl) * time.Second
+    return token, nil
+}
+
+```
+## only-once execution
+
+A sync.Once object allows us to ensure a function runs only once (only the first call to Do will call the function passed in)
+
+```go
+var once sync.Once
+var x *singleton
+
+func initialize(){
+    x = NewSingleton()
+}
+
+func handle(w http.ResponseWriter, r *http.Request){
+    once.Do(initialize)
+}
+```
+
+checking x==nil in the handler is **unsafe**
+
+## Pool
+
+a pool provides for efficient and safe reuse of objects, but it is a container of interface{}
+
+```go
+var bufPool = syncPool {
+    New: func() interface{} {
+        return new(bytes.Buffer)
+    },
+}
+
+func Log(w io.Writer, key, val string){
+    b := bufPool.Get().(*bytes.Buffer)
+    b.Reset()
+    // write to it
+    w.Write(b.Bytes())
+    bufPool.Put(b)
+}
+```
+
+Other primitives:
+* condition variable
+* Map (safe containter; uses interfac{})
+* WaitGroup
+
+
