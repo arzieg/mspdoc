@@ -61,7 +61,7 @@ if err := WaitForServer(url); err != nil {
 }
 ```
 
-When you call log.Fatalf, the program doesn't just exit; it drops the mic, walks off stage, and doesn’t care what’s still running—files, oroutines, you name it. This can lead to problems if cleanup is needed.
+When you call log.Fatalf, the program doesn't just exit; it drops the misc, walks off stage, and doesn’t care what’s still running—files, goroutines, you name it. This can lead to problems if cleanup is needed.
 
 Use log.Fatalf when:
 * The program cannot logically continue. Think missing configurations, critical services being unavailable, or a sanity check failing.
@@ -92,3 +92,106 @@ func main() {
     }
 }
 ```
+
+
+## Custom error type
+
+```go
+type errKind int
+
+const (
+    -   errKind = iota
+    noHeader
+    cantReadHeader
+    ...
+)
+
+type WaveError struct {
+    kind errKind
+    value int
+    err error
+}
+
+// Implement a error method
+func (e WaveError) Error() string {
+    swith e.kind {
+        case noHeader:
+            return "no header (file to short?)"
+        case cantReadHeader:
+            return fmt.Sprintf("can't read header[%d]: %s", e.value, e.err.Error())
+        ...
+    }
+}
+
+// some helper methods
+// with returns an error with a particular value (e.g. header type)
+func (e WaveError) with(val int) WaveError {
+    e1 := e
+    e1.value = val
+    return e1
+}
+
+// from returns an error with a particular location and underlying error (e.g. from the standard library)
+func (e WaveError) from (pos int, err error) WaveError {
+    e1 := e
+    e1.value = pos
+    e1.err = err
+    return e1
+}
+
+// some prototypes, which are exported
+var (
+    HeaderMissing = WaveError{kind: noHeader}
+    HeaderReadFailed = WaveError{kind: cantReadHeader}
+    ...
+)
+
+// and in use
+func DecodeHeader(b []byte) (*Header, []byte, error){
+    ...
+    if len(b) < headerSize {
+        return &header, nil, HeaderMissing
+    }
+}
+
+```
+
+In go >= 1.13 error could be wraped (%w format)
+
+```go
+...
+  return fmt.Errorf("Im sorry %s, I cant't: %w", h.victim, h.err)
+...
+```
+=> Error chaing: top-level-error -> intermediate error -> original error
+
+Custom error types may now unwrap their internal errors
+
+```go
+func (w *WaveError) Unwrap() error {
+    return w.err
+}
+```
+
+## Error.Is (compares an error with a variable)
+
+we can check whether an errar has another error in its chain
+
+errors.Is compares with an error **variable**, not a type
+
+ex.  if errors.Is(err, os.ErrPermission) ...
+
+## Error.As (compares an error with a type)
+
+errors.As looks for an error type, not a value
+
+ex.: 
+```go
+...
+var e os.PathError
+
+if errors.As(err, &e) {
+    ....
+}
+```
+

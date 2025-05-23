@@ -200,3 +200,74 @@ In a select block, the default case is always ready and will be chosen if no oth
 
 Book recomendation: Concurrency in go, Katherine Cox-Buday
 
+
+# Gotchas
+
+Concurrency problems: 
+1. race conditions: with -race go find some race conditions
+2. deadlock: go find some deadlocks automatically
+3. goroutine leak: 
+	* goroutine hangs on a empty or blocked channel
+	* no daedlock: other goroutines make progress
+	* often found by looking at pprof output\
+	**when you start a goroutine always know how/when it will end**
+4. channel errors:
+	* trying to send on a closed channel
+	* trying to send or receive on a nil channel
+	* closing a nil channel
+	* closing a channel twice
+5. other errors:
+	* closure capture
+	* misuse of mutex, WaitGroups, select
+
+(Document: https://cseweb.ucsd.edu/~yiying/GoStudy-ASPLOS19.pdf)
+
+Mutex:
+ Mutexe müssen in einer Reihenfolge aufgebaut werden und in der umgekehrten Reihenfolge wieder gelöscht werden. 
+
+Bsp. Goroutine Leak, Solution: put buffer to ch, so it could not block
+```go
+func finishReq(timeout time.Duration) *obj{
+	ch := make(chan obj)
+	go func() {
+		.. // work that takes to long
+		ch <- fn()  // blocking send
+	}()
+
+	select {
+		case rslt := <-ch
+			return rslt
+		case <- time.After(timeout):
+			return nil
+	}
+}
+```
+	
+WaitGroups: 
+	always Add (wg.Add(1)) before unit of work starts (unmittelbar dovor)
+
+Bsp.: closure capture. 
+A goroutine closure shouldn't capture a **mutating** variable
+
+```go
+for i :=0; i<10; i++ { // Wrong
+	go func() {
+		fmt.Println(i)
+	}()
+}
+
+for i :=0; i<10; i++ { // right
+	go func() {
+		fmt.Println(i)
+	}(i)   // pass the variable values as a parameter
+}
+```
+
+**select problems:**
+* default is always active
+* a nil channel is always ignored
+* a full channel (for send) is skipped over
+* a "done" channel is just another channel
+* available channels are selected at random
+
+
