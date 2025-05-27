@@ -195,3 +195,77 @@ if errors.As(err, &e) {
 }
 ```
 
+## Normal Errors
+
+**Normal** errors result from input or extenal conditions (f.i. "file not found" error)
+
+Go code handles this case by returning the error type
+
+## Abnormal Errors (Fail hard, fail fast)
+
+**Abnormal** errors result from invalid program logic (f.i. a nil pointer). For program logic errors, Go code does a panic. 
+
+```go
+...
+if d.nx != 0{
+    panic("d.nx != 0")
+}
+```
+
+panic should be used when our assumptions of our own programming design and logic are **wrong**
+
+These cases might use an "assert" in other programming languages
+
+Exception handling introduces invisible control paths through code
+So code with exceptions is harder to analyze (automatically or by eye)
+
+Officially Go doesn't support exception handling as in other languages. Practically, it does - in the form of panic & recover.
+
+panic in a function will still cause deferred function calls to run
+Then it will stop only if it finds a valid recover call in a defer as it unwinds the stack.
+
+recover could only be done in a defer function. 
+Often used in test 
+Should not used in production code - code smell
+
+## Define errors out of existence
+
+Error (edge) cases are one of the primary sources of complexity.
+The best way to deal with many errors is to make them impossible
+
+Design your abstractions so that most (or all) operations are safe:
+* reading from a nil map
+* appending to a nil slice
+* deleting a non-existant item from a map
+* taking the length of an unitialized string
+
+Try to reduce the edge cases that are hard to test or debug (or even think about!)
+
+## Proactively Prevent Problems
+
+Every piece of data in your software should start life in a valid state
+
+Every transformation should leave it in a valid state:
+* break large programs into small pieces you can understand
+* hide information to reduce the chance of corruption
+* avoid clever code and side effects
+* avoid unsafe operations
+* assert your invariants
+* never ignore errors
+* test
+
+Never accept input from a user (or environment) without validation
+
+## Error handling culture in Go
+
+Go programmers think about the failure case first.
+We solve the "what if..." case first. This leads to programs where failures are handled at the point of writing, rather than the point they occur in production. The verbosity of 
+
+```go
+if err != nil {
+    return err
+}
+```
+
+is outweighed by the value if deliberately handling each failure condition at the point at which it occurs. Key to this is the cultural value of handling each and every error explicitly. - dave cheney
+
