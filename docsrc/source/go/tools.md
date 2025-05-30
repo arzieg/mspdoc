@@ -11,33 +11,75 @@ When to Use ServBay?
 ServBay eliminates tedious manual setup, letting you focus on coding rather than environment issues.
 https://www.servbay.com/
 
+## gofmt
+will put your code in standard form
+
+## goimports
+like gofmt and also update import lists
+
 ## Code Quality Checking: golangci-lint
 
 https://golangci-lint.run/
+
+* exported names should have comments for godoc
+* names shouldn't have under_scores or be in ALLCAPS
+* names shouldn't be used for normal error handling
+* the error flow should be indented, the happy path not
+* variable declarations shouldn't have redundant type info
+
+(all bases on Effective Go and Google's Go Code Review Comments)
+
+can be configured with 
+.golangci.yml
+
+False positivescan be marked with **//nolint**
+
+
+## Go vet
+
+will find some issues the compiler won't
+* suspicious printf format strings
+* accidentally copying a mutex type
+* possibly invalid integer shifts
+* possibly invalid atomic assignments
+* possibly invalid struct tags
+* unreachable code
+
+## Other tools
+
+goconst - finds literals that should be declared with const
+gosec   - looks for possible security issues
+ineffasign - finds assignments thar are ineffective (shadowed?), f.i. err assign and do not check and in the next row err is assign again
+gocyclo - reports high cyclomatic complexity in functions - complexity of a function, if to high should be break it down
+deadcode, unused and varcheck - find unused/dead code
+unconvert - finds redundant type conversions
+
 
 ## Dependency Management: Go Modules
 
 https://go.dev/ref/mod
 
-## Test Automation: Gotests
 
-https://github.com/cweill/gotests
 
-## Performance Optimization: pprof
+# Lebensweisheiten
 
-Golang’s concurrency model is powerful, but mismanaged Goroutines can lead to memory leaks and high CPU usage. The pprof package helps diagnose performance bottlenecks by providing real-time profiling data.
+* clear is better than clever
+* a little copying is better than a little dependency
+* concurrency is not parallism
+* channels orchestrate; mutex serialize
+* don't communicate by sharing memory, share memory by communicating
+* make the zero value useful
+* the bigger the interface, the weaker the abstraction
+* errors are values
+* don't just check errors, handle them gracefully
 
-Example: Enabling pprof on a go server
+## video recommedations
 
-```
-import _ "net/http/pprof"
+* simple made easy (Rick Hickey, QCon 2012)
+* small is beautiful (Kevlin Henney, goto 2016)
+* software that fits in your head (Dan North, goto 2016)
+* worse is better, for better or for worse (Kevlin Henney, goto 2013)
+* solid snakes ot how to take 5 weeks of vacation (Hynek Schlawack, pycon 2017)
 
-go func(){
-    log.Println(http.ListenAndServe("localhost:6060", nil))
-}()
-```
-
-open http://localhost:6060/debug/pprof/ in your browser to inspect CPU, memory, and Goroutine usage in real time.
-
-https://pkg.go.dev/net/http/pprof
+(https://github.com/matt4biz/go-resources)
 
