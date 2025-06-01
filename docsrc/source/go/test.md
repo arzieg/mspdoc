@@ -1,5 +1,12 @@
 # Test
 
+## Links
+
+https://rednafi.com/go/capture_console_output/
+
+
+
+
 ## file structure
 
 * Test files end with _test.go and have TestXXX functions

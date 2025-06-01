@@ -3,6 +3,8 @@
 * Typdeklarationen, Constanten und Methoden werden in einem go-File abgelegt
 * Funktionen werden in einem anderem go-File abgelegt (analog c mit .c und .h?)
 
+# Links
+https://blog.mikesahari.com/posts/go-structs/
 
 
 

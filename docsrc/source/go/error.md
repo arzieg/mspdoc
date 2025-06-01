@@ -1,5 +1,15 @@
 # Error 
 
+## Links
+
+https://southcla.ws/structured-errors-in-go 
+https://dev.to/jacktt/tracing-error-strack-in-golang-234o
+
+
+
+
+## Introduction
+
 
 The fmt.Errorf function formats an error message using fmt.Sprintf and returns a new error value. We use it to **build descriptive errors** by successively prefixing additional context information to the original error message. When the error is ultimately handled by the program’s main function, it should provide a clear causal chain from the root problem to the overall failure, reminiscent of a NASA accident investigation:
 

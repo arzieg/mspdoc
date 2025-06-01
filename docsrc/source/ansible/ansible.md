@@ -1,5 +1,15 @@
 # Ansible
 
+## links
+
+
+https://www.cncf.io/blog/2024/10/31/ansible-runner/ 
+https://developers.redhat.com/articles/2024/12/05/our-top-ansible-automation-articles-2024
+https://developers.redhat.com/articles/2024/11/27/how-build-virtual-machines-using-ansible-collections
+https://spacelift.io/blog/ansible-handlers
+
+
+
 ## Arbeitsumgebung (to be tested)
 
 * pre-commit: `pip install pre-commit`

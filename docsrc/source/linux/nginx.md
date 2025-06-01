@@ -1,5 +1,8 @@
 # nginx
 
+## Links
+https://devjournal.info/a-beginners-guide-to-nginx-proxy-manager/
+
 ## Reverse Proxy zum SUMA im OnPrem-Labor
 
 Der Kommunikationsweg ist wie folgt: 
