@@ -210,3 +210,6 @@ go test ./... -coverprofile=c.out -covermode=count     // Ausgabe in Datei
     	go tool cover -html=c.out                      // Darstellung im Browser
 ``` 
 
+## Test Automation: Gotests
+
+https://github.com/cweill/gotests
