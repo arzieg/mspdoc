@@ -14,7 +14,7 @@
     * https://github.com/ansible/ansible-navigator
 * molecule: `python3 -m pip install molecule ansible-core` - Testumgebung für Ansible
     * https://github.com/ansible/molecule
-* antsiball-changelog: `pip install antsibull-changelog` - Create Changelog
+* antsiball-changelog: `pip install antsiball-changelog` - Create Changelog
     * https://github.com/ansible-community/antsibull-changelog
 
 
