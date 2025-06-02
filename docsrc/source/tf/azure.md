@@ -74,3 +74,15 @@ https://learn.microsoft.com/en-us/azure/virtual-machines/vm-naming-conventions
 ||NP = node packing|
 |*Accelerator Type|	Denotes the type of hardware accelerator in the specialized/GPU SKUs. Only the new specialized/GPU SKUs launched from Q3 2020 have the hardware accelerator in the name.|
 |Version|	Denotes the version of the VM Family Series|
+
+
+
+# Serielle Konsole
+
+1. Serielle Konsole öffen und neustarten
+
+Darauf achten, dass man mit der Maus in der Console ist und diese aktiviert ist. 
+Während Neustart 
+* ESC drücken bei UEFI um in EFI Menü zu gelangen
+* Shift bei BIOS 
+
