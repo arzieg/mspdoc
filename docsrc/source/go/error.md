@@ -4,6 +4,7 @@
 
 https://southcla.ws/structured-errors-in-go 
 https://dev.to/jacktt/tracing-error-strack-in-golang-234o
+https://dave.cheney.net/2016/04/27/dont-just-check-errors-handle-them-gracefully
 
 
 
