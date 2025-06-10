@@ -103,3 +103,16 @@ https://www.linkedin.com/pulse/hana-startup-issue-priyadarshi-amitav-jena
 
 
 
+3203165 - Start scheitert bei Fehler nameserver: Coucould't find own nameserver in topology
+---------------------------------------------------------------------------------------------
+
+In diesem Fall: HANA SR wurde runtergefahren und ein `hdbnsutil -sr_cleanup -force` durchgeführt auf beiden Seiten. Auf der primären Seite startet die HANA, auf der
+ehemaligen sekundären Seite startet HANA nicht. In diesem Fall der durchgeführt:
+
+1. Stellen Sie sicher, dass das System vollständig heruntergefahren wird. Wenn ein Service noch ausgeführt wird, können Sie die Topologie beschädigen, und es gibt keine Möglichkeit, sie wiederherzustellen.
+2. Führen Sie anschließend den folgenden Befehl als Benutzer <sid>adm im früheren Sekundärsystem aus:
+hdbnsutil -exportTopology myExportedTopology.txt
+3. Öffnen Sie die generierte Datei myExportedTopology.txt, und ersetzen Sie jeden Eintrag des Hostnamens des Primärstandorts durch den aktuellen Hostnamen des nicht registrierten Sekundärsystems.
+4. Importieren Sie anschließend die korrigierte Topologiedatei mit dem folgenden Befehl im Zielsystem:
+hdbnsutil -importTopology myExportedTopology.txt
+5. Starten Sie nun die HANA-Instanz.
