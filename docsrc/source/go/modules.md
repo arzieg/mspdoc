@@ -60,6 +60,12 @@ Start project: `go mod init <module-name>`  ## create to go.mod file
 `go mod tidy`          ## remove unneeded modules
 `go list -m versions rsc.io/sampler`   ## list availables version of a dependency
 
+
+`go list -m -u all`    ## List all of the modules that are dependencies of your current module, along with the latest version available for each
+`go get example.com/theirmodule@v1.3.4`  ## get specific version
+`go get example.com/theirmodule@latest`  ## get latest
+
+
 ## Vendoring and the local cache
 
 Use go mod vendor to create the vendor directory; it must be in the modules root directory (along with go.mod)
