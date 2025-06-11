@@ -34,6 +34,7 @@ import (
     "github.com/x"
  x2 "github.com/x/v2"
 )
+```
 
 ## Files
 
@@ -54,16 +55,22 @@ access to private github repos is also needed
 
 ## Maintaining dependency
 
-Start project: `go mod init <module-name>`  ## create to go.mod file
-`go get -u <module>`   ## get module
-`go get -u ./...`      ## update trasivitely
-`go mod tidy`          ## remove unneeded modules
-`go list -m versions rsc.io/sampler`   ## list availables version of a dependency
+Start project: `go mod init <module-name>`  // create to go.mod file
+
+`go get -u <module>`   // get module
+
+`go get -u ./...`      // update trasivitely
+
+`go mod tidy`          // remove unneeded modules
+
+`go list -m versions rsc.io/sampler`   // list availables version of a dependency
 
 
-`go list -m -u all`    ## List all of the modules that are dependencies of your current module, along with the latest version available for each
-`go get example.com/theirmodule@v1.3.4`  ## get specific version
-`go get example.com/theirmodule@latest`  ## get latest
+`go list -m -u all`    // List all of the modules that are dependencies of your current module, along with the latest version available for each
+
+`go get example.com/theirmodule@v1.3.4`  // get specific version
+
+`go get example.com/theirmodule@latest`  // get latest
 
 
 ## Vendoring and the local cache
@@ -88,3 +95,8 @@ go get eval
 ```
 
 Das Paket wird dann im anderen Package mit eval angesprochen. 
+
+## Module release and versioning workflow
+https://go.dev/doc/modules/release-workflow
+
+

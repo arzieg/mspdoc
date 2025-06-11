@@ -1,5 +1,10 @@
 # Setup GO
 
+## install
+
+zypper in go1.24
+update-alternatives --config go
+
 ## Documents
 https://github.com/vbd/Fieldnotes  (-> more links)
 https://www.practical-go-lessons.com/

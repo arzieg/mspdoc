@@ -18,10 +18,13 @@ git stash apply zurückholen des Arbeitsstandes. Der Arbeitsstand bleibt in der 
 
 ## GIT TAG
 
+git tag <tagname>   - anlegen eines Tags
 git tag -n          - zeige tags an inkl. message
 git tag -d <tag>    - löschen lokal
 git push --delete origin <tagname>
 git tag eddi-lorup-r19-2 eddi-lorup-r19-2^{} -f -a    - wie ändere ich eine TAG Nachricht (solange noch nicht gepusht)
+
+git push tags
 
 
 ## GIT History

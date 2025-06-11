@@ -1,9 +1,6 @@
 # Tools
 
-## install
 
-zypper in go1.24
-update-alternatives --config go
 
 ## Links
 https://medium.com/@stallone119/boost-your-golang-development-efficiency-with-these-tools-eb8ccc722c7d
