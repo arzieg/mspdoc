@@ -88,3 +88,7 @@ https://go.dev/ref/mod
 
 (https://github.com/matt4biz/go-resources)
 
+
+## Debug
+
+https://github.com/goforj/godump
