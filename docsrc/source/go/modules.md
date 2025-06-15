@@ -96,6 +96,23 @@ go get eval
 
 Das Paket wird dann im anderen Package mit eval angesprochen. 
 
+Manchmal muss man auch umstellen, wenn man lokal entwickelt: 
+
+```
+vi go.mod
+replace github.com/arzieg/appapi => ../../../appapi
+
+require github.com/arzieg/appapi v1.0.0
+```
+
+oder
+
+```
+go mod edit -replace github.com/arzieg/appapi=../../../appapi
+```
+
+
+
 ## Module release and versioning workflow
 https://go.dev/doc/modules/release-workflow
 
