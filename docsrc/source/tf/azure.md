@@ -47,6 +47,19 @@ az vm list-sizes --location "Germany West Central" --query "[?supportsGen2==true
 Standard_B2s
 ```
 
+Show #nic's, #cpu, #ram, #generation
+```
+az vm list-skus --location "germanywestcentral" --query "[].{Name:name, vCPUs:capabilities[?name=='vCPUs'].value | [0], MemoryGB:capabilities[?name=='MemoryGB'].value | [0], MaxNICs:capabilities[?name=='MaxNetworkInterfaces'].value | [0]}" --output table
+
+```
+
+Filter for 4 NIC's
+```
+az vm list-skus --location "germanywestcentral" --query "[?capabilities[?name=='MaxNetworkInterfaces'].value | [0] == '4'].{Name:name, vCPUs:capabilities[?name=='vCPUs'].value | [0], MemoryGB:capabilities[?name=='MemoryGB'].value | [0], MaxNICs:capabilities[?name=='MaxNetworkInterfaces'].value | [0], Generation:capabilities[?name=='Generation'].value | [0]}" --output table
+```
+
+
+
 
 # VM Namenskonventionen 
 
