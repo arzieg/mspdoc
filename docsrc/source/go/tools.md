@@ -65,6 +65,15 @@ unconvert - finds redundant type conversions
 https://go.dev/ref/mod
 
 
+# Development
+
+https://github.com/air-verse/air  - Live reload for go apps (immer wenn bei der Entw. etwas geändert wird, wird neues binary erzeugt und gestartet)
+https://github.com/go-chi/chi     - chi is a lightweight, idiomatic and composable router for building Go HTTP services.
+https://github.com/go-gorm/gorm   - The fantastic ORM library for Golang, aims to be developer friendly.
+https://github.com/stephenafamo/bob - Bob is a set of Go packages and tools to work with SQL databases.
+https://github.com/jmoiron/sqlx   - sqlx is a library which provides a set of extensions on go's standard database/sql library
+
+
 
 # Lebensweisheiten
 
