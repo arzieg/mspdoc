@@ -1,9 +1,24 @@
 # Setup GO
 
-## install
+## install suse
 
 zypper in go1.24
 update-alternatives --config go
+
+## install ubuntu
+
+https://go.dev/doc/manage-install
+$ go install golang.org/dl/go1.10.7@latest
+$ go1.10.7 download
+
+installiert nach $HOME/sdk/*goversion*
+
+~/.bashrc
+export GOPATH=$HOME/go
+export GOBIN=$HOME/go/bin
+export PATH=$PATH:$GOBIN
+alias go="go1.24.4"
+
 
 ## Documents
 https://github.com/vbd/Fieldnotes  (-> more links)

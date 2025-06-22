@@ -56,7 +56,7 @@ goconst - finds literals that should be declared with const
 gosec   - looks for possible security issues
 ineffasign - finds assignments thar are ineffective (shadowed?), f.i. err assign and do not check and in the next row err is assign again
 gocyclo - reports high cyclomatic complexity in functions - complexity of a function, if to high should be break it down
-deadcode, unused and varcheck - find unused/dead code
+deadcode, unused and varcheck - find unused/dead code (go get -tools golang.org/x/tools/cmd/deadcode@latest)
 unconvert - finds redundant type conversions
 
 
