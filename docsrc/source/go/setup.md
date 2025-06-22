@@ -14,6 +14,7 @@ $ go1.10.7 download
 installiert nach $HOME/sdk/*goversion*
 
 ~/.bashrc
+export GOROOT=$HOME/sdk/go1.24.4
 export GOPATH=$HOME/go
 export GOBIN=$HOME/go/bin
 export PATH=$PATH:$GOBIN
