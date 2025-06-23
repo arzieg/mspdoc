@@ -405,7 +405,20 @@ bei der Erstellung der NICs. Für jeden Key (aka hostname) in der Struktur vm_ho
 
 
 
+Check-Block
+------------
 
+Ab Terraform 1.5 kann man in check_blocks auch Parameterchecks einfügen. Diese können in eine eigene check.tf ausgelagert werden. 
+
+Bsp. Prüfung, ob locale Liste eine grade Anzahl von Hosts enthält:
+
+.. code-block:: shell
+  check "ms_lb_hana_associated_hosts_is_even" {
+  assert {
+    condition     = local.ms_lb_hana_associated_hosts_is_even
+    error_message = "The list must contain an even number of hana hosts."
+  }
+}
 
 
 
