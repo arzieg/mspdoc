@@ -1,5 +1,10 @@
 # Build Go
 
+## run go
+
+go run -x main.go    // -x Anzeige von Aktivitäten, die vorher durchgeführt werden (z.B. compilieren von c libraries)
+
+
 ## Build pure go
 
 * build "pure" go (with some cautions) to put it into a container:
