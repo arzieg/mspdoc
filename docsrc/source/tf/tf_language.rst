@@ -385,6 +385,20 @@ auf das Hilfskonstrukt z.B. bei der statischen Registrierung im DNS
     records             = ["${each.value.ipaddr}"]
   }
 
+  # Das scheint auch noch einfacher zu gehen
+  resource "azurerm_private_dns_a_record" "vmCreateStaticEntry" {
+    provider            = azurerm.shared
+    for_each            = local.lbconfig
+    name                = each.key
+    zone_name           = data.azurerm_private_dns_zone.clab_dns_zone.name
+    resource_group_name = var.dagobah_resource_group_name
+    ttl                 = 31449600 # 52 weeks
+    records             = [ "${each.value.ip}" ]
+  }
+  # hier ist der key=hostname und lbconfig.ip die IP-Adresse
+
+
+
 bei der Erstellung der NICs. Für jeden Key (aka hostname) in der Struktur vm_hostname wird die IP entweder dynamisch zugewiesen oder statisch registriert.
 
 .. code-block:: bash

@@ -21,7 +21,7 @@ Providerversionen in der .terrafrom.lock.hcl
 1. terraform init (-upgrade)
 2. terraform validate
 3. terraform plan (-out main.tfplan)
-4. terraform apply
+4. terraform apply (-auto-approve)
    
   * terraform apply -var "resource_group_name=myNewResourceGroupName"   - einzelne Variablen übersteuern
   * terraform output resource_group_id  - Rückgabewerte abfrage, sofern man eine output.tf - Datei erzeugt hat
