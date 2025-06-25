@@ -385,7 +385,8 @@ auf das Hilfskonstrukt z.B. bei der statischen Registrierung im DNS
     records             = ["${each.value.ipaddr}"]
   }
 
-  # Das scheint auch noch einfacher zu gehen
+  # Das scheint auch noch einfacher zu gehen, aber achtung, wenn es eine Map ist (wie in diesem Fall), dann ist die Sortierung zufällig und bei Lücken können dann auch andere
+  # Ressourcen gelöscht/angepasst werden bei einem neuen Apply.
   resource "azurerm_private_dns_a_record" "vmCreateStaticEntry" {
     provider            = azurerm.shared
     for_each            = local.lbconfig
