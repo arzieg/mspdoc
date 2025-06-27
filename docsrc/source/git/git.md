@@ -19,6 +19,7 @@ git stash apply zurückholen des Arbeitsstandes. Der Arbeitsstand bleibt in der 
 ## GIT TAG
 
 git tag <tagname>   - anlegen eines Tags
+git tag -a v1.4 -m "my version 1.4"  - anlegen eines Tags mit Message
 git tag -n          - zeige tags an inkl. message
 git tag -d <tag>    - löschen lokal
 git push --delete origin <tagname>
