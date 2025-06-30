@@ -66,6 +66,7 @@ https://github.com/uber-go/fx   - Fx is a dependency injection system for Go. Wr
 https://echo.labstack.com/      - High performance, extensible, minimalist Go web framework
 https://github.com/stretchr/testify  - Testify: Testing with Confidence
 https://github.com/rs/zerolog   - The zerolog package provides a fast and simple logger dedicated to JSON output.
+https://github.com/pilinux/gorest - gorest is a starter kit, written in Golang with Gin framework, for rapid prototyping and developing a RESTful API.
 
 
 ## Dependency Management: Go Modules

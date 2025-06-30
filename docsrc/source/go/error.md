@@ -280,3 +280,5 @@ if err != nil {
 
 is outweighed by the value if deliberately handling each failure condition at the point at which it occurs. Key to this is the cultural value of handling each and every error explicitly. - dave cheney
 
+https://dave.cheney.net/2016/04/27/dont-just-check-errors-handle-them-gracefully
+

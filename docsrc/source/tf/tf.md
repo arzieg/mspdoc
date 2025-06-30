@@ -43,6 +43,9 @@ tf import azurerm_network_security_group.<SG-NAME> <ID>
 tf plan -refresh-only   (sollte dann idealerweise identisch sein)
 
 
+https://itnext.io/terraform-using-import-and-some-hidden-pitfalls-f28f12415836
+
+
 ### terraform workspace:
 
 https://spacelift.io/blog/terraform-workspaces
