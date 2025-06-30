@@ -60,6 +60,14 @@ deadcode, unused and varcheck - find unused/dead code (go get -tools golang.org/
 unconvert - finds redundant type conversions
 
 
+https://github.com/spf13/viper  - read config files
+https://github.com/spf13/cobra  - Cobra is a library for creating powerful modern CLI applications.
+https://github.com/uber-go/fx   - Fx is a dependency injection system for Go. Write http api
+https://echo.labstack.com/      - High performance, extensible, minimalist Go web framework
+https://github.com/stretchr/testify  - Testify: Testing with Confidence
+https://github.com/rs/zerolog   - The zerolog package provides a fast and simple logger dedicated to JSON output.
+
+
 ## Dependency Management: Go Modules
 
 https://go.dev/ref/mod
@@ -96,6 +104,13 @@ https://github.com/jmoiron/sqlx   - sqlx is a library which provides a set of ex
 * solid snakes ot how to take 5 weeks of vacation (Hynek Schlawack, pycon 2017)
 
 (https://github.com/matt4biz/go-resources)
+
+## Other Solutions
+
+https://blog.cloud66.com/our-golang-stack
+
+
+
 
 
 ## Debug
