@@ -5,6 +5,10 @@ https://programmingpercy.tech/blog/how-to-domain-driven-design-ddd-golang/
 
 Domain-Driven Design is a way of structuring and modeling the software after the Domain it belongs to. The domain is the topic or problem that the software intends to work on. The software should be written to reflect the domain.
 
+Domain := The domain is the area that the software will be operating in, I would call the Tavern the Core/Root domain.
+
+Subdomain := We have also gotten a few Sub-domains which are the things top hat mentions that the tavern needs. A subdomain is a separate domain used to solve an area inside the root domain.
+
 Entity := Unique identifier, mutable
 
     An entity is a struct that has an Identifier and that can change state, by changing state we mean that the values of the entity can change.
@@ -26,7 +30,31 @@ Aggregates := unique identifier by root entry, multiple entries/value objects co
 
     I set all the entities as pointers, this is because an entity can change state and I want that to reflect across all instances of the runtime that has access to it. The value objects are held as nonpointers though since they cannot change state.
 
-    
+# Abstraktion
+
+Abstraktion wird auf den Aggregaten erzeugt. Hier werden Design Pattern angewandt. Z.B. neuer Customer, ein FactoryPattern welches einen Pointer zu einem neuen Customer zurückgibt. 
+
+## Repository pattern
+
+DDD describes that repositories should be used to store and manage aggregates. It is a pattern that relies on hiding the implementation of the storage/database solution behind an interface. This allows us to define a set of methods that has to be present, and if they are present it is qualified to be used as a repository.
+
+The advantage of this design pattern is that it allows us to exchange the solution without breaking anything.
+
+In aggregates liegt die Busines Logic. Dort wird eine repository.go angelegt
+
+```
+type CustomerRepository interface {
+	Get(uuid.UUID) (aggregate.Customer, error)
+	Add(aggregate.Customer) error
+	Update(aggregate.Customer) error
+}
+``` 
+
+mit einem Interface, d.h. den benötigten Funktionen, die ein anderes go-modul bedienen muss. 
+
+Bsp. MemoryDatenbank, in einem eigenen Package werden dann die Funktionen geschrieben, die das CustomerRepository interface "bedienen" können, dh. dort gibt es dann auch Get, Add und Update Methoden(Funktionen)
+
+
 
 
 
