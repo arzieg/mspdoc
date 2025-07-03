@@ -54,7 +54,10 @@ mit einem Interface, d.h. den benötigten Funktionen, die ein anderes go-modul b
 
 Bsp. MemoryDatenbank, in einem eigenen Package werden dann die Funktionen geschrieben, die das CustomerRepository interface "bedienen" können, dh. dort gibt es dann auch Get, Add und Update Methoden(Funktionen)
 
+## Service
 
+A service will tie all loosely coupled repositories into a business logic that fulfills the needs of a certain domain. 
+A service typically holds all the repositories needed to perform a certain business logic flow, such as an Order, Api, or Billing. What’s great is that you can even have a service inside a service.
 
 
 
