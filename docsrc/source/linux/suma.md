@@ -33,3 +33,5 @@ Hier ist zu beachten, dass in der ~/.gitconfig der Eintrag zum safe-directory an
 Ich hatte aber auch schon das Phänomen, dass das nicht geholfen hat. Dann musste man die ~/.gitconfig nach /etc/gitconfig kopieren (als Vorlage für alle User)
 
 
+## register host
+curl -Sks https://<url>/pub/bootstrap/salt-bootstrap-release-50-sle155-latest.sh | /bin/bash
