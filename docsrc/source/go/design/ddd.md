@@ -30,6 +30,12 @@ Aggregates := unique identifier by root entry, multiple entries/value objects co
 
     I set all the entities as pointers, this is because an entity can change state and I want that to reflect across all instances of the runtime that has access to it. The value objects are held as nonpointers though since they cannot change state.
 
+Repository :=  A implementation of storing aggregates or other information
+
+Factory :=  A constructor to create complex objects and make creating new instance easier for the developers of other domains
+
+Service := A collection of repositories and sub-services that builds together the business flow
+
 # Abstraktion
 
 Abstraktion wird auf den Aggregaten erzeugt. Hier werden Design Pattern angewandt. Z.B. neuer Customer, ein FactoryPattern welches einen Pointer zu einem neuen Customer zurückgibt. 
