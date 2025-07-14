@@ -261,6 +261,71 @@ Conditionals mit for_each
     }
 }
 
+Switch-Case Anweisung
+----------------------
+
+Hat Terraform so in der Form nicht, aber es gibt Workarrounds: 
+
+**Variante 1: Map Lookup**
+
+.. code-block:: shell
+
+  variable "env" {
+  type    = string
+  default = "dev"
+  }
+
+  locals {
+    config_map = {
+      dev     = "value-for-dev"
+      staging = "value-for-staging"
+      prod    = "value-for-prod"
+    }
+
+    selected_value = lookup(local.config_map, var.env, "default-value")
+  }
+
+This acts like a switch: if env is "dev", you get "value-for-dev", etc. The third argument in lookup is the default if no match is found.
+
+**Variante 2: Nested IF**
+
+.. code-block:: shell
+  locals {
+  selected_value = var.env == "dev"     ? "value-for-dev" :
+                   var.env == "staging" ? "value-for-staging" :
+                   var.env == "prod"    ? "value-for-prod" :
+                   "default-value"
+  }
+
+This is readable for 2–3 cases, but gets messy with more.
+
+**Variante 3: Map of Maps (Advanced switch-like logic)**
+
+.. code-block:: shell
+
+  variable "env" {
+    type    = string
+    default = "dev"
+  }
+
+  locals {
+    env_config = {
+      dev = {
+        region = "eu-west-1"
+        size   = "small"
+      }
+      prod = {
+        region = "us-east-1"
+        size   = "large"
+      }
+    }
+
+    selected_region = local.env_config[var.env].region
+    selected_size   = local.env_config[var.env].size
+  }
+
+This lets you switch entire config blocks based on a key.
+Terraform's design encourages declarative logic, so these patterns are the go-to way to simulate switch-case behavior.
 
 
 Tags
