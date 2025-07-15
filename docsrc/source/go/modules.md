@@ -117,3 +117,36 @@ go mod edit -replace github.com/arzieg/appapi=../../../appapi
 https://go.dev/doc/modules/release-workflow
 
 
+
+## Remove a go module
+
+https://stackoverflow.com/questions/13792254/removing-packages-installed-with-go-get
+
+```
+$ go get -u github.com/motemen/gore
+
+$ which gore
+/Users/ches/src/go/bin/gore
+
+$ go clean -i -n github.com/motemen/gore...
+cd /Users/ches/src/go/src/github.com/motemen/gore
+rm -f gore gore.exe gore.test gore.test.exe commands commands.exe commands_test commands_test.exe complete complete.exe complete_test complete_test.exe debug debug.exe helpers_test helpers_test.exe liner liner.exe log log.exe main main.exe node node.exe node_test node_test.exe quickfix quickfix.exe session_test session_test.exe terminal_unix terminal_unix.exe terminal_windows terminal_windows.exe utils utils.exe
+rm -f /Users/ches/src/go/bin/gore
+cd /Users/ches/src/go/src/github.com/motemen/gore/gocode
+rm -f gocode.test gocode.test.exe
+rm -f /Users/ches/src/go/pkg/darwin_amd64/github.com/motemen/gore/gocode.a
+
+$ go clean -i github.com/motemen/gore...
+
+$ which gore
+
+$ tree $GOPATH/pkg/darwin_amd64/github.com/motemen/gore
+/Users/ches/src/go/pkg/darwin_amd64/github.com/motemen/gore
+
+0 directories, 0 files
+
+# If that empty directory really bugs you...
+$ rmdir $GOPATH/pkg/darwin_amd64/github.com/motemen/gore
+
+$ rm -rf $GOPATH/src/github.com/motemen/gore
+```
