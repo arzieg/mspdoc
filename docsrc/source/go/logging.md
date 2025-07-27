@@ -1,6 +1,7 @@
 # Logging
 
-https://www.dash0.com/guides/logging-in-go-with-slog
+https://www.dash0.com/guides/logging-in-go-with-slog 
+https://last9.io/blog/write-logs-to-file/
 
 ## Understanding slog fundamentals
 
