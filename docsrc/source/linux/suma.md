@@ -35,3 +35,13 @@ Ich hatte aber auch schon das Phänomen, dass das nicht geholfen hat. Dann musst
 
 ## register host
 curl -Sks https://<url>/pub/bootstrap/salt-bootstrap-release-50-sle155-latest.sh | /bin/bash
+
+------------------
+# SUMA 5
+
+mgrctl term  - connect to pod
+
+
+## SUSE Mgr. Proxy
+
+mgrpxy start uyuni-proxy-pod
