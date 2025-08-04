@@ -36,6 +36,11 @@ Ich hatte aber auch schon das Phänomen, dass das nicht geholfen hat. Dann musst
 ## register host
 curl -Sks https://<url>/pub/bootstrap/salt-bootstrap-release-50-sle155-latest.sh | /bin/bash
 
+
+## regeneration yum cache
+
+spacecmd -> softwarechannel_regenerateyumcache channels
+Überwachung mit: taskotop oder tail -f /var/log/rhn/rhn_taskomatic_daemon.log
 ------------------
 # SUMA 5
 
@@ -45,3 +50,4 @@ mgrctl term  - connect to pod
 ## SUSE Mgr. Proxy
 
 mgrpxy start uyuni-proxy-pod
+
