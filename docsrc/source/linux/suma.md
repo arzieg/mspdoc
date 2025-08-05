@@ -51,3 +51,68 @@ mgrctl term  - connect to pod
 
 mgrpxy start uyuni-proxy-pod
 
+## Update
+
+```
+transaction-update up
+mgradm upgrade podman
+```
+
+## Paketinstallation
+https://documentation.suse.com/smart/systems-management/html/Micro-transactional-updates/index.html
+
+```
+sudo transactional-update pkg install package_1 package_2 ...    - Installation von Package 1,2 ...
+sudo transactional-update --continue 13 pkg install package_2    - Installation von Package2 in Snapshot 13
+sudo transactional-update pkg install -t pattern pattern_name    - Installation eines Patterns
+
+sudo transactional-update pkg remove package_name                - Package remove
+sudo transactional-update pkg update package_name                - Update
+
+sudo transactional-update patch                                  - Checks for available patches and installs them. The default option for this command is --non-interactive.
+sudo transactional-update dup                                    - Performs an upgrade of your system. The default option for this command is --non-interactive.
+sudo transactional-update up                                     - Updates installed packages to newer versions. The default option for this command is --non-interactive.
+sudo transactional-update migration                              - The command migrates your system to a selected target. Typically, it is used to upgrade your system if it has been registered via SUSE Customer Center.
+```
+
+### Performing snapshots cleanup
+
+You can use transactional-update to clean unused file system snapshots and unreferenced /etc overlay directories.
+
+transactional-update recognizes the following cleanup commands:
+
+```
+cleanup-snapshots   The command marks all unused snapshots for removal by Snapper.
+
+cleanup-overlays    The command removes all unused overlay layers of /etc in the /var/lib/overlay directory.
+
+cleanup             The command combines the cleanup-snapshots and cleanup-overlays commands.
+```
+
+### Performing system rollback
+
+GRUB 2 enables booting from btrfs snapshots and thus allows you to use any older functional snapshot in case the new snapshot does not work correctly.
+
+When booting a snapshot, the parts of the file system included in the snapshot are mounted read-only; all other file systems and parts that are excluded from snapshots are mounted read-write and can be modified.
+
+#### Rollback from a running system
+
+```
+sudo snapper list
+sudo transactional-update rollback snapshot_number
+
+To set the last working snapshot as the default one, run rollback last.
+``` 
+
+#### Rollback to a working snapshot
+
+1. Reboot your system and select Start bootloader from a read-only snapshot.
+2. Choose a snapshot to boot. The snapshots are sorted according to the date of creation, with the latest one at the top.
+3. Log in to your system and check whether everything works as expected. The data written to directories excluded from the snapshots will stay untouched.
+4. If the snapshot you booted into is not suitable for the rollback, reboot your system and choose another one.
+5. If the snapshot works as expected, you can perform the rollback by running the following command:
+    ```
+    sudo transactional-update rollback
+    ```
+6. And reboot afterwards.
+
