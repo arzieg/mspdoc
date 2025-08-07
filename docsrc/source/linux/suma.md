@@ -46,6 +46,10 @@ spacecmd -> softwarechannel_regenerateyumcache channels
 
 mgrctl term  - connect to pod
 
+## start/stop
+mgradm restart
+mgradm start
+mgradm stop
 
 ## SUSE Mgr. Proxy
 
