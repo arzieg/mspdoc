@@ -222,7 +222,7 @@ siehe kubernetes/install
 
 ## 101
 
-### Basics
+### WSL Standardversion
 
 https://learn.microsoft.com/de-de/windows/wsl/basic-commands
 
@@ -237,4 +237,21 @@ WSL aktualisieren: `wsl --update --web-download`
 `ip route show | grep -i default | awk '{ print $3}'`: Gibt die IP-Adresse des Windows-Computers zurück, wie von WSL 2 (der WSL 2-VM) dargestellt
 
 WSL Distibution löschen: `wsl --unregister <distroName> `  https://learn.microsoft.com/de-de/windows/wsl/faq
+
+
+### Namensauflösung funktioniert nicht mehr
+https://askubuntu.com/questions/1192347/temporary-failure-in-name-resolution-on-wsl
+
+Hier war es notwendig, in der /etc/resolv.conf den Nameserver des Unternehmens einzutragen
+
+```
+sudo tee /etc/wsl.conf << EOF
+[network]
+generateResolvConf = false
+EOF
+
+sudo tee /etc/resolv.conf << EOF
+nameserver <unternehmens namesserver>
+EOF
+``` 
 
