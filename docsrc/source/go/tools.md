@@ -82,7 +82,7 @@ https://github.com/go-gorm/gorm   - The fantastic ORM library for Golang, aims t
 https://github.com/stephenafamo/bob - Bob is a set of Go packages and tools to work with SQL databases.
 https://github.com/jmoiron/sqlx   - sqlx is a library which provides a set of extensions on go's standard database/sql library
 
-
+https://go-cookbook.com/        - Code Snippets
 
 # Lebensweisheiten
 
