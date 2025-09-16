@@ -51,3 +51,19 @@ https://askubuntu.com/questions/1095266/apt-get-update-failed-because-certificat
 apt-get -o Acquire::https::Verify-Peer=false update
 apt-get -o Acquire::https::Verify-Peer=false install kubectl
 ```
+
+
+## Problem in WSL beim Update
+
+Process: sudo apt upgrade
+
+Fehler: `Failed to take /etc/passwd lock: Invalid argument`
+
+Workarround: 
+
+```
+    sudo mv /var/lib/dpkg/info/systemd.postinst /tmp/
+    sudo apt install systemd=255.4-1ubuntu8.10 systemd-sysv=255.4-1ubuntu8.10
+    sudo apt update && sudo apt upgrade
+    sudo mv /tmp/systemd.postinst /var/lib/dpkg/info/
+```
