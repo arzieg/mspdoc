@@ -14,6 +14,31 @@ podman version
 vi /etc/containers/registries.conf
 ```
 
+## Install WSL
+
+Bei WSL1 scheint es mehrere Probleme zu geben, weswegen WSL2 das Mittel der Wahl ist. 
+
+apt-get install podman
+
+Test: podman run hello-world
+
+SSL Probleme: 
+
+```
+# Extrahieren der Zertifikatskette:
+openssl s_client -showcerts -connect registry-1.docker.io:443
+
+# Jedes angezeigte Zertifikat in eine eigene Datei ablegen unter /usr/local/share/ca-certificates/
+# Format der .crt Datei:
+-----BEGIN CERTIFICATE-----
+...
+-----END CERTIFICATE-----
+
+sudo update-ca-certificates
+sudo systemctl restart podman
+```
+
+
 ### Build von Source auf Linux Mint 21.3
 
 https://podman.io/docs/installation
