@@ -7,6 +7,15 @@ update-alternatives --config go
 
 ## install ubuntu
 
+Download go
+rm -rf /usr/local/go && tar -C /usr/local -xzf go1.25.1.linux-amd64.tar.gz
+export PATH=$PATH:/usr/local/go/bin  // in .profile eintragen
+go version
+
+Sinnvoll, dann einen c-compiler zu installieren für cgo-Pakete:
+sudo apt install build-essential
+
+
 https://go.dev/doc/manage-install
 $ go install golang.org/dl/go1.10.7@latest
 $ go1.10.7 download
