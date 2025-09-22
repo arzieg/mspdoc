@@ -53,7 +53,19 @@ mgradm stop
 
 ## SUSE Mgr. Proxy
 
+mgrpxy start
+mgrpxy status
+mgrpxy stop
 mgrpxy start uyuni-proxy-pod
+
+
+Five SUSE Manager Proxy containers should be present and should be part of the proxy-pod container pod:
+* proxy-salt-broker
+* proxy-httpd
+* proxy-tftpd
+* proxy-squid
+* proxy-ssh
+
 
 ## Update
 
