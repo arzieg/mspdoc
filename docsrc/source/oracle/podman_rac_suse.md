@@ -233,9 +233,11 @@ Oracle bietet unter https://github.com/oracle/docker-images/tree/main/OracleData
 ### Create Zonefile & Reversezonefile
 
 ```
-cd ~/docker-images/OracleDatabase/RAC/OracleDNSServer/dockerfiles/latest
+cd ~/docker-images/OracleDatabase/RAC/OracleDNSServer/containerfiles/latest
 mv zonefile zonefile.bak
 mv reversezonefile reversezonefile.bak
+mv named.conf named.conf.bak
+
 ```
 
 vi zonefile
@@ -312,6 +314,21 @@ $TTL 86400
 182       IN PTR  racnode-cman4.example.com.
 ```
 
+Die named.conf muss um den DNS Server von Microsoft erweitert werden. Dies ist die 168.63.129.16. Das kann sich vmtl. auch ändern. 
+ToDO: Set der IP durch eine Environmentvariable während des Build? 
+Den DNS Nameserver erhält man über die /etc/resolv.conf der Podman - Hostsystems
+Sollte man in den Container springen zwekcs Analyse ist wichtig, dass named in einer chroot-Umgebung aufgerufen wird:
+`/usr/sbin/named -u named -c /etc/named.conf -t /var/named/chroot`, das -c bezieht sich dann auf die chroot-Umgebung /var/named/chroot/etc/named.conf
+
+
+vi named.conf
+```
+...
+        forwarders { 168.63.129.16; 192.168.100.1; 169.254.169.254; };
+        forward only;
+...
+```
+
 Nur zweck Proof-of-concept. Später überlegen, ob man das im DNS einträgt
 DNS Pod: https://github.com/oracle/docker-images/blob/main/OracleDatabase/RAC/OracleDNSServer/README.md
 
@@ -321,7 +338,7 @@ Daher `podman login container-registry.oracle.com`
 ### run buildscript
 
 ```
-cd ~/docker-images/OracleDatabase/RAC/OracleDNSServer/dockerfiles/lates
+cd ~/docker-images/OracleDatabase/RAC/OracleDNSServer/containerfiles/
 ./buildContainerImage.sh -v latest
 ```
 
@@ -847,3 +864,13 @@ Fehler:
 
 Oracle Support Document 2850137.1 (ORA-00600: internal error code, arguments: [ksipc_ksmsq_init] while creating a database using DBCA) can be found at: https://support.oracle.com/epmos/faces/DocumentDisplay?id=2850137.1
 
+
+
+# Images bereitstellen
+
+Die Images exportieren mittels
+
+## DNS Server
+Darauf achten, dass das Image Tag localhost/oracle-dns-server lautet (ansonten podman image tag ändern, z.b. p image tag localhost/oracle/rac-dnsserver localhost/oracle-dns-server)
+podman save oracle-dns-server > rac-dnsserver.tar
+Beim Importieren wird dann das wieder ein oracle-dns-server:latest image. Dann braucht man das in Ansible nicht noch mühsam wieder anpassen. 
