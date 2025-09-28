@@ -1,11 +1,66 @@
-.. _postgresql:
+Postgres
 
-Konfiguration
-###############
+# Konfiguration
 
-Remote Access ermöglichen
-==========================
+
+## Podman Container
+
+lokales Environment-File erzeugen
+
+~/.env:
+
+```
+export POSTGRES_PASSWORD=""
+export POSTGRES_USER="analyzer"
+export POSTGRES_DB="sanalyzer"
+export POSTGRES_INITDB_ARGS="--auth-host=scram-sha-256"
+export POSTGRES_HOST_AUTH_METHOD="scram-sha-256"
+```
+
+compose.yaml:
+```
+# Use postgres/example user/password credentials
+
+services:
+
+  db:
+    image: postgres
+    restart: always
+    # set shared memory limit when using docker compose
+    shm_size: 128mb
+    # or set shared memory limit when deploy via swarm stack
+    #volumes:
+    #  - type: tmpfs
+    #    target: /dev/shm
+    #    tmpfs:
+    #      size: 134217728 # 128*2^20 bytes = 128Mb
+    environment: 
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST_AUTH_METHOD: ${POSTGRES_HOST_AUTH_METHOD}
+      POSTGRES_INITDB_ARGS: ${POSTGRES_INITDB_ARGS}
+
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+```
+
+Container starten mit: `p compose up -d`
+
+Adminer läuft auf Port 8080.
+
+
+
+
+## Remote Access ermöglichen
+
 1. /etc/postgresql/14/main/postgresql.conf
+
+```
     # Listen Adresse auf alle Interfaces setzen
       listen_addresses = '*' 
 
@@ -23,11 +78,14 @@ Remote Access ermöglichen
         52 00 00 00 17 00 00 00 0a 53 43 52 41 4d 2d 53    |R........SCRAM-S|
         48 41 2d 32 35 36 00 00                            |HA-256..|
     
+```
 
 2. /etc/postgresql/14/main/pg_hba.conf
-   
+
+```   
     # Netzwerkbereich zulassen, der zugreifen darf
       host    all             all             <IP Netz>/24        md5
+```
 
 3. systemctl restart postgresql
 4. lsof -i:5432
@@ -35,9 +93,7 @@ Remote Access ermöglichen
 6. psql -h <IP> -p 5432 -d <DB> -U <user> -W
 
 
-####################################
-Command Execution with COPY Command
-####################################
+## Command Execution with COPY Command
 
 Quelle: `<https://medium.com/r3d-buck3t/command-execution-with-postgresql-copy-command-a79aef9c2767>`_
 
@@ -61,4 +117,3 @@ Befehle auf dem Zielhost abzusetzen.
 
 
 
-Zurück zu :ref:`postgresql`
