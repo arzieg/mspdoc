@@ -131,6 +131,37 @@ crsctl start res laszdb11-vip   // start vip
 crsctl delete res laszdb11-vip  // delete resource
 ```
 
+
+### Datenbank löschen
+
+
+1. Make cluster database to FALSE
+	`alter system set cluster_database=FALSE scope=spfile sid='*';`
+
+2. Stop the db service
+	`Srvctl stop database –d DBACLASS`
+
+3. start the database in mount exclusive mode:
+  
+  ```
+  startup mount exclusive restrict
+  select instance_name,status,logins from v$Instance;
+
+
+	INSTANCE_NAME STATUS LOGINS
+	---------------- ------------ ----------
+	DBACLASS MOUNTED RESTRICTED
+  ```
+
+4. Now drop the database:
+	`drop database;`
+
+5. Remove the db service from cluster
+	`srvctl remove database -db DBACLASS`
+
+
+
+
 ## CDB/PDB:
 
 ALTER PLUGGABLE DATABASE PDB_NAME CLOSE IMMEDIATE  // Stoppen einer PDB, check über srvctl status service
