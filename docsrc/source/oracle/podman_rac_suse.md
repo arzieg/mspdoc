@@ -564,8 +564,9 @@ COPY  $SETUPCONTAINERENV $SCRIPT_DIR/
 
 ### RUN Commands
 # -----
+# perl sudo less wget at the special request of taposi
 COPY $HOSTFILEENV $RESOLVCONFENV $OPENSSHPUB $SCRIPT_DIR/
-RUN dnf install -y oracle-database-preinstall-19c systemd vim passwd openssh-server hostname xterm xhost vi policycoreutils-python-utils && \
+RUN dnf install -y oracle-database-preinstall-19c systemd vim passwd openssh-server hostname xterm xhost vi policycoreutils-python-utils perl sudo less wget && \
  dnf clean all && \
  sync && \
  groupadd -g 54334 asmadmin && \
@@ -868,7 +869,7 @@ Oracle Support Document 2850137.1 (ORA-00600: internal error code, arguments: [k
 
 # Images bereitstellen
 
-Die Images exportieren mittels
+Die Images exportieren mittels `podman save localhost/oracle-dns-server > oracle-dns-server.tar`
 
 ## DNS Server
 Darauf achten, dass das Image Tag localhost/oracle-dns-server lautet (ansonten podman image tag ändern, z.b. p image tag localhost/oracle/rac-dnsserver localhost/oracle-dns-server)
