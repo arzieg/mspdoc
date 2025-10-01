@@ -682,7 +682,7 @@ oracle/database-rac:19.22-slim
 # podman create -t -i \
   --hostname racnode2 \
   --dns-search=example.com \
-  --privileged=false  \
+  --privileged=true  \
   --security-opt apparmor=unconfined \
   --volume /dev/shm \
   --volume racstorage:/oradata \

@@ -32,6 +32,16 @@ https://spacelift.io/blog/ansible-handlers
 `ansible <hostname> -m ansible.builtin.setup`
 
 
+## Exit eines Playbooks
+
+Hart: 
+
+```
+    - name: Exit playbook
+      fail:
+        msg: "Playbook execution stopped intentionally."
+```
+
 ## Debug
 
 export ANSIBLE_KEEP_REMOTE_FILES=1 -> damit wird sichergestellt, dass auf dem target-host die tmp-files nicht gelöscht werden. Hilfreich beim debuggen. Die Tempfiles sind zu finden unter ~/.ansible/tmp/
