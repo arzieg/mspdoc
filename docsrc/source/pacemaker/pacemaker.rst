@@ -79,8 +79,9 @@ Ressourcen haben im SAPHana den Präfix rsc_<name>.
       Es werden dann Constraints gesetzt in der Konfiguration! Diese wird man mit
       crm resource clear <resourcenid> wieder los. Dies ist wichtig, da ansonsten der 
       Cluster beim Ausfall sich vielleicht anders verhält als erwartet.
-    # Alle Ressource-Fehler löschen
-    crm_resource --cleanup
+    # Alle Ressource-Fehler löschen und den Error Counter sofern die Resource Errors hatte
+    crm_resource --cleanup 
+    crm_resource --refresh  -> will clear the resource history and error counts in any case
     # Löschen der Ressource - Fehler und reload 
     crm_resource -P
     # Resource in Maintenance setzen
@@ -88,6 +89,12 @@ Ressourcen haben im SAPHana den Präfix rsc_<name>.
     crm resource maintenance msl_SAPHana_SR_<SID>_HDB10 off
     # Wait for idle
     cs_wait_for_idle -n \<sec\>
+
+Failcount
+==========
+    crm_failcount -G -r prm_mariadb   # show failcount of a primitive resource
+    crm_failcount -r rsc_sap_HA1_ASCS00 -v 0 # set failcount to 0
+    crm_failcount -r rsc_sap_HA1_ASCS00 -D   # Delete failcount attribute (maybe with moving the resource to an other place)
 
 Simulation
 ============
@@ -102,6 +109,7 @@ Simulation
     crm_simulate --simulate --xml-file $FILENAME --dot-file $FILENAME.dot
         dot $FILENAME.dot -Tsvg > $FILENAME.svg
 
+    showscores # anzeigen der Scores je Resource
 Logs
 ====
 /var/lib/pacemaker
