@@ -566,14 +566,15 @@ COPY  $SETUPCONTAINERENV $SCRIPT_DIR/
 # -----
 # perl sudo less wget at the special request of taposi
 COPY $HOSTFILEENV $RESOLVCONFENV $OPENSSHPUB $SCRIPT_DIR/
-RUN dnf install -y oracle-database-preinstall-19c systemd vim passwd openssh-server hostname xterm xhost vi policycoreutils-python-utils perl sudo less wget && \
+RUN dnf install -y oracle-database-preinstall-19c systemd vim passwd openssh-server hostname xterm xhost vi policycoreutils-python-utils perl sudo less tmux wget && \
  dnf clean all && \
  sync && \
  groupadd -g 54334 asmadmin && \
  groupadd -g 54335 asmdba && \
  groupadd -g 54336 asmoper && \
+ groupadd -g 666 dasi && \
  useradd -u 54332 -g oinstall -G oinstall,asmadmin,asmdba,asmoper,racdba,dba grid && \
- usermod -g oinstall -G oinstall,dba,oper,backupdba,dgdba,kmdba,asmdba,racdba,asmadmin oracle && \
+ usermod -g oinstall -G oinstall,dba,oper,dasi,backupdba,dgdba,kmdba,asmdba,racdba,asmadmin oracle && \
  cp /etc/security/limits.d/oracle-database-preinstall-19c.conf /etc/security/limits.d/grid-database-preinstall-19c.conf && \
  sed -i 's/oracle/grid/g' /etc/security/limits.d/grid-database-preinstall-19c.conf && \
  rm -f /etc/rc.d/init.d/oracle-database-preinstall-19c-firstboot && \
