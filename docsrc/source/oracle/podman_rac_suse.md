@@ -573,8 +573,9 @@ RUN dnf install -y oracle-database-preinstall-19c systemd vim passwd openssh-ser
  groupadd -g 54335 asmdba && \
  groupadd -g 54336 asmoper && \
  groupadd -g 666 dasi && \
+ groupadd -g 503 sapinst && \
  useradd -u 54332 -g oinstall -G oinstall,asmadmin,asmdba,asmoper,racdba,dba grid && \
- usermod -g oinstall -G oinstall,dba,oper,dasi,backupdba,dgdba,kmdba,asmdba,racdba,asmadmin oracle && \
+ usermod -g oinstall -G oinstall,dba,dasi,sapinst,users oracle && \
  cp /etc/security/limits.d/oracle-database-preinstall-19c.conf /etc/security/limits.d/grid-database-preinstall-19c.conf && \
  sed -i 's/oracle/grid/g' /etc/security/limits.d/grid-database-preinstall-19c.conf && \
  rm -f /etc/rc.d/init.d/oracle-database-preinstall-19c-firstboot && \
