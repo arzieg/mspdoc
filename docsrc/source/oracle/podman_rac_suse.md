@@ -574,7 +574,7 @@ RUN dnf install -y oracle-database-preinstall-19c systemd vim passwd openssh-ser
  groupadd -g 54336 asmoper && \
  groupadd -g 666 dasi && \
  groupadd -g 503 sapinst && \
- useradd -u 54332 -g oinstall -G oinstall,asmadmin,asmdba,asmoper,racdba,dba grid && \
+ useradd -u 54332 -g oinstall -G oinstall,asmadmin,asmdba,asmoper,dba grid && \
  usermod -g oinstall -G oinstall,dba,dasi,sapinst,users oracle && \
  cp /etc/security/limits.d/oracle-database-preinstall-19c.conf /etc/security/limits.d/grid-database-preinstall-19c.conf && \
  sed -i 's/oracle/grid/g' /etc/security/limits.d/grid-database-preinstall-19c.conf && \
@@ -624,7 +624,9 @@ localhost/oracle/database-rac                 19.22-slim  20fc1f911871  30 secon
 Optional, da hier auf dem podman host erzeugt und auch nur ein Server vorhanden nicht notwendig, ansonsten 
 Sichern des Images und Kopie auf den Podmanhost:
 ```
-# podman image save -o /var/tmp/database-rac.tar localhost/oracle/database-rac:19.16-slim 
+# p image tag localhost/oracle/database-rac:19.22-slim localhost/database-rac:19.22-slim
+# p image rm localhost/oracle/database-rac:19.22-slim
+# podman image save -o /var/tmp/racnode.tar localhost/database-rac:19.22-slim 
 # scp -i <ssh key for host podman-host-2> /var/tmp/database-rac.tar opc@podman-host-2:/var/tmp/database-rac.tar
 
 Auf dem anderen Podman-Host:
