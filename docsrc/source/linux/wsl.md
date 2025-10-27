@@ -255,3 +255,13 @@ nameserver <unternehmens namesserver>
 EOF
 ``` 
 
+### WSL2 im Unternehmensnetzwerk 
+
+Geholfen hat hier unter %USERPROFILE/.wslconfig
+
+```
+[wsl2]
+networkingMode=mirrored
+dnsTunneling=true
+autoProxy=true
+```

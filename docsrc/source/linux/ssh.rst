@@ -105,3 +105,11 @@ settings to prevent connection drops over problematic networks:
         ServerAliveInterval 30
         ServerAliveCountMax 6
 
+
+
+SCP
+####
+
+scp mit ProxyJump
+
+```scp -oProxyJump=lascjh1.clab.azr.ez.edeka.net <iso-file> root@viseddlabayst.rs.edeka.net:/install/media/```

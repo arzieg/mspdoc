@@ -116,4 +116,20 @@ Befehle auf dem Zielhost abzusetzen.
 
 
 
+## Lokaler Client 
 
+**Add the PGDG repo**
+
+`sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'`
+
+**Import the repository signing Keys**
+
+`curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg`
+
+**Update Your Package Index again**
+
+`sudo apt update`
+
+**Install PostgreSQL Version 18 Client**
+
+`sudo apt -y install postgresql-client-18`
