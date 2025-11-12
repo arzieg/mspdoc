@@ -9,6 +9,8 @@ go-dev
   /frontend
   compose.yml
 
+podman build -t clabmgr .
+podman run --name clabmgr_app --env-file ~/.env_clabmgr -p 4000:4000 clabmgr
 
 Das Dockerfile der Backend-Anwendung könnte wie folgt aussehen:
 
