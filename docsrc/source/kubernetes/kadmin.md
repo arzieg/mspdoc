@@ -102,7 +102,33 @@ for pod in $(kubectl get po --output=jsonpath={.items..metadata.name}); do echo 
 kubectl get deployment nginx-deployment --subresource=status
 
 
-## Pod Management
+## Pods
+
+A Pod is a collection of application containers and volumes running in the same execution environment. Pods, not containers, are the smallest deployable artifact in a
+Kubernetes cluster. This means all of the containers in a Pod always land on the same machine. Each container within a Pod runs in its own cgroup, but they share a number of
+Linux namespaces.
+
+Applications running in the same Pod share the same IP address and port space (network namespace), have the same hostname (UTS namespace), and can communicate using native interprocess communication channels over System V IPC or POSIX message queues (IPC namespace). However, applications in different Pods are isolated from each other; they have different IP addresses, hostnames, and more.
+
+In general, the right question to ask yourself when designing Pods is “Will these containers work correctly if they land on different machines?” If the answer is no,
+a Pod is the correct grouping for the containers. If the answer is yes, using multiple Pods is probably the correct solution.
+
+### The Pod Manifest
+
+Pods are described in a Pod manifest, which is just a text-file representation of the Kubernetes API object.
+
+### Creating a pod
+
+```
+kubectl run kuard --image=gcr.io/kuar-demo/kuard-amd64:blue
+kubectl get pods
+kuebectl delete pods/kuard
+```
+
+
+
+
+### Pod Management
 
 k delete pod -n argocd 'pod-name' 
 kubectl logs my-pod                                 # dump pod logs (stdout)\
@@ -128,6 +154,10 @@ kubectl debug node/my-node -it --image=busybox:1.28 # Create an interactive debu
 kubectl top pod -n 'namespace'                      # Show metrics for all pods in the default namespace\
 kubectl top pod POD_NAME --containers               # Show metrics for a given pod and its containers\
 kubectl top pod POD_NAME --sort-by=cpu              # Show metrics for a given pod and sort it by 'cpu' or 'memory'\
+kubectl top nodes                                   # Show top nodes\
+kubectl get events                                  # Show events\
+
+
 
 
 ## Port Forwarding
@@ -146,6 +176,43 @@ ssh -L 8080:localhost:8080 -J <user>@<jumphost> <adminuser>@<adminjumphost>
 ```
 
 Get Ingress Services:  `kubectl get ingress -A`
+
+## Creating, Updating, and Destroying Kubernetes Objects
+
+You can use these YAML or JSON files to create, update, or delete objects on the Kubernetes server.
+
+kubectl apply -f obj.yaml   - Apply & Update obj.yaml definition, the apply tool will only modify objects that are different from the current objects in
+the cluster.
+
+kubectl delete -f obj.yaml  - Delete
+
+
+
+*If you feel like making interactive edits instead of editing a local file, you can instead use the edit command, which will download the latest object state and then launch an editor that contains the definition:*
+
+```
+$ kubectl edit <resource-name> <obj-name>
+```
+
+*After you save the file, it will be automatically uploaded back to the Kubernetes cluster.*
+
+## Labeling and Annotating Objects
+
+kubectl label pods bar color=red                    Labels and annotations are tags for your objects. 
+
+kubectl label pods bar color=red --overwrite        Overwrite an existing Label
+
+kubectl label pods bar color                        Remove a label
+
+## Cluster Management
+
+
+
+
+
+
+
+
 
 ## Secrets
 
@@ -188,13 +255,6 @@ k delete secret 'podname' -n argocd
     ```
 
 
-
-
-
-
-
-
-
 ## Custom Resource
 
 Custom resources are extensions of the Kubernetes API. A custom resource is an extension of the Kubernetes API that is not necessarily available in a default Kubernetes installation. 
@@ -228,6 +288,13 @@ kubectl top node my-node                                              # Show met
 kubectl cluster-info                                                  # Display addresses of the master and services\
 kubectl cluster-info dump                                             # Dump current cluster state to stdout\
 kubectl cluster-info dump --output-directory=/path/to/cluster-state   # Dump current cluster state to /path/to/cluster-state\
+
+When you cordon a node, you prevent future Pods from being scheduled onto that machine. There is NO undrain command
+
+When you drain a node, you remove any Pods that are currently running on that machine.
+
+
+
 
 ### View existing taints on which exist on current nodes.
 kubectl get nodes -o='custom-columns=NodeName:.metadata.name,TaintKey:.spec.taints[*].key,TaintValue:.spec.taints[*].value,TaintEffect:.spec.taints[*].effect'

@@ -32,6 +32,32 @@ Sie können in einem Knotenpool bis zu 100 Knoten konfigurieren. Die Anzahl der 
 Benutzerknotenpools sind so konzipiert, dass sie benutzerdefinierte Workloads ausführen und nicht die 30-Pod-Anforderung aufweisen. Mit Benutzerknotenpools können Sie die Knotenanzahl für einen Pool auf null festlegen.
 Beachten Sie, dass Namen von Knotenpools mit einem Kleinbuchstaben beginnen müssen und nur alphanumerische Zeichen enthalten dürfen. Knotenpoolnamen sind auf zwölf Zeichen für Linux-Knotenpools und sechs Zeichen für Windows-Knotenpools beschränkt.
 
+## Kubernetes Proxy
+The Kubernetes proxy is responsible for routing network traffic to load-balanced services in the Kubernetes cluster. To do its job, the proxy must be present on every
+node in the cluster. Kubernetes has an API object named DaemonSet, which you will learn about in Chapter 11, that is used in many clusters to accomplish this. If your
+cluster runs the Kubernetes proxy with a DaemonSet, you can see the proxies by running:
+```
+$ kubectl get daemonSets --namespace=kube-system kube-proxy
+NAME       DESIRED CURRENT READY UP-TO-DATE AVAILABLE NODE SELECTOR
+kube-proxy 5        5       5    5          5         ...   45d
+```
+Depending on how your cluster is set up, the DaemonSet for the kube-proxy may be named something else, or it’s possible that it won’t use a DaemonSet at all. Regardless,
+the kube-proxy container should be running on all nodes in a cluster
+
+## Kubernetes DNS
+Kubernetes also runs a DNS server, which provides naming and discovery for the services that are defined in the cluster. This DNS server also runs as a replicated
+service on the cluster. 
+
+```
+kubectl get deployments --namespace=kube-system coredns
+NAME      READY   UP-TO-DATE   AVAILABLE   AGE
+coredns   2/2     2            2           100m
+
+kubectl get services --namespace=kube-system kube-dns
+NAME       TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)         AGE
+kube-dns   ClusterIP   10.0.0.10    <none>        53/UDP,53/TCP   101m
+
+```
 ## Was ist ein Container?
 Ein Container ist eine kleine Einheit von Software, die Code, Abhängigkeiten und Konfiguration für eine bestimmte Anwendung bündelt. Mit Containern können Sie monolithische Anwendungen in einzelne Services aufteilen, aus denen sich die Lösung zusammensetzt.
 
@@ -100,4 +126,30 @@ Verwenden Sie OPA Gatekeeper, um organisationsweite Richtlinien mit Regeln zu de
 
 
 Bridge to Kubernetes -> testen, plugin in vsc. 
+
+## Namespaces
+
+Kubernetes uses namespaces to organize objects in the cluster. You can think of each namespace as a folder that holds a set of objects. By default, the kubectl
+command-line tool interacts with the default namespace. 
+
+## Contexts
+
+If you want to change the default namespace more permanently, you can use a context. This gets recorded in a kubectl configuration file, usually located at
+$HOME/.kube/config. This configuration file also stores how to both find and authenticate to your cluster. For example, you can create a context with a different default namespace for your kubectl commands using:
+
+```
+kubectl config set-context my-context --namespace=mystuff
+```
+
+This creates a new context, but it doesn’t actually start using it yet. To use this newly created context, you can run:
+
+```
+$ kubectl config use-context my-context
+```
+
+Contexts can also be used to manage different clusters or different users for authenticating to those clusters using the --users or --clusters flags with the set-context command.
+
+## Viewing Kubernetes API Objects
+
+
 
