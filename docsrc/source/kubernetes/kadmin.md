@@ -102,33 +102,8 @@ for pod in $(kubectl get po --output=jsonpath={.items..metadata.name}); do echo 
 kubectl get deployment nginx-deployment --subresource=status
 
 
-## Pods
 
-A Pod is a collection of application containers and volumes running in the same execution environment. Pods, not containers, are the smallest deployable artifact in a
-Kubernetes cluster. This means all of the containers in a Pod always land on the same machine. Each container within a Pod runs in its own cgroup, but they share a number of
-Linux namespaces.
-
-Applications running in the same Pod share the same IP address and port space (network namespace), have the same hostname (UTS namespace), and can communicate using native interprocess communication channels over System V IPC or POSIX message queues (IPC namespace). However, applications in different Pods are isolated from each other; they have different IP addresses, hostnames, and more.
-
-In general, the right question to ask yourself when designing Pods is “Will these containers work correctly if they land on different machines?” If the answer is no,
-a Pod is the correct grouping for the containers. If the answer is yes, using multiple Pods is probably the correct solution.
-
-### The Pod Manifest
-
-Pods are described in a Pod manifest, which is just a text-file representation of the Kubernetes API object.
-
-### Creating a pod
-
-```
-kubectl run kuard --image=gcr.io/kuar-demo/kuard-amd64:blue
-kubectl get pods
-kuebectl delete pods/kuard
-```
-
-
-
-
-### Pod Management
+## Pod Management
 
 k delete pod -n argocd 'pod-name' 
 kubectl logs my-pod                                 # dump pod logs (stdout)\
