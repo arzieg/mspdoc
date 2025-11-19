@@ -260,6 +260,121 @@ metadata:
 ...
 ```
 
+# Service Discovery
+
+While the dynamic nature of Kubernetes makes it easy to run a lot of things, it creates problems when it comes to finding those things. Most of the traditional network infrastructure wasn’t built for the level of dynamism that Kubernetes presents.
+
+Servicediscovery tools help solve the problem of finding which processes are listening at which addresses for which services.
+
+## Service Object
+
+Real service discovery in Kubernetes starts with a Service object. A Service object is a way to create a named label selector
+
+```
+apiVersion: v1
+kind: Service
+metadata:
+  name: alpaca-prod-service
+spec:
+  selector:
+    app: alpaca
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
+  type: ClusterIP
+```
+
+type ist hier interessant: 
+ type=Loadbalancer, es wird eine externe (in azure public) IP erstellt
+ type=ClusterIP, es wird keine public IP erstellt (Service ist nicht von außen erreichbar)
+ type=NodePort, This exposes the service on a static port (e.g., 30000–32767) on each node’s IP, but does not assign an external IP.
+
+Möchte man hingegen, dass ein interner Loadbalancer verwendet wird, gibt man diesen in den Metadaten an. Dieser ist dann Cloud-Spezifisch, hier unter annotations.
+
+```
+apiVersion: v1
+kind: Service
+metadata:
+  name: alpaca-prod-service
+  annotations:
+    service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+
+spec:
+  selector:
+    app: alpaca
+...
+```
+
+
+Endpoints: 
+
+```
+kubectl get endpoints alpaca-prod-service --watch
+NAME                  ENDPOINTS                                             AGE
+alpaca-prod-service   10.244.0.12:8080,10.244.0.195:8080,10.244.0.72:8080   9m6s
+```
+
+## kube-proxy and ClusterIP
+
+apiserver->kube-proxy->ClusterIP->Backend1/2/3...
+
+The kube-proxy watches for new services in the cluster via the API server. It then programs a set of iptables rules in the kernel of that host to rewrite the destinations of packets so they are directed at one of the endpoints for that service. If the set of endpoints for a service changes (due to Pods coming and going or due to a failed readiness check), the set of iptables rules is rewritten.
+
+The cluster IP itself is usually assigned by the API server as the service is created. However, when creating the service, the user can specify a specific cluster IP. Once
+set, the cluster IP cannot be modified without deleting and re-creating the Service object.
+
+!!!!!!
+
+*The Kubernetes service address range is configured using the --service-cluster-ip-range flag on the kube-apiserver binary. The service address range should not overlap with theIP subnets and ranges assigned to each Docker bridge or Kubernetes node. In addition, any explicit cluster IP requested must come from that range and not already be in use.*
+
+!!!!!!!
+
+## Connecting to Resources Outside of a Cluster
+
+When you are connecting Kubernetes to legacy resources outside of the cluster, you can use selector-less services to declare a Kubernetes service with a manually assigned IP address that is outside of the cluster. That way, Kubernetes service discovery via DNS works as expected, but the network traffic itself flows to an external resource.
+
+To create a selector-less service, you remove the spec.selector field from your resource, while leaving the metadata and the ports sections unchanged.Because your service has no selector, no endpoints are automatically added to the service. This means that you must add them manually. Typically the endpoint that you will add will be a fixed IP address (e.g., the IP address of your database server) so you only need to add it once. But if the IP address that backs the service ever changes, you will need to update the corresponding endpoint resource. To create or update the endpoint resource, you use an endpoint that looks something like the following:
+
+```
+apiVersion: v1
+kind: Endpoints
+metadata:
+  # This name must match the name of your service
+  name: my-database-server
+subsets:
+  - addresses:
+      # Replace this IP with the real IP of your server
+     - ip: 1.2.3.4
+    ports:
+      # Replace this port with the port(s) you want to expose
+      - port: 1433
+...
+ ```
+
+## Connecting External Resources to Services Inside a Cluster
+
+If your cloud provider supports it, the easiest thing to do is to create an “internal” load balancer, as described above, that lives in your virtual private network and can deliver traffic from a fixed IP address into the cluster. You can then use traditional DNS to make this IP address available to the external resource. If an internal load balancer isn’t available, you can use a NodePort service to expose the service on the IP addresses of the nodes in the cluster. You can then either program a physical load balancer to serve traffic to those nodes, or use DNS-based load-balancing to spread traffic between the nodes.
+
+If neither of those solutions works for your use case, more complex options include running the full kube-proxy on an external resource and programming that machine to use the DNS server in the Kubernetes cluster. Such a setup is significantly more difficult to get right and should really only be used in on-premise environments. There are also a variety of open source projects (for example, HashiCorp’s Consul) that can be used to manage connectivity between in-cluster and out-of-cluster resources. Such options require significant knowledge of both networking and Kubernetes to get right and should really be considered a last resort.
+
+# HTTP Load Balancing with Ingress
+
+The Service object operates at Layer 4 (according to the OSI model). This means that it only forwards TCP and UDP connections and doesn’t look inside of those connections. Because of this, hosting many applications on a cluster uses many different exposed services. In the case where these services are type: NodePort, you’ll have to have clients connect to a unique port per service. In the case where these services are type: LoadBalancer, you’ll be allocating (often expensive or scarce) cloud resources for each service. 
+
+But for HTTP (Layer 7)-based services, we can do better. When solving a similar problem in non-Kubernetes situations, users often turn to the idea of “virtual hosting.” This is a mechanism to host many HTTP sites on a single IP address. Typically, the user uses a load balancer or reverse proxy to accept incoming connections on HTTP (80) and HTTPS (443) ports. That program then parses the HTTP connection and, based on the Host header and the URL path that is requested, proxies the HTTP call to some other program. In this way, that load balancer or reverse proxy directs traffic for decoding and directing incoming connections to the right “upstream” server.
+
+Kubernetes calls its HTTP-based load-balancing system **Ingress**. Ingress is aKubernetes-native way to implement the “virtual hosting” pattern we just discussed. One of the more complex aspects of the pattern is that the user has to manage the load balancer configuration file. In a dynamic environment and as the set of virtual hosts expands, this can be very complex. The Kubernetes Ingress system works to simplify this by (a) standardizing that configuration, (b) moving it to a standard Kubernetes object, and (c) merging multiple Ingress objects into a single config for the load balancer.
+
+The Ingress controller is a software system made up of two parts. 
+* The first is the Ingress proxy, which is exposed outside the cluster using a service of type: LoadBalancer. This proxy sends requests to “upstream” servers. 
+* The other component is the Ingress reconciler, or operator. The Ingress operator is responsible for reading and monitoring Ingress objects in the Kubernetes API and reconfiguring the Ingress proxy to route traffic as specified in the Ingress resource. 
+
+## Ingress Spec
+
+The Spec is split into a common resource specification and a controller implementation. There is no "standard" Ingress controller that is built into Kubernetes, so the user must install one of many optional implementations.
+
+Users can create and modify Ingress objects just like every other object. But, by default, there is no code running to actually act on those objects.
 
 
 
