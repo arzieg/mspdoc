@@ -364,7 +364,7 @@ The Service object operates at Layer 4 (according to the OSI model). This means 
 
 But for HTTP (Layer 7)-based services, we can do better. When solving a similar problem in non-Kubernetes situations, users often turn to the idea of “virtual hosting.” This is a mechanism to host many HTTP sites on a single IP address. Typically, the user uses a load balancer or reverse proxy to accept incoming connections on HTTP (80) and HTTPS (443) ports. That program then parses the HTTP connection and, based on the Host header and the URL path that is requested, proxies the HTTP call to some other program. In this way, that load balancer or reverse proxy directs traffic for decoding and directing incoming connections to the right “upstream” server.
 
-Kubernetes calls its HTTP-based load-balancing system **Ingress**. Ingress is aKubernetes-native way to implement the “virtual hosting” pattern we just discussed. One of the more complex aspects of the pattern is that the user has to manage the load balancer configuration file. In a dynamic environment and as the set of virtual hosts expands, this can be very complex. The Kubernetes Ingress system works to simplify this by (a) standardizing that configuration, (b) moving it to a standard Kubernetes object, and (c) merging multiple Ingress objects into a single config for the load balancer.
+Kubernetes calls its HTTP-based load-balancing system **Ingress**. Ingress is a Kubernetes-native way to implement the “virtual hosting” pattern we just discussed. One of the more complex aspects of the pattern is that the user has to manage the load balancer configuration file. In a dynamic environment and as the set of virtual hosts expands, this can be very complex. The Kubernetes Ingress system works to simplify this by (a) standardizing that configuration, (b) moving it to a standard Kubernetes object, and (c) merging multiple Ingress objects into a single config for the load balancer.
 
 The Ingress controller is a software system made up of two parts. 
 * The first is the Ingress proxy, which is exposed outside the cluster using a service of type: LoadBalancer. This proxy sends requests to “upstream” servers. 
@@ -375,6 +375,323 @@ The Ingress controller is a software system made up of two parts.
 The Spec is split into a common resource specification and a controller implementation. There is no "standard" Ingress controller that is built into Kubernetes, so the user must install one of many optional implementations.
 
 Users can create and modify Ingress objects just like every other object. But, by default, there is no code running to actually act on those objects.
+
+### Beispiel Ingress Controller Contour
+
+This is a controller built to configure the open source (and CNCF project) load balancer called Envoy. Envoy is built to be dynamically configured via an API. 
+
+Deployment: 
+```
+kubectl apply -f https://projectcontour.io/quickstart/contour.yaml
+
+bzw. 
+
+kubectl apply -f .\contour.yaml.txt
+namespace/projectcontour created
+serviceaccount/contour created
+serviceaccount/envoy created
+configmap/contour created
+customresourcedefinition.apiextensions.k8s.io/contourconfigurations.projectcontour.io configured
+customresourcedefinition.apiextensions.k8s.io/contourdeployments.projectcontour.io configured
+customresourcedefinition.apiextensions.k8s.io/extensionservices.projectcontour.io configured
+customresourcedefinition.apiextensions.k8s.io/httpproxies.projectcontour.io configured
+customresourcedefinition.apiextensions.k8s.io/tlscertificatedelegations.projectcontour.io configured
+serviceaccount/contour-certgen created
+rolebinding.rbac.authorization.k8s.io/contour created
+role.rbac.authorization.k8s.io/contour-certgen created
+job.batch/contour-certgen-v1-33-0 created
+clusterrolebinding.rbac.authorization.k8s.io/contour unchanged
+rolebinding.rbac.authorization.k8s.io/contour-rolebinding created
+clusterrole.rbac.authorization.k8s.io/contour unchanged
+role.rbac.authorization.k8s.io/contour created
+service/contour created
+service/envoy created
+deployment.apps/contour created
+daemonset.apps/envoy created
+```
+
+Wenn man keine Public IP Adresse definieren möchte (aka Loadbalancer), dann muss man bei der Containerdefinition von envoy ClusterIP oder NodePort angeben. 
+
+``` 
+apiVersion: v1
+kind: Service
+metadata:
+  name: envoy
+  namespace: projectcontour
+  annotations:
+    # This annotation puts the AWS ELB into "TCP" mode so that it does not
+    # do HTTP negotiation for HTTPS connections at the ELB edge.
+    # The downside of this is the remote IP address of all connections will
+    # appear to be the internal address of the ELB. See docs/proxy-proto.md
+    # for information about enabling the PROXY protocol on the ELB to recover
+    # the original remote IP address.
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: tcp
+spec:
+  #externalTrafficPolicy: Local
+  ports:
+  - port: 80
+    name: http
+    protocol: TCP
+    targetPort: 8080
+  - port: 443
+    name: https
+    protocol: TCP
+    targetPort: 8443
+  selector:
+    app: envoy
+  type: ClusterIP <-- hier
+```
+
+IP Adresse ermitteln
+```
+kubectl get -n projectcontour service envoy -o wide
+NAME    TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)          AGE   SELECTOR
+envoy   ClusterIP   10.0.163.230   <none>        80/TCP,443/TCP   32s   app=envoy
+```
+
+
+### DNS konfigurieren
+
+You need to configure DNS entries to the external address for your load balancer. You can map multiple hostnames to a single external endpoint
+and the Ingress controller will direct incoming requests to the appropriate upstream service based on that hostname.
+
+### Simple Ingress
+
+```
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+ name: simple-ingress
+spec:
+ defaultBackend:
+   service:
+     name: alpaca
+     port:
+       number: 8080
+```
+
+```
+kubectl apply -f simple-ingress.yaml
+kubectl get ingress
+kubectl describe ingress simple-ingress
+```
+
+### Ingress using Hostnames
+
+The most common example of this is to have the Ingress system look at the HTTP host header (which is set to the DNS domain in the original URL) and direct traffic based on that header.
+
+```
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: host-ingress
+spec:
+  defaultBackend:
+    service:
+      name: be-default
+      port:
+        number: 8080
+  rules:   
+    - host: alpaca.example.com
+      http:
+        paths:
+          - pathType: Prefix
+            path: /
+            backend:
+              service:
+                name: alpaca
+                port:
+                  number: 8080
+```
+
+```
+kubectl get ingress
+kubectl describe ingress host-ingress
+
+
+Name:             host-ingress
+Labels:           <none>
+Namespace:        default
+Address:
+Ingress Class:    <none>
+Default backend:  be-default:8080 (10.244.0.192:8080,10.244.0.49:8080,10.244.0.50:8080)
+Rules:
+  Host                Path  Backends
+  ----                ----  --------
+  alpaca.example.com
+                      /   alpaca:8080 (10.244.0.154:8080,10.244.0.233:8080,10.244.0.114:8080)
+Annotations:          <none>
+Events:               <none>
+```
+
+-> default-backend: einige Controller senden Traffic, der nicht durch eine Regel erfasst wird an den Service default-http-backend.
+
+Der Service müsste nun unter *http://alpaca.example.com.* erreichbar sein. 
+
+### Ingress Using Paths
+
+The next interesting scenario is to direct traffic based on not just the hostname, but also the path in the HTTP request.
+
+```
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+ name: path-ingress
+spec:
+ rules:
+ - host: bandicoot.example.com
+   http:
+     paths:
+     - pathType: Prefix
+       path: "/"
+       backend:
+         service:
+           name: bandicoot
+           port:
+             number: 8080
+     - pathType: Prefix
+       path: "/a/"
+       backend:
+         service:
+           name: alpaca
+           port:
+             number: 8080
+``` 
+
+Aufrufe nach / werden an bandicoot.example.com gesendet, Aufrufe nach /a/ werden nach alpaca gesendet. 
+
+As requests get proxied to the upstream service, the path remains unmodified. That means a request to bandicoot.example.com/a/ shows up to the upstream server that is configured for that request hostname and path. The upstream service needs to be ready to serve traffic on that subpath. In this case, kuard has special code for testing, where it responds on the root path (/) along with a predefined set of subpaths (/a/, /b/, and /c/).
+
+```
+kubectl describe ingress path-ingress
+Name:             path-ingress
+Labels:           <none>
+Namespace:        default
+Address:
+Ingress Class:    <none>
+Default backend:  <default>
+Rules:
+  Host                   Path  Backends
+  ----                   ----  --------
+  bandicoot.example.com
+                         /     bandicoot:8080 (10.244.0.29:8080,10.244.0.37:8080,10.244.0.186:8080)
+                         /a/   alpaca:8080 (10.244.0.154:8080,10.244.0.233:8080,10.244.0.114:8080)
+Annotations:             <none>
+Events:                  <none>
+```
+
+### Advanced Ingress Topics
+Many of the extended features are exposed via annotations on the Ingress object. Be careful; these annotations can be hard to validate and are easy to get wrong. Many of these annotations apply to the entire Ingress object and so can be more general than you might like. To scope the annotations down, you can always split a single Ingress object into multiple Ingress objects. The Ingress controller should read them and merge them together.
+
+### TLS
+
+1. users need to specify a Secret with their TLS certificate and keys—something like what is outlined in Example 8-4. You can also create a Secret imperatively with kubectl create secret tls \<secret-name\> --cert \<certificate-pem-file\> --key \<private-key-pem-file\>.
+
+2. tls-secret.yaml
+
+```
+apiVersion: v1
+kind: Secret
+metadata:
+  creationTimestamp: null
+  name: tls-secret-name
+type: kubernetes.io/tls
+data:
+  tls.crt: <base64 encoded certificate>
+  tls.key: <base64 encoded private key>
+```
+
+3. Once you have the certificate uploaded, you can reference it in an Ingress object. This specifies a list of certificates along with the hostnames that those certificates should be used for:
+
+```
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+ name: tls-ingress
+spec:
+ tls:
+ - hosts:
+ - alpaca.example.com
+ secretName: tls-secret-name
+ rules:
+  - host: alpaca.example.com
+    http:
+      paths:
+    - backend:
+        serviceName: alpaca
+        servicePort: 8080
+```
+
+Lets Encrypt Certificates: is API-driven, it is possible to set up a Kubernetes cluster that automatically fetches and installs TLS certificates for you. The missing piece is an open source project called cert-manager created by Jetstack, a UK startup, onboarded to the CNCF. The cert-manager.io website or GitHub repository has details on how to install cert-manager and get started.
+
+### Alternate Ingress Implementation
+
+The most popular generic Ingress controller is probably the open source NGINX Ingress controller.
+
+Emissary and Gloo are two other Envoy-based Ingress controllers that are focused on being API gateways.
+
+Traefik is a reverse proxy implemented in Go that also can function as an Ingress controller. It has a set of features and dashboards that are very developer-friendly.
+
+
+-> Wichtige URL für weitere Informationen: https://gateway-api.sigs.k8s.io/
+
+# Replica Sets
+
+A ReplicaSet acts as a cluster-wide Pod manager, ensuring that the right types and numbers of Pods are running at all times.
+
+
+Redundancy - Failure toleration by running multiple instances.
+
+Scale - Higher request-processing capacity by running multiple instances.
+
+Sharding - Different replicas can handle different parts of a computation in parallel
+
+
+The actual act of managing the replicated Pods is an example of a reconciliation loop. Such loops are fundamental to most of the design and implementation of Kubernetes.
+
+## Reconciliation Loops
+
+The central concept behind a reconciliation loop is the notion of desired state versus observed or current state.
+
+## Relating Pods and ReplicaSets
+
+the relationship between ReplicaSets and Pods is loosely coupled. Though ReplicaSets create and manage Pods, they do not own the Pods they create. ReplicaSets use label queries to identify the set of Pods they should be managing.
+
+ReplicaSets are designed for stateless (or nearly stateless) services. 
+
+
+## ReplicaSet Spec
+
+```
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  labels:
+    app: kuard
+    version: "2"
+  name: kuard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kuard
+      version: "2"
+  template:
+    metadata:
+      labels:
+        app: kuard
+        version: "2"
+    spec:
+      containers:
+        - name: kuard
+          image: "docker.io/ksaito1125/kuard"
+```
+
+
+
+
+
+
 
 
 
