@@ -18,18 +18,55 @@ dlv replay \<rr trace\>
 
 ## Environmentvariables
 
+```
 $DELVE_EDITOR is used by the edit command (if it isn't set the $EDITOR variable is used instead)
 $DELVE_PAGER is used by commands that emit large output (if it isn't set the $PAGER variable is used instead, if neither is set more is used)
 $TERM is used to decide whether or not ANSI escape codes should be used for colorized output
+```
 
 ## Basic commands
 
 help
-list main.main        (show source code by package und function name)
-list ./main.go:14     (show source code by line)
-funcs fib             (find function fib, list with list main.fib)
+
+list main.main        show source code by package und function name
+
+list ./main.go:14     show source code by line
+
+funcs fib             find function fib, list with list main.fib
 
 ## Breakpoints
+
+break ./main.go:10    - set breakpoint
+
+breakpoints           - show breakpoints
+
+clear \<nr\>          - clear breakpoint with nr. 
+
+clearall              - clear all breakpoints
+
+cond                  - conditional breakpoint. 1. set breakpoint (b main.go:9), 2. bp (list breakpoints), 3. cond \<nr\> n==98 (conditional check if n==98, then stop)
+
+
+
+## Navigate
+
+continue, c           - continue
+
+next, n               - next line
+
+step, s               - step in
+
+stepout               - step out
+
+restart, r            - restart program
+
+## Print
+
+print, p              - print
+
+locals                - print all local variables
+
+
 
 
 
