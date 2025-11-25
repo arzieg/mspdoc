@@ -687,6 +687,236 @@ spec:
           image: "docker.io/ksaito1125/kuard"
 ```
 
+-> erstellt einen Pod
+
+Beschreibung des Replica Set über: `kubectl describe rs kuard`
+Welches Replicaset steuert den Pod?: `kubectl get pods kuard-vmq5s -o=jsonpath='{.metadata.ownerReferences[0].name}'`
+
+## Scaling and Autoscaling
+
+scale ReplicaSets up or down by updating the spec.replicas
+
+AdHoc: `kubectl scale replicasets kuard --replicas=4`
+
+oder in yaml File um Persistenz sicherzustellen. 
+
+Autoscaling:
+-------------
+
+Scale in response to custom application metrics (Horizontal Pod Autoscaling, HPA)
+
+Autoscaling requires the presence of the metrics-server. Most installations of Kubernetes include metrics-server by default. 
+
+Bsp.: für CPU basiertes Autoscaling `kubectl autoscale rs kuard --min=2 --max=5 --cpu='80%'`
+
+Überprüfung: 
+
+```
+ kubectl get hpa
+NAME    REFERENCE          TARGETS              MINPODS   MAXPODS   REPLICAS   AGE
+kuard   ReplicaSet/kuard   cpu: <unknown>/80%   2         5         3          2m8s
+```
+
+Because of the decoupled nature of Kubernetes, there is no direct link between the HPA and the ReplicaSet. While this is great for modularity and composition, it also enables some antipatterns. In particular, it’s a bad idea to combine autoscaling with imperative or declarative management of the number of replicas. If both you and an autoscaler are attempting to modify the number of replicas, it’s highly likely that you will clash, resulting in unexpected behavior.
+
+Get possible metrics: `kubectl get --raw "/apis/metrics.k8s.io/v1beta1/namespaces/default/pods"`
+
+## Deleting ReplicaSets and Autoscale
+
+ReplicaSet and PODS!: `kubectl delete rs kuard`
+Only ReplicaSet: `kubectl delete rs kuard --cascade=orphan`
+
+Autoscale: `kubectl delete hpa kuard`
+
+
+# Deployments
+
+Deployments enable you to easily move from one version of your code to the next.
+ReplicaSets manage Pods, Deployments manage ReplicaSets. 
+
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kuard
+  labels:
+    run: kuard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: kuard
+  template:
+    metadata:
+      labels:
+        run: kuard
+    spec:
+      containers:
+      - name: kuard
+        image: docker.io/ksaito1125/kuard
+```
+
+Get Label of Deployment: `kubectl get deployments kuard -o jsonpath --template '{.spec.selector.matchLabels}'`
+
+Get ReplicaSet: `kubectl get replicasets --selector=run=kuard`  - hier is run=kuard der Output vom Deployment, ein selector=kuard findet nichts.
+
+Resize Deployment: `kubectl scale deployments kuard --replicas=2`  - ReplicaSet wird angepasst
+
+!! Resize ReplicaSet: `kubectl scale rs kuard-7fb4557664 --replicas=1` -> führt nicht zu dem gewünschten Ergebnis. RS bleibt bei 2
+
+Deployment in Datei speichern: `kubectl get deployments kuard -o yaml > kuard-deployment.yaml`. Bei der weiteren Verwendung aber darauf achten, dass die Read-Only Bereiche gelöscht sind. Das Minifest soll nur enthalten: apiVersion, kind, metadata (name, labels, optional annotations you set yourself), spec
+
+
+
+Replace a Deployment: `kubectl replace -f kuard-deployment.yaml --save-config`
+
+You also need to run kubectl replace --save-config. This adds an annotation so that, when applying changes in the future, kubectl will know what the last applied configuration was for smarter merging of configs. If you always use kubectl apply, this step is only required after the first time you create a Deployment using kubectl create -f.
+
+Get Deployment Information 
+
+```
+kubectl describe deployments kuard
+Name:                   kuard
+Namespace:              default
+CreationTimestamp:      Tue, 25 Nov 2025 09:53:37 +0100
+Labels:                 run=kuard
+Annotations:            deployment.kubernetes.io/revision: 1
+Selector:               run=kuard
+Replicas:               2 desired | 2 updated | 2 total | 2 available | 0 unavailable
+StrategyType:           RollingUpdate
+MinReadySeconds:        0
+RollingUpdateStrategy:  25% max unavailable, 25% max surge
+Pod Template:
+  Labels:  run=kuard
+  Containers:
+   kuard:
+    Image:         docker.io/ksaito1125/kuard
+    Port:          <none>
+    Host Port:     <none>
+    Environment:   <none>
+    Mounts:        <none>
+  Volumes:         <none>
+  Node-Selectors:  <none>
+  Tolerations:     <none>
+Conditions:
+  Type           Status  Reason
+  ----           ------  ------
+  Progressing    True    NewReplicaSetAvailable
+  Available      True    MinimumReplicasAvailable
+OldReplicaSets:  <none>                                      <--- bei Update wird das gesetzt, danach wieder auf none gesetzt
+NewReplicaSet:   kuard-7fb4557664 (2/2 replicas created)     
+Events:
+  Type    Reason             Age                    From                   Message
+  ----    ------             ----                   ----                   -------
+  Normal  ScalingReplicaSet  14m                    deployment-controller  Scaled up replica set kuard-7fb4557664 from 0 to 1
+  Normal  ScalingReplicaSet  7m16s (x2 over 8m36s)  deployment-controller  Scaled up replica set kuard-7fb4557664 from 1 to 2
+```
+
+## Updating Deployments
+
+The two most common operations on a Deployment are scaling and application updates.
+
+Verfahren wie üblich. YAML - File anpassen, bei Scaling die Anzahl der Replicas, bei Update i.d.R. ein neues Image. 
+
+Bei einem Annotate soll man auch ein paar Informationen über das Update mit eintragen: 
+
+```
+...
+spec:
+ ...
+ template:
+   metadata:
+     annotations:
+       kubernetes.io/change-cause: "Update to green kuard"
+ ...
+```
+
+Make sure you add this annotation to the template and not the Deployment itself, since the kubectl apply command uses this field in the Deployment object. Also, do not update the changecause annotation when doing simple scaling operations. A modification of change-cause is a significant change to the template and will trigger a new rollout.
+
+```
+kubectl apply -f kuard-deployment.yaml
+kubectl rollout status deployments kuard
+kubectl get replicasets -o wide
+kubectl rollout pause deployments kuard
+kubectl rollout resume deployments kuard
+kubectl rollout history deployment kuard                      - history of deployments
+kubectl rollout history deployment kuard --revision=2         - info about deployment nr. 2
+kubectl rollout undo deployments kuard                        - undo last deployment
+```
+
+By default, the last 10 revisions of a Deployment are kept attached to the Deployment object itself. It is recommended that if you have Deployments that you expect to keep around for a long time, you set a maximum history size for the Deployment revision history. For example, if you do a daily update, you may limit your revision history to 14, to keep a maximum of two weeks’ worth of revisions (if you don’t expect to need
+to roll back beyond two weeks).
+
+To accomplish this, use the revisionHistoryLimit property in the Deployment specification:
+```
+...
+spec:
+ # We do daily rollouts, limit the revision history to two weeks of
+ # releases as we don't expect to roll back beyond that.
+ revisionHistoryLimit: 14
+...
+```
+
+## Deployment Strategies
+
+Recreate or RollingUpdate. 
+
+Recreate strategy: Updates the ReplicaSet and terminates all of the Pods associated with the Deployment and recreates all Pods with new image.
+-> Downtime
+
+RollingUpdate: Importantly, this means that for a while, both the new and the old version of your service will be receiving requests and serving traffic. This has important implications for how you build your software.
+
+### Configuring a rolling update
+
+There are two parameters you can use to tune the rolling update behavior: maxUnavailable and maxSurge.
+
+maxUnavailable: max. number of Pods that can be unavailable during a rolloing update (count or percent).
+
+maxSurge: how many extra resources can be created or achive a rollout. To illustrate how this works, imagine a service with 10 replicas. We set
+maxUnavailable to 0 and maxSurge to 20%. The first thing the rollout will do is scale the new ReplicaSet up by 2 replicas, for a total of 12 (120%) in the service. It will then scale the old ReplicaSet down to 8 replicas, for a total of 10 (8 old, 2 new) in the service. This process proceeds until the rollout is complete. At any time, the capacity of the service is guaranteed to be at least 100% and the maximum extra resources used for the rollout are limited to an additional 20% of all resources.
+
+
+### Ensure Service Health
+
+For Deployments, this time to wait is defined by the minReadySeconds parameter:
+
+```
+...
+spec:
+ minReadySeconds: 60
+...
+```
+
+Setting minReadySeconds to 60 indicates that the Deployment must wait for 60 seconds after seeing a Pod become healthy before moving on to updating the next Pod.
+
+In order to set the timeout period, you will use the Deployment parameter progress DeadlineSeconds:
+
+```
+...
+spec:
+ progressDeadlineSeconds: 600
+...
+```
+
+This example sets the progress deadline to 10 minutes. If any particular stage in the rollout fails to progress in 10 minutes, then the Deployment is marked as failed, and all attempts to move the Deployment forward are halted.
+
+## Deleting a Deployment
+
+`kubectl delete deployments kuard`
+`kubectl delete -f kuard-deployment.yaml` - delete also rs
+`kubectl delete -f kuard-deployment.yaml --cascade=orphan`   - delete only deployment
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
