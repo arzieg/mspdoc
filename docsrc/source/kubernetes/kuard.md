@@ -907,6 +907,162 @@ This example sets the progress deadline to 10 minutes. If any particular stage i
 `kubectl delete -f kuard-deployment.yaml --cascade=orphan`   - delete only deployment
 
 
+# Daemon Sets
+
+A DaemonSet ensures that a copy of a Pod is running across a set of nodes in a Kubernetes cluster. DaemonSets are used to deploy system daemons such as log col‐
+lectors and monitoring agents, which typically must run on every node. DaemonSets share similar functionality with ReplicaSets; both create Pods that are expected to be
+long-running services and ensure that the desired state and the observed state of the cluster match.
+
+* ReplicaSets should be used when your application is completely decoupled from the node and you can run multiple copies on a given node without special consideration. 
+* DaemonSets should be used when a single copy of your application must run on all or a subset of the nodes in the cluster
+
+You should generally not use scheduling restrictions or other parameters to ensure that Pods do not colocate on the same node. If you find yourself wanting a single Pod
+per node, then a DaemonSet is the correct Kubernetes resource to use. Likewise, if you find yourself building a homogeneous replicated service to serve user traffic, then a ReplicaSet is probably the right Kubernetes resource to use.
+
+By default, a DaemonSet will create a copy of a Pod on every node unless a node selector is used, which will limit eligible nodes to those with a matching set of labels.
+
+```
+apiVersion: apps/v1
+kind: DaemonSet   <-- Daemon Set
+metadata:
+  name: fluentd
+  labels:
+    app: fluentd
+spec:
+  selector:
+    matchLabels:
+      app: fluentd
+  template:
+    metadata:
+      labels:
+        app: fluentd
+    spec:
+      containers:
+      - name: fluentd
+        image: fluent/fluentd:v0.14.10
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        volumeMounts:
+        - name: varlog
+          mountPath: /var/log
+        - name: varlibdockercontainers
+          mountPath: /var/lib/docker/containers
+          readOnly: true
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: varlog
+        hostPath:
+          path: /var/log
+      - name: varlibdockercontainers
+        hostPath:
+          path: /var/lib/docker/containers
+```
+
+With the fluentd DaemonSet in place, adding a new node to the cluster will result in a fluentd Pod being deployed to that node automatically.
+
+## Limiting DaemonSets to Specific Nodes
+
+* Adding Labels to Nodes
+
+```yaml
+# Add Label to node
+kubectl label nodes k0-default-pool-35609c18-z7tb ssd=true    
+kubectl get nodes --selector ssd=true
+
+# pod file
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: nginx-fast-storage
+  labels:
+    app: nginx
+    ssd: "true"
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+      ssd: "true"
+  template:
+    metadata:
+      labels:
+        app: nginx
+        ssd: "true"
+    spec:
+      nodeSelector:
+        ssd: "true"    <-- wähle jene Nodes mit dem Label
+      containers:
+      - name: nginx
+        image: nginx:1.10.0
+```
+
+**Removing labels from a node that are required by a DaemonSet’s node selector will cause the Pod being managed by that DaemonSet to be removed from the node.**
+
+
+## Update a Daemon-Set
+
+DaemonSets can be rolled out using the same RollingUpdate strategy that Deployments use.
+
+There are two parameters that control the rolling update of a DaemonSet:
+
+* *spec.minReadySeconds*  Determines how long a Pod must be “ready” before the rolling update proceeds to upgrade subsequent Pods
+
+* *spec.updateStrategy.rollingUpdate.maxUnavailable*   Indicates how many Pods may be simultaneously updated by the rolling update
+
+# Jobs
+
+A Job creates Pods that run until successful termination (for instance, exit with 0). In contrast, a regular Pod will continually restart regardless of its exit code. Jobs are
+useful for things you only want to do once, such as database migrations or batch jobs.
+
+The Job object is responsible for creating and managing Pods defined in a template in the job specification. These Pods generally run until successful completion. The Job
+object coordinates running a number of Pods in parallel.
+
+## Job patterns
+By default, each job runs a single Pod once until successful termination. This job pattern is defined by two primary attributes of a job: the **number of job completions** and the **number of Pods to run in parallel**.
+
+### One Shot
+
+One-shot jobs provide a way to run a single Pod once until successful termination.
+
+```
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: oneshot
+spec:
+  template:
+    spec:
+      containers:
+      - name: kuard
+        image: gcr.io/kuar-demo/kuard-amd64:blue
+        imagePullPolicy: Always
+        command:
+        - "/kuard"
+        args:
+        - "--keygen-enable"
+        - "--keygen-exit-on-complete"
+        - "--keygen-num-to-gen=10"
+      restartPolicy: OnFailure
+
+kubectl delete pod oneshot
+```
+
+Because jobs have a finite beginning and ending, users often create many of them. This makes picking unique labels more difficult and more critical. For this reason, the Job object will automatically pick a unique label and use it to identify the Pods it creates. In advanced scenarios (such as swapping out a running job without killing the
+Pods it is managing), users can choose to turn off this automatic behavior and manually specify labels and selectors.
+
+### Parallelism
+
+
+
+
+
+
+
+
+
 
 
 
