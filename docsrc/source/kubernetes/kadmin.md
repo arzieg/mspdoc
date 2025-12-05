@@ -285,8 +285,15 @@ kubectl taint nodes foo dedicated=special-user:NoSchedule
 
 Mit diesem Befehl wird der ~/.kube/config-Datei ein Eintrag hinzugefügt, der alle Informationen für den Zugriff auf Ihre Cluster enthält. Mit kubectl können Sie mehrere Cluster über eine einzelne Befehlszeilenschnittstelle verwalten.
 ```
-kubectl config delete-context aks-contoso-video
+kubectl config add-context aks-contoso-video
 ```
+
+### Context setzen
+
+```
+kubectl config set-context --current --namespace=mynamespace
+```
+
 
 ### Context - Löschen: 
 
