@@ -1,5 +1,93 @@
 # systemd
 
+# Boot
+
+GPT is part of the Unified Extensible Firmware Interface (UEFI) specification. Designed both for much greater disk sizes and systemic redundancy, it is larger than the legacy MBR, so it supports much larger storage devices up to 9.44 zettabytes, or 9.44 × 1021. The partition table provides pointers to up to 256 partition entries. Each entry defines a partition in the data area of the storage device.
+
+
+## Target
+
+systemctl list-dependencies multi-user.target
+
+Default-Target ist unter /usr/lib/systemd/system/default.target ein SymLink auf ein Runlevel. Mit cat default.target kann man sich die Abhängigkeiten ansehen. Mit `systemctl get-default` kann man sich das default.target ansehen. Ändern des default.target durch Änderung des SymLink
+
+systemctl list-units --type target   - aktuellen Zustand ansehen
+
+## Systemd Units
+
+|systemd Unit   |Description|
+| -------- | -------- | 
+|.automount     |The .automount units are used to implement on-demand (i.e., plug and play) and mounting of filesystem units in parallel during startup.|
+|.device        |The .device unit files define hardware and virtual devices that are exposed to the SysAdmin in the /dev/directory. Not all devices have unit files; typically, block devices such as hard drives, network devices, and some others have unit files.|
+|.mount         |The .mount unit defines a mount point on the Linux filesystem directory structure.|
+|.scope         |The .scope unit defines and manages a set of system processes. This unit is not configured using unit files; rather, it is created programmatically. Per the systemd.scope man page, “The main purpose of scope units is grouping worker processes of a system service for organization and for managing resources.”|
+|.service        |The .service unit files define processes that are managed by systemd. These include services such as crond cups (Common Unix Printing System), iptables, multiple logical volume management (LVM) services, NetworkManager, and more.|
+|.slice          |The .slice unit defines a “slice,” which is a conceptual division of system resources that are related to a group of processes. You can think of all system resources as a pie and this subset of resources as a “slice” out of that pie.|
+|.socket         |The .socket units define inter-process communication sockets, such as network sockets.|
+|.swap           |The .swap units define swap devices or files.|
+|.target         |The .target units define groups of unit files that define startup synchronization points, runlevels, and services. Target units define the services and other units that must be active in order to start successfully.|
+|.timer          |The .timer unit defines timers that can initiate program execution at specified times.|
+
+Anzeige über
+systemctl list-unit-files -t mount
+systemctl --all -t service
+
+Manchmal gibt es aber auch bessere spezielle Befehle, z.B. systemctl list-timers (systemctl list-unit-files -t timer geht auch, ist aber nicht so schick)
+
+
+## Journal
+https://last9.io/blog/systemctl-logs/
+
+| command | description | 
+| -------- | -------- | 
+|journalctl	                      |View all system logs in reverse chronological order.
+|journalctl -u <service-name>	    |View logs for a specific service (e.g., journalctl -u nginx).
+|journalctl -u nginx.service --since today | Trouble of Service nginx today
+|journalctl _COMM=sshd --since="24 hours ago" | who logged in
+|journalctl --since="1 hour ago" -o json-pretty | in colors
+|journalctl --since="1 hour ago" --output=short-precise | exact timestamp
+|journalctl --since="1 hour ago" -o verbose | magic
+|journalctl --since=2024-10-29 06:30:00" --until="2024-10-29 06:33:10" | since ... until
+|journalctl -f	                  |View logs in real-time (similar to tail -f, journalctl -u nginx -f).
+|journalctl --since="1 hour ago"  |Last hour
+|journalctl --since="10 minutes ago" | | Last 10 Minutes
+|journalctl --since "YYYY-MM-DD"	|View logs from a specific date (e.g., journalctl --since "2024-12-01", journalctl --since "2024-12-01" --until "2024-12-09").
+|journalctl -b	                  |View logs from the current boot session. (previous boot: journalctl -b -1)
+|journalctl -b -o short-monotonic	   |View logs from the current boot session, display numbers of seconds after kernel startup
+|journalctl -p <priority>    	    |Filter logs by priority (e.g., journalctl -p err for errors).
+|journalctl -n <number>	          |Show the last specified number of logs (e.g., journalctl -n 100 for the last 100 logs).
+|journalctl --vacuum-time=2weeks	|Clean up logs older than the specified time (e.g., two weeks).
+|journalctl --vacuum-size=500M	  |Clean up logs to keep the system journal size under the specified limit.
+
+Show Disk Usage: 
+  journalctl --disk-usage
+  du -sh /var/log/journal
+
+Rotate Journal
+   journalctl --rotate
+
+Clear journal log older then x days
+  journalctl --vacuum-time=2d
+
+Restrict logs to a certain size
+  journalctl --vacuum-size=100M
+
+Restrict number of logs
+  journalctl --vacuum-files=5
+
+Config journal:
+  vi /etc/systemd/journald.conf
+
+    SystemMaxUse	Max disk space logs can take
+    SystemMaxFileSize	Max size of an INDIVIDUAL log file
+    SystemMaxFiles	Max number of log files
+
+  systemctl restart systemd-journald
+
+
+
+
+
 ## systemd Timers
 
 https://documentation.suse.com/smart/systems-management/html/systemd-working-with-timers/index.html
@@ -100,6 +188,18 @@ OnBootSec=10hours
 OnStartupSec=5minutes 20seconds
 OnUnitInactiveSec=2hours 15minutes 18 seconds
 ```
+
+| command | description | 
+| -------- | -------- | 
+
+| Timer    | Monotonic  | Definition |
+| -------- | ---------- | ---------- |
+| OnActiveSec= | X      | This defines a timer relative to the moment the timer is activated. |
+| OnBootSec=   | X      | This defines a timer relative to when the machine boots up. |
+| OnStartupSec= | X     | This defines a timer relative to when the service manager first starts. For system timer units, this is very similar to OnBootSec=, as the system service manager generally starts very early at boot. It’s primarily useful when configured in units running in the per-user service manager, as the user service manager generally starts on first login only, not during boot. |
+| OnUnitActiveSec=| X   | This defines a timer relative to when the timer that is to be activated was last activated. |
+| OnUnitInactiveSec=| X | This defines a timer relative to when the timer that is to be activated was last deactivated. |
+| OnCalendar=  |   | This defines real-time (i.e., wall clock) timers with calendar event expressions. See systemd.time(7) for more information on the syntax of calendar event expressions. Otherwise, the semantics are similar to OnActiveSec= and related settings. This timer is the one most like those used with the cron service. |
 
 ### Transient timers
 
@@ -225,4 +325,32 @@ OnCalendar=Mon..Fri 10:00
 Persistent=true
 Unit=helloworld.service
 ```
+
+
+## Mount (via systemd)
+
+Mount units may be configured either with the traditional /etc/fstab file or with systemd units. Fedora uses the fstab file as it is created during the installation. However, systemd uses the systemd-fstab-generator program to translate the fstab file into systemd units for each entry in the fstab file. Now that you know you can use systemd .mount unit files for filesystem mounting, let’s create a mount unit for the new filesystem.
+
+Create /etc/systemd/system/TestFS.mount
+
+```
+# This mount unit is for the TestFS filesystem
+[Unit]
+Description=TestFS Mount
+[Mount]
+What=/dev/vdb
+Where=/TestFS
+Type=ext4
+Options=defaults
+[Install]
+WantedBy=multi-user.target
+```
+
+```
+systemd-analyze verify /etc/systemd/system/TestFS.mount 
+systemctl enable TestFS.mount 
+systemctl start TestFS.mount
+systemctl status TestFS.mount
+```
+
 
