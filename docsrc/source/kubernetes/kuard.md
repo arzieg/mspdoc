@@ -1055,6 +1055,392 @@ Pods it is managing), users can choose to turn off this automatic behavior and m
 
 ### Parallelism
 
+10 Completions, parallel 5 Jobs
+
+```
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: parallel
+  labels:
+    chapter: jobs
+spec:
+  parallelism: 5
+  completions: 10
+  template:
+    metadata:
+      labels:
+        chapter: jobs
+    spec:
+      containers:
+      - name: kuard
+        image: docker.io/ksaito1125/kuard
+        imagePullPolicy: Always
+        command:
+        - "/kuard"
+        args:
+        - "--keygen-enable"
+        - "--keygen-exit-on-complete"
+        - "--keygen-num-to-gen=10"
+      restartPolicy: OnFailure
+```
+
+`kubectl delete job parallel`
+
+### Workqueues
+
+Some task creats a number of work items and publishes them to a work queue. A worker job can be run to process each work item until the work queue is empty.
+
+#### Starting a workqueue
+
+We start by launching a centralized work queue service. kuard has a simple memorybased work queue system built in.
+
+```
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: queue
+  labels:
+    app: work-queue
+    component: queue
+    chapter: jobs
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: work-queue
+      component: queue
+      chapter: jobs
+  template:
+    metadata:
+      labels:
+        app: work-queue
+        component: queue
+        chapter: jobs
+    spec:
+      containers:
+      - name: queue
+        image: "docker.io/ksaito1125/kuard"
+        imagePullPolicy: Always
+``` 
+
+Create a service
+
+```
+apiVersion: v1
+kind: Service
+metadata:
+  name: queue
+  labels:
+    app: work-queue
+    component: queue
+    chapter: jobs
+spec:
+  ports:
+    - port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: work-queue
+    component: queue
+    chapter: jobs
+```
+ 
+```
+kubectl get services
+NAME                  TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
+kubernetes            ClusterIP   10.0.0.1       <none>        443/TCP    22d
+queue                 ClusterIP   10.0.16.181    <none>        8080/TCP   10s
+```
+
+#### Loading the queue
+
+```
+# Create a work queue called 'keygen'
+curl -X PUT localhost:8080/memq/server/queues/keygen
+
+# Create 100 work items and load up the queue.
+for i in work-item-{0..99}; do
+ curl -X POST localhost:8080/memq/server/queues/keygen/enqueue -d "$i"
+done
+
+
+Powershell:
+# Create the queue
+Invoke-RestMethod -Uri "http://localhost:8080/memq/server/queues/keygen" -Method Put
+
+# Create 100 work items and enqueue them
+for ($i = 0; $i -lt 100; $i++) {
+    $workItem = "work-item-$i"
+    Invoke-RestMethod -Uri "http://localhost:8080/memq/server/queues/keygen/enqueue" `
+                      -Method Post `
+                      -Body $workItem
+}
+
+```
+
+#### create a consumer job
+
+```
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: consumers
+  labels:
+    app: message-queue
+    component: consumer
+    chapter: jobs
+spec:
+  parallelism: 5
+  template:
+    metadata:
+      labels:
+        app: message-queue
+        component: consumer
+        chapter: jobs
+    spec:
+      containers:
+      - name: worker
+        image: "docker.io/ksaito1125/kuard"
+        imagePullPolicy: Always
+        command:
+        - "/kuard"
+        args:
+        - "--keygen-enable"
+        - "--keygen-exit-on-complete"
+        - "--keygen-memq-server=http://queue:8080/memq/server"
+        - "--keygen-memq-queue=keygen"
+      restartPolicy: OnFailure
+```
+
+`kubectl apply -f job-consumers.yaml`
+
+Note there are five Pods running in parallel. These Pods will continue to run until the work queue is empty. You can watch as it happens in the UI on the work queue server. As the queue empties, the consumer Pods will exit cleanly and the consumers job will be considered complete.
+
+### Cronjobs
+
+Sometimes you want to schedule a job to be run at a certain interval. To achieve this, you can declare a CronJob in Kubernetes, which is responsible for creating a new Job object at a particular interval.
+
+```
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: example-cron
+spec:
+  # Run every fifth hour
+  schedule: "0 */5 * * *"   <- Standard cron format
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: batch-job
+            image: my-batch-image
+          restartPolicy: OnFailure
+```
+
+```
+kubectl get cronjob.batch
+NAME           SCHEDULE      TIMEZONE   SUSPEND   ACTIVE   LAST SCHEDULE   AGE
+example-cron   0 */5 * * *   <none>     False     0        <none>          3m17s
+
+kubectl describe cronjob.batch/example-cron
+```
+
+# ConfigMap & Secrets
+
+ConfigMaps are used to provide configuration information for workloads. Secrets are similar to ConfigMaps but focus on making sensitive information available to the workload.
+
+## ConfigMaps
+
+ConfigMap is a set of variables that can be used when defining the environment or command line for your containers. The key thing to note is that
+the ConfigMap is combined with the Pod right before it is run. This means that the container image and the Pod definition can be reused by many workloads just by
+changing the ConfigMap that is used.
+
+### Creating ConfigMaps
+
+Parameterdatei, in der Form
+```
+parameter1=value1
+parameter2=value"
+```
+
+`kubectl create configmap my-config --from-file=my-config.txt --from-literal=extra-param=extra-value --from-literal=another-param=another-value`
+
+```
+kubectl get configmaps my-config -o yaml
+apiVersion: v1
+data:
+  another-param: another-value
+  extra-param: extra-value
+  my-config.txt: "# This is a sample config file that I might use to configure an
+    application\r\nparameter1 = value1\r\nparameter2 = value2\r\n"
+kind: ConfigMap
+metadata:
+  creationTimestamp: "2025-12-09T15:15:03Z"
+  name: my-config
+  namespace: default
+  resourceVersion: "3064113"
+  uid: b993a192-6aed-464e-a1fd-24c3b038c899
+```
+
+### Using a ConfigMap
+
+1. Filesystem -> mount in container
+2. Environment Variable 
+3. Command-Line argument
+
+
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kuard-config
+spec:
+  containers:
+  - name: test-container
+    image: docker.io/ksaito1125/kuard
+    imagePullPolicy: Always
+    command:
+    - "/kuard"
+    - "$(EXTRA_PARAM)"
+    env:
+      # An example of an environment variable used inside the container
+      - name: ANOTHER_PARAM
+        valueFrom:
+          configMapKeyRef:
+            name: my-config
+            key: another-param
+      # An example of an environment variable passed to the command to start
+      # the container (above).
+      - name: EXTRA_PARAM
+        valueFrom:
+          configMapKeyRef:
+            name: my-config
+            key: extra-param
+    volumeMounts:
+      # Mounting the ConfigMap as a set of files
+      - name: config-volume
+        mountPath: /config
+  volumes:
+  - name: config-volume
+    configMap:
+      name: my-config
+  restartPolicy: Never
+```
+
+For the filesystem method, we create a new volume inside the Pod and give it the name config-volume.
+
+Environment variables are specified with a special valueFrom member.
+
+Command-line arguments build on environment variables.
+
+```
+kubectl apply -f kuard-config.yaml
+kubectl port-forward kuard-config 8080
+kubectl exec -it kuard-config -- sh
+```
+
+In the pod in dir /config is also a config-map stored
+
+## Secrets
+
+Secrets are exposed to Pods via explicit declaration in Pod manifests and the Kubernetes API.
+
+*By default, Kubernetes Secrets are stored in plain text in the etcd storage for the cluster. Depending on your requirements, this may not be sufficient security for you. In particular, anyone who has cluster administration rights in your cluster will be able to read all of the Secrets in the cluster.*
+*In recent versions of Kubernetes, support has been added for encrypting the Secrets with a user-supplied key, generally integrated into a cloud key store. Additionally, most cloud key stores have integration with Kubernetes Secrets Store CSI Driver volumes, enabling you to skip Kubernetes Secrets entirely and rely exclusively on the cloud provider’s key store. All of these options should provide you with sufficient tools to craft a security profile that suits your needs.*
+
+### Creating Secrets
+
+*The kuard container image does not bundle a TLS certificate or key. This allows the kuard container to remain portable across environments and distributable through public Docker repositories.*
+
+1. Get certificates
+``` 
+$ curl -o kuard.crt https://storage.googleapis.com/kuar-demo/kuard.crt
+$ curl -o kuard.key https://storage.googleapis.com/kuar-demo/kuard.key
+```
+2. Create a secret 
+`kubectl create secret generic kuard-tls --from-file=kuard.crt --from-file=kuard.key`
+
+` kubectl describe secrets kuard-tls`
+
+### Consume Secrets
+
+Instead of accessing Secrets through the API server, we can use a Secrets volume. Secret data can be exposed to Pods using the Secrets volume type. Secrets volumes are managed by the kubelet and are created at Pod creation time. Secrets are stored on tmpfs volumes (aka RAM disks), and as such are not written to disk on nodes.
+
+Mounting the kuard-tls Secrets volume to /tls results in the following files:
+
+/tls/kuard.crt
+/tls/kuard.key
+
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kuard-tls
+spec:
+  containers:
+  - name: kuard-tls
+    image: docker.io/ksaito1125/kuard
+    imagePullPolicy: Always
+    volumeMounts:
+    - name: tls-certs
+      mountPath: "/tls"
+      readOnly: true
+  volumes:
+  - name: tls-certs
+    secret:
+      secretName: kuard-tls
+```
+
+```
+kubectl apply -f kuard-secret.yml
+kubectl port-forward kuard-tls 8443:8443
+https://localhost:8443
+```
+
+### Private Container Registry
+
+A special use case for Secrets is to store access credentials for private container registries.Kubernetes supports using images stored on private registries, but access to those images requires credentials.
+
+Image pull Secrets leverage the Secrets API to automate the distribution of private registry credentials. Image pull Secrets are stored just like regular Secrets but are consumed through the spec.imagePullSecrets Pod specification field.
+
+Use kubectl create secret docker-registry to create this special kind of Secret:
+```
+$ kubectl create secret docker-registry my-image-pull-secret \
+ --docker-username=<username> \
+ --docker-password=<password> \
+ --docker-email=<email-address>
+```
+
+Enable access to the private repository by referencing the image pull secret in the Pod manifest file
+
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kuard-tls
+spec:
+  containers:
+  - name: kuard-tls
+    image: docker.io/ksaito1125/kuard
+    imagePullPolicy: Always
+    volumeMounts:
+    - name: tls-certs
+      mountPath: "/tls"
+      readOnly: true
+  imagePullSecrets:
+  - name: my-image-pull-secret
+  volumes:
+  - name: tls-certs
+    secret:
+      secretName: kuard-tls
+```
+
+If you are repeatedly pulling from the same registry, you can add the Secrets to the default service account associated with each Pod to avoid having to specify the Secrets in every Pod you create.
+
+## Naming Constraints
+
 
 
 
