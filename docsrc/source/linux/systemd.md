@@ -54,6 +54,7 @@ https://last9.io/blog/systemctl-logs/
 |journalctl --since "YYYY-MM-DD"	|View logs from a specific date (e.g., journalctl --since "2024-12-01", journalctl --since "2024-12-01" --until "2024-12-09").
 |journalctl -b	                  |View logs from the current boot session. (previous boot: journalctl -b -1)
 |journalctl -b -o short-monotonic	   |View logs from the current boot session, display numbers of seconds after kernel startup
+|journalctl --list-boots          |View boots
 |journalctl -p <priority>    	    |Filter logs by priority (e.g., journalctl -p err for errors).
 |journalctl -n <number>	          |Show the last specified number of logs (e.g., journalctl -n 100 for the last 100 logs).
 |journalctl --vacuum-time=2weeks	|Clean up logs older than the specified time (e.g., two weeks).

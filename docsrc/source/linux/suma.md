@@ -70,7 +70,7 @@ Five SUSE Manager Proxy containers should be present and should be part of the p
 ## Update
 
 ```
-transaction-update up
+transactional-update up
 mgradm upgrade podman
 ```
 

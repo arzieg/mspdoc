@@ -1441,6 +1441,214 @@ If you are repeatedly pulling from the same registry, you can add the Secrets to
 
 ## Naming Constraints
 
+When selecting a key name, remember that these keys can be exposed to Pods via a volume mount. Pick a name that is going to make sense when specified on a command line or in a config file. Storing a TLS key as key.pem is clearer than tls-key when configuring applications to access Secrets.
+
+## Managing ConfigMaps and Secrets
+
+ConfigMaps and Secrets are managed through the Kubernetes API. The usual create, delete, get, and describe commands work for manipulating these objects.
+
+```
+# List
+kubectl get secrets
+kubectl get configmaps
+kubectl describe configmap my-config
+
+# create
+kubectl create secret generic ...
+kubectl create configmap ...
+
+mit ...
+--from-file=filename
+--from-file=key=filename (load from the file with the Secret data key explicitly specified.)
+--from-file=directory
+--from-literal=key=value (use specified key/value pair)
+
+# Update
+
+If you have a manifest for your ConfigMap or Secret, you can just edit it directly and replace it with a new version using kubectl replace -f <filename>. You can
+also use kubectl apply -f <filename> if you previously created the resource with kubectl apply.
+
+# recreate & update
+
+kubectl create secret generic kuard-tls --from-file=kuard.crt --from-file=kuard.key --dry-run -o yaml | kubectl replace -f -
+
+This command line first creates a new Secret with the same name as our existing Secret. If we just stopped there, the Kubernetes API server would return an error complaining that we are trying to create a Secret that already exists. Instead, we tell kubectl not to actually send the data to the server but instead to dump the YAML that it would have sent to the API server to stdout. We then pipe that to kubectl replace and use -f - to tell it to read from stdin. In this way, we can update a Secret from files on disk without having to manually base64-encode data.
+
+# edit current version
+
+kubectl edit configmap my-config
+```
+
+# Role-Based Access Control for Kubernetes
+
+## RBAC
+
+### Identities in kubernetes
+
+Every request to Kubernetes is associated with some identity. Even a request with no identity is associated with the system:unauthenticated group. Kubernetes makes a
+distinction between user identities and service account identities. Service accounts are created and managed by Kubernetes itself and are generally associated with components running inside the cluster. User accounts are all other accounts associated with actual users of the cluster, and often include automation like continuous delivery services that run outside the cluster.
+
+You should always use different identities for different applications in your cluster.
+
+For example, you should have one identity for your production frontends, a different identity for the production backends, and all production identities should be distinct
+from development identities. s. You should also have different identities for different clusters. All of these identities should be machine identities that are not shared with
+users. You can either use Kubernetes Service Accounts for achieving this, or you can use a Pod identity provider supplied by your identity system; for example, Azure Active Directory supplies an open source identity provider for Pods as do other popular identity providers.
+
+A role is a set of abstract capabilities. 
+
+A role binding is an assignment of a role to one or more identities. 
+
+In Kubernetes, two pairs of related resources represent roles and role bindings. One pair is scoped to a namespace (Role and RoleBinding), while the other pair is scoped to the cluster (ClusterRole and ClusterRoleBinding).
+
+Role resources are namepaced and represent capabilities within that single namespace. You cannot use namespaced roles for nonnamespaced resources
+
+Example Role
+
+```yaml
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+ namespace: default
+ name: pod-and-services
+rules:
+- apiGroups: [""]
+  resources: ["pods", "services"]
+  verbs: ["create", "delete", "get", "list", "patch", "update", "watch"]
+```
+
+Example Binding
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+ namespace: default
+ name: pods-and-services     
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+ kind: User
+ name: alice                 <- user
+- apiGroup: rbac.authorization.k8s.io
+ kind: Group
+ name: mydevs                <- or group
+roleRef:
+ apiGroup: rbac.authorization.k8s.io
+ kind: Role
+ name: pod-and-services      <- role
+```
+
+Sometimes you need to create a role that applies to the entire cluster, or you want to limit access to cluster-level resources. To achieve this, you use the ClusterRole and
+ClusterRoleBinding resources. They are largely identical to their namespaced peers, but are cluster-scoped.
+
+
+| Verb | HTTP |method Description                                  |
+| -----|------|--------------------------------------------------- |
+| create| POST| Create a new resource.                             |
+| delete | DELETE| Delete an existing resource.                    |
+| get | GET |Get a resource.                                       |
+| list | GET |List a collection of resources.                      |
+| patch | PATCH| Modify an existing resource via a partial change. |
+| update | PUT |Modify an existing resource via a complete object. |
+| watch | GET |Watch for streaming updates to a resource.          |
+| proxy | GET |Connect to resource via a streaming WebSocket proxy |
+
+
+### Built-in roles
+
+kubectl get clusterroles
+
+* The cluster-admin role provides complete access to the entire cluster.
+* The admin role provides complete access to a complete namespace.
+* The edit role allows an end user to modify resources in a namespace.
+* The view role allows for read-only access to a namespace.
+
+Bindings: `kubectl get clusterrolebindings`
+
+When the Kubernetes API server starts up, it automatically installs a number of default ClusterRoles that are defined in the code of the API server itself. This means that if you modify any built-in cluster role, those modifications are transient. Whenever the API server is restarted (e.g., for an upgrade), your changes will be overwritten.
+
+To prevent this from happening, before you make any other modifications, you need to add the rbac.authorization.kubernetes.io/autoupdate annotation with a value of false to the built-in ClusterRole resource. If this annotation is set to false, the API server will not overwrite the modified ClusterRole resource.
+
+**By default, the Kubernetes API server installs a cluster role that allows system:unauthenticated users access to the API server’s API discovery endpoint. For any cluster exposed to a hostile environment (e.g., the public internet) this is a bad idea, and there has been at least one serious security vulnerability via this exposure. If you are running a Kubernetes service on the public internet or an other hostile environment, you should ensure that the --anonymous-auth=false flag is set on your API server.**
+
+## Managing RBACS
+
+can-i command for kubectl. This tool is used for testing whether a specific user can perform a specific action. You can use can-i to validate configuration settings as you configure your cluster, or you can ask users to use the tool to validate their access when filing errors or bug reports.
+
+```
+kubectl auth can-i create pods
+kubectl auth can-i get pods --subresource=logs
+```
+RBAC resources are modeled using YAML. Given this text-based representation, it makes sense to store these resources in version control, which allows for accountability, auditability, and rollback.
+
+`kubectl auth reconcile -f some-rbac-config.yaml`
+
+**Aggregate**
+
+Sometimes you want to be able to define roles that are combinations of other roles. Kubernetes RBAC supports the usage of an aggregation rule to combine multiple roles in a new role. This new role combines all of the capabilities of all of the aggregate roles, and any changes to any of the constituent subroles will automatically be propogated back into the aggregate role. As with other aggregations or groupings in Kubernetes, the ClusterRoles to be aggregated are specified using label selectors. In this particular case, the aggregationRule field in the ClusterRole resource contains a clusterRoleSelector field, which in turn is a label selector. All ClusterRole resources that match this selector are dynamically aggregated into the rules array in the aggregate ClusterRole resource.
+
+example: the built-in edit role looks like this:
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+ name: edit
+ ...
+aggregationRule:
+ clusterRoleSelectors:
+ - matchLabels:
+ rbac.authorization.k8s.io/aggregate-to-edit: "true"
+...
+``` 
+
+This means that the edit role is defined to be the aggregate of all ClusterRole objects that have a label of rbac.authorization.k8s.io/aggregate-to-edit set to true.
+
+**Bindings**
+
+When you bind a group to a Role or ClusterRole, anyone who is a member of that group gains access to the resources and verbs defined by that role.
+
+To bind a group to a ClusterRole, use a Group kind for the subject in the binding:
+
+```yaml
+...
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+ kind: Group
+ name: my-great-groups-name
+...
+```
+
+
+# Service Mesh
+
+There are three general capabilities provided by most service mesh implementations: network encryption and authorization, traffic shaping, and observability
+
+## Encryption and Authentication with Mutal TLS
+
+Encryption of network traffic between Pods is a key component to security in a microservice architecture. Encryptions provided by Mutual Transport Layer Security,
+or mTLS, is one of the most popular use cases for a service mesh. installing a service mesh on your Kubernetes cluster automatically provides encryption to network traffic between every Pod in the cluster. The service mesh adds a sidecar container to every Pod, which transparently intercepts all network communication. 
+
+## Traffic shaping
+
+In a dog-fooding model, you may run version Y of your service for a day to a week (or longer) for a subset of users before you roll it out broadly to your full set of users.
+Such experiments require the ability to do traffic shaping, or routing of requests to different service implementations based on the characteristics of the request.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
